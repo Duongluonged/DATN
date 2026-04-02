@@ -1,0 +1,2 @@
+CREATE DATABASE VietJob;
+GO
