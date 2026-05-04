@@ -1,139 +1,146 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Register = () => {
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    if (password !== confirmPassword) {
+      alert("Mật khẩu xác nhận không khớp!");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await axios.post("http://localhost:5000/api/register", {
+        username,
+        password,
+        email
+      });
+      alert("Đăng ký thành công!");
+      navigate("/login");
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.error || "Đăng ký thất bại");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="w-full flex justify-center py-12 px-4 sm:px-6 lg:px-8 bg-white">
-      
-      {/* Container chính */}
-      <div className="max-w-5xl w-full bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 overflow-hidden flex flex-col md:flex-row min-h-[650px]">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      {/* Container chính - Đồng bộ h-[600px] và shadow-xl */}
+      <div className="max-w-5xl w-full bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row h-[650px]">
         
-        {/* Cột trái: Form Đăng ký */}
-        <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center bg-white order-2 md:order-1">
-          <div className="mb-8">
+        {/* Cột trái: Hình ảnh & Thương hiệu (Đổi sang bên trái giống Login) */}
+        <div className="hidden md:flex md:w-1/2 relative flex-col justify-end">
+          {/* Ảnh nền 3D Artist/Tech chuyên nghiệp */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: "url('https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80')" }}
+          ></div>
+          {/* Lớp phủ gradient xanh lam đặc trưng */}
+          <div className="absolute inset-0 bg-gradient-to-t from-blue-700 via-blue-600/60 to-transparent mix-blend-multiply"></div>
+          
+          {/* Nội dung chữ trên nền ảnh */}
+          <div className="relative z-10 p-10 text-white">
+            <h1 className="text-4xl font-bold mb-4 leading-tight">
+              Bắt đầu hành trình <br /> sự nghiệp của bạn.
+            </h1>
+            <p className="text-blue-100 text-sm max-w-sm">
+              Tham gia cộng đồng IT Career VN để tiếp cận hàng ngàn việc làm công nghệ hấp dẫn nhất.
+            </p>
+          </div>
+        </div>
+
+        {/* Cột phải: Form Đăng ký */}
+        <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center bg-white">
+          <div className="mb-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Tạo tài khoản mới</h2>
-            <p className="text-gray-500 text-sm">Tham gia cùng hàng ngàn chuyên gia IT ngay hôm nay.</p>
+            <p className="text-gray-500 text-sm">Điền thông tin bên dưới để đăng ký thành viên.</p>
           </div>
 
-          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-            
+          <form className="space-y-4" onSubmit={handleRegister}>
             {/* Input Họ và tên */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Họ và tên
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  {/* Icon User */}
-                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </div>
-                <input 
-                  type="text" 
-                  placeholder="Nguyễn Văn A" 
-                  className="w-full pl-10 pr-4 py-3 bg-gray-100/80 border border-gray-200 rounded-lg focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
-                  required
-                />
-              </div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Họ và tên</label>
+              <input 
+                type="text" 
+                placeholder="Nguyễn Văn A" 
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full px-4 py-2.5 bg-gray-100 border border-transparent rounded-lg focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                required
+              />
             </div>
 
             {/* Input Email */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Địa chỉ Email
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  {/* Icon Mail */}
-                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                </div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+              <input 
+                type="email" 
+                placeholder="name@company.com" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-2.5 bg-gray-100 border border-transparent rounded-lg focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                required
+              />
+            </div>
+
+            {/* Grid Mật khẩu và Xác nhận */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Mật khẩu</label>
                 <input 
-                  type="email" 
-                  placeholder="email@example.com" 
-                  className="w-full pl-10 pr-4 py-3 bg-gray-100/80 border border-gray-200 rounded-lg focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                  type="password" 
+                  placeholder="••••••••" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-gray-100 border border-transparent rounded-lg focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Xác nhận</label>
+                <input 
+                  type="password" 
+                  placeholder="••••••••" 
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-gray-100 border border-transparent rounded-lg focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
                   required
                 />
               </div>
             </div>
 
-            {/* Grid 2 cột cho Mật khẩu và Xác nhận mật khẩu */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  Mật khẩu
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    {/* Icon Lock */}
-                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                  </div>
-                  <input 
-                    type="password" 
-                    placeholder="••••••••" 
-                    className="w-full pl-10 pr-4 py-3 bg-gray-100/80 border border-gray-200 rounded-lg focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  Xác nhận
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                  </div>
-                  <input 
-                    type="password" 
-                    placeholder="••••••••" 
-                    className="w-full pl-10 pr-4 py-3 bg-gray-100/80 border border-gray-200 rounded-lg focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Checkbox Điều khoản */}
-            <div className="flex items-start mt-4">
-              <input 
-                id="terms" 
-                type="checkbox" 
-                className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
-                required
-              />
-              <label htmlFor="terms" className="ml-2 block text-xs text-gray-600 cursor-pointer leading-relaxed">
-                Tôi đồng ý với{' '}
-                <a href="#" className="font-semibold text-blue-600 hover:underline">Điều khoản & Điều kiện</a>
-                {' '}và{' '}
-                <a href="#" className="font-semibold text-blue-600 hover:underline">Chính sách Bảo mật</a>
-                {' '}của Talent Arc.
-              </label>
-            </div>
-
+            {/* Nút Submit - Sử dụng loading state */}
             <button 
               type="submit" 
-              className="w-full mt-2 py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              disabled={loading}
+              className={`w-full mt-2 py-3 px-4 ${loading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'} text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all`}
             >
-              Đăng ký ngay
+              {loading ? "Đang xử lý..." : "Đăng Ký Ngay"}
             </button>
           </form>
 
-          <div className="mt-6 flex items-center justify-center relative">
+          {/* Đường kẻ chia cắt */}
+          <div className="mt-6 relative flex items-center justify-center">
             <div className="w-full h-px bg-gray-200"></div>
-            <span className="px-4 text-[11px] font-semibold text-gray-400 uppercase bg-white absolute">
-              Hoặc tiếp tục với
+            <span className="px-4 text-[10px] font-bold text-gray-400 uppercase bg-white absolute tracking-widest">
+              Hoặc tham gia với
             </span>
           </div>
 
-          <div className="mt-6 flex gap-4">
+          {/* Nút Google Login (Chỉ giữ lại 1 để cân bằng diện tích) */}
+          <div className="mt-6">
             <button className="w-full flex items-center justify-center gap-2 py-2.5 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -141,49 +148,19 @@ const Register = () => {
                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
               </svg>
-              Google
-            </button>
-            <button className="w-full flex items-center justify-center gap-2 py-2.5 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
-              <svg className="w-5 h-5 text-[#1877F2]" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-              </svg>
-              Facebook
+              Đăng ký bằng Google
             </button>
           </div>
 
-          <p className="mt-8 text-center text-sm text-gray-600">
+          {/* Link chuyển về Đăng nhập */}
+          <p className="mt-6 text-center text-sm text-gray-600">
             Đã có tài khoản?{' '}
-            {/* Sử dụng thẻ Link để chuyển về trang Login */}
             <Link to="/login" className="font-semibold text-blue-600 hover:text-blue-500">
-              Đăng nhập
+              Đăng nhập ngay
             </Link>
           </p>
 
         </div>
-
-        {/* Cột phải: Hình ảnh & Thương hiệu */}
-        <div className="hidden md:flex md:w-1/2 relative flex-col justify-end p-10 order-1 md:order-2">
-          {/* Ảnh nền văn phòng */}
-          <div 
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: "url('https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80')" }}
-          ></div>
-          {/* Overlay gradient xanh lam */}
-          <div className="absolute inset-0 bg-gradient-to-t from-blue-700 via-blue-600/90 to-blue-600/60 mix-blend-multiply"></div>
-          
-          <div className="relative z-10 text-white">
-            <span className="inline-block px-1 mb-4 text-sm font-semibold tracking-wide border-b-2 border-green-400 pb-1">
-              IT Career VN
-            </span>
-            <h1 className="text-3xl lg:text-4xl font-bold mb-4 leading-tight">
-              Khởi đầu hành trình <br /> Công nghệ của bạn
-            </h1>
-            <p className="text-blue-100 text-sm max-w-sm leading-relaxed">
-              Kết nối với những cơ hội hàng đầu trong ngành công nghệ thông tin tại Việt Nam.
-            </p>
-          </div>
-        </div>
-
       </div>
     </div>
   );

@@ -2,6 +2,7 @@ import Navbar from "../common/Navbar";
 import Footer from "../common/Footer";
 import Banner from "../common/Banner";
 import { Outlet } from "react-router-dom";
+import Stats from "../common/statistical";
 
 const MainLayout = () => {
   return (
@@ -16,7 +17,9 @@ const MainLayout = () => {
       </main>
     
       {/* Footer luôn ở dưới cùng */}
+      <Stats />
       <Footer />
+
     </div>
   );
 };
