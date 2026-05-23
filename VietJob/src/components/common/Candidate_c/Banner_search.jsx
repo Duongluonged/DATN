@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-
+import React, { useEffect, useState } from 'react';
+import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
+import { Ban } from 'lucide-react';
 const provinces = [
   "Tất cả các địa điểm", "Hà Nội", "TP. Hồ Chí Minh", "Đà Nẵng",
   "Hải Phòng", "Cần Thơ", "Bình Dương", "Đồng Nai", "Huế", "Nha Trang"
@@ -22,35 +23,78 @@ const jobTypes = [
   { label: "Hợp đồng", value: "contract" },
 ];
 
-const trendingTags = ["ReactJS", "Node.js", "Java", "Python", "Laravel", "C#"];
 
-function Banner() {
+function BannerSearch() {
   const navigate = useNavigate();
-  const [keyword, setKeyword] = useState("");
   const [selectedLocation, setSelectedLocation] = useState(provinces[0]);
   const [selectedSalary, setSelectedSalary] = useState("all");
   const [selectedJobType, setSelectedJobType] = useState("all");
 
-  const handleSearch = () => {
-    const params = new URLSearchParams();
-    if (keyword.trim()) params.set("keyword", keyword.trim());
-    if (selectedLocation !== "Tất cả các địa điểm") params.set("location", selectedLocation);
-    if (selectedSalary !== "all") params.set("salary", selectedSalary);
-    if (selectedJobType !== "all") params.set("jobType", selectedJobType);
 
-    navigate(`/search?${params.toString()}`);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // State bộ lọc đồng bộ từ URL
+  const [keyword, setKeyword] = useState(searchParams.get('keyword') || '');
+  const [location, setLocation] = useState(searchParams.get('location') || 'Tất cả các địa điểm');
+  const [salary, setSalary] = useState(searchParams.get('salary') || 'all');
+  const [jobType, setJobType] = useState(searchParams.get('jobType') || 'all');
+
+  // Gọi API mỗi khi URL params thay đổi
+  useEffect(() => {
+    const fetchJobs = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await axios.get('http://localhost:5000/api/jobs/search', {
+          params: {
+            keyword: searchParams.get('keyword') || undefined,
+            location: searchParams.get('location') || undefined,
+            salary: searchParams.get('salary') || undefined,
+            jobType: searchParams.get('jobType') || undefined,
+          }
+        });
+        setJobs(res.data);
+      } catch (err) {
+        console.error(err);
+        setError('Không thể kết nối server. Vui lòng thử lại.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchJobs();
+  }, [searchParams]);
+
+  // Áp dụng bộ lọc → cập nhật URL
+  const applyFilters = () => {
+    const params = new URLSearchParams();
+    if (keyword.trim()) params.set('keyword', keyword.trim());
+    if (location !== 'Tất cả các địa điểm') params.set('location', location);
+    if (salary !== 'all') params.set('salary', salary);
+    if (jobType !== 'all') params.set('jobType', jobType);
+    setSearchParams(params);
   };
+
+
+  const clearFilters = () => {
+    setKeyword('');
+    setLocation('Tất cả các địa điểm');
+    setSalary('all');
+    setJobType('all');
+    setSearchParams(new URLSearchParams());
+  };
+
+  const hasFilters = searchParams.toString() !== '';
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter') handleSearch();
+    if (e.key === 'Enter') applyFilters();
   };
 
-  const handleTagClick = (tag) => {
-    setKeyword(tag);
-    const params = new URLSearchParams();
-    params.set("keyword", tag);
-    navigate(`/search?${params.toString()}`);
-  };
+
 
   return (
     <section
@@ -60,12 +104,6 @@ function Banner() {
       <div className="absolute inset-0 bg-neutral-900/70"></div>
 
       <div className="max-w-5xl mx-auto relative z-10">
-        <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-4 leading-tight">
-          Kiến Tạo <span className="text-sky-400">Tương Lai</span> Công Nghệ.
-        </h1>
-        <p className="text-gray-300 mb-10 text-lg italic">
-          "Kết nối bạn với những cơ hội hàng đầu tại Việt Nam"
-        </p>
 
         {/* Thanh tìm kiếm */}
         <div className="flex items-center bg-white rounded-full shadow-2xl focus-within:ring-4 focus-within:ring-sky-500/30 transition-all overflow-hidden">
@@ -83,7 +121,7 @@ function Banner() {
             />
           </div>
           <button
-            onClick={handleSearch}
+            onClick={applyFilters}
             className="bg-sky-600 hover:bg-sky-700 text-white font-bold px-8 py-4 transition-all active:scale-95"
           >
             TÌM KIẾM
@@ -95,11 +133,11 @@ function Banner() {
           {/* Địa điểm */}
           <div className="relative">
             <select
-              value={selectedLocation}
-              onChange={(e) => setSelectedLocation(e.target.value)}
-              className="bg-white/10 hover:bg-white/20 border border-white/30 text-white rounded-full px-5 py-2 text-sm cursor-pointer outline-none appearance-none pr-9 backdrop-blur-md transition-all"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="text-sm border border-gray-200 rounded-full px-4 py-1.5 outline-none cursor-pointer bg-white hover:border-sky-400 transition-colors"
             >
-              {provinces.map((p, i) => <option key={i} value={p} className="text-gray-900">{p}</option>)}
+              {provinces.map((p, i) => <option key={i} value={p}>{p}</option>)}
             </select>
             <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/70">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -111,11 +149,11 @@ function Banner() {
           {/* Mức lương */}
           <div className="relative">
             <select
-              value={selectedSalary}
-              onChange={(e) => setSelectedSalary(e.target.value)}
-              className="bg-white/10 hover:bg-white/20 border border-white/30 text-white rounded-full px-5 py-2 text-sm cursor-pointer outline-none appearance-none pr-9 backdrop-blur-md transition-all"
+              value={salary}
+              onChange={(e) => setSalary(e.target.value)}
+              className="text-sm border border-gray-200 rounded-full px-4 py-1.5 outline-none cursor-pointer bg-white hover:border-sky-400 transition-colors"
             >
-              {salaryRanges.map((r, i) => <option key={i} value={r.value} className="text-gray-900">{r.label}</option>)}
+              {salaryRanges.map((r, i) => <option key={i} value={r.value}>{r.label}</option>)}
             </select>
             <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/70">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -127,11 +165,11 @@ function Banner() {
           {/* Loại hình */}
           <div className="relative">
             <select
-              value={selectedJobType}
-              onChange={(e) => setSelectedJobType(e.target.value)}
-              className="bg-white/10 hover:bg-white/20 border border-white/30 text-white rounded-full px-5 py-2 text-sm cursor-pointer outline-none appearance-none pr-9 backdrop-blur-md transition-all"
+              value={jobType}
+              onChange={(e) => setJobType(e.target.value)}
+              className="text-sm border border-gray-200 rounded-full px-4 py-1.5 outline-none cursor-pointer bg-white hover:border-sky-400 transition-colors"
             >
-              {jobTypes.map((t, i) => <option key={i} value={t.value} className="text-gray-900">{t.label}</option>)}
+              {jobTypes.map((t, i) => <option key={i} value={t.value}>{t.label}</option>)}
             </select>
             <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/70">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -139,24 +177,20 @@ function Banner() {
               </svg>
             </div>
           </div>
-        </div>
 
-        {/* Trending Tags */}
-        <div className="mt-7 flex flex-wrap items-center gap-2">
-          <span className="text-gray-300 text-sm font-medium">Từ khóa phổ biến:</span>
-          {trendingTags.map((tag, i) => (
-            <button
-              key={i}
-              onClick={() => handleTagClick(tag)}
-              className="text-xs bg-white/5 hover:bg-white/20 border border-white/20 text-gray-200 px-3 py-1.5 rounded-md transition-all"
-            >
-              {tag}
-            </button>
-          ))}
+          {hasFilters && (
+              <button
+                onClick={clearFilters}
+                className="text-sm text-blue-800 hover:text-blue-700 px-3 py-1.5 rounded-full border border-blue-200 hover:border-blue-400 bg-white transition-colors"
+              >
+                Xóa bộ lọc
+              </button>
+            )}
+
         </div>
       </div>
     </section>
   );
 }
 
-export default Banner;
+export default BannerSearch;

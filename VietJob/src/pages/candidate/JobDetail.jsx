@@ -1,7 +1,10 @@
-/* eslint-disable no-undef */
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../../components/common/Navbar";
+import axios from "axios";
+import ApplyJob from "./ApplyJob";
+
 
 // ─── SVG Icons ───────────────────────────────────────────────────────────────
 const CheckIcon = () => (
@@ -67,111 +70,44 @@ const GrowthIcon = () => (
   </svg>
 );
 
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-const mockJobs = [
-  {
-    id: 1,
-    title: "Biên Tập Viên Nội Dung Cao Cấp (Editorial Lead)",
-    postedAgo: "2 ngày trước",
-    salary: "25.000.000 – 35.000.000 VNĐ",
-    location: "Quận 1, TP. Hồ Chí Minh",
-    company: "Vietnam Heritage Media Group",
-    companySlogan: "Preserving values, inspiring the future",
-    companySize: "500 – 1000 nhân viên",
-    companyWeb: "www.heritage-media.vn",
-    companyAddress: "Lô 4, Bình Nghĩa, Quận 1",
-    deadline: "30/06/2024",
-    workType: "Toàn thời gian",
-    level: "Quản lý / Trưởng nhóm",
-    gender: "Không yêu cầu",
-    description: [
-      "Xây dựng định hướng nội dung – đóng (Editorial Strategy) cho các tuyến tin; tổ chức và cải thiện các bộ phận.",
-      "Phụ trách và biên tập các bài viết chuyên sâu về những ngành nghề, tài chính và kinh doanh.",
-      "Hợp tác cùng bộ phận Design để tối ưu hóa trải nghiệm thị giác cho người đọc; tạo bộ sưu tập qua Layout.",
-      "Phỏng vấn các CEO và những người có tiếng nói trong ngành, làm việc ở nhiều cấp bậc.",
-    ],
-    requirements: [
-      { label: "KINH NGHIỆM", value: "Ít nhất 5 năm trong ngành báo chí/biên tập" },
-      { label: "NGOẠI NGỮ", value: "Tiếng Anh lưu loát (IELTS 7.5+)" },
-      { label: "KỸ NĂNG", value: "Tư duy phân biện & Thẩm mỹ đồ họa" },
-      { label: "BẰNG CẤP", value: "Chuyên ngành Báo chí, Truyền thông" },
-    ],
-  },
-  {
-    id: 2,
-    title: "Frontend Developer",
-    postedAgo: "1 ngày trước",
-    salary: "20.000.000 – 30.000.000 VNĐ",
-    location: "Quận 3, TP. Hồ Chí Minh",
-    company: "TechViet Solutions",
-    companySlogan: "Building the digital future",
-    companySize: "100 – 500 nhân viên",
-    companyWeb: "www.techviet.vn",
-    companyAddress: "123 Nguyễn Đình Chiểu, Quận 3",
-    deadline: "15/07/2024",
-    workType: "Toàn thời gian",
-    level: "Senior / Chuyên viên",
-    gender: "Không yêu cầu",
-    description: [
-      "Phát triển giao diện người dùng với ReactJS và Tailwind CSS.",
-      "Tối ưu hóa hiệu suất ứng dụng web.",
-      "Phối hợp với team Backend để tích hợp API.",
-      "Tham gia review code và mentor junior developer.",
-    ],
-    requirements: [
-      { label: "KINH NGHIỆM", value: "Ít nhất 3 năm với ReactJS" },
-      { label: "KỸ NĂNG", value: "React, TypeScript, Tailwind CSS" },
-      { label: "NGOẠI NGỮ", value: "Tiếng Anh đọc hiểu tài liệu" },
-      { label: "BẰNG CẤP", value: "CNTT hoặc ngành liên quan" },
-    ],
-  },
-  {
-    id: 3,
-    title: "Backend Developer (NodeJS)",
-    postedAgo: "3 ngày trước",
-    salary: "22.000.000 – 32.000.000 VNĐ",
-    location: "Quận Bình Thạnh, TP. Hồ Chí Minh",
-    company: "DataCore Vietnam",
-    companySlogan: "Data-driven, people-first",
-    companySize: "50 – 100 nhân viên",
-    companyWeb: "www.datacore.vn",
-    companyAddress: "45 Xô Viết Nghệ Tĩnh, Bình Thạnh",
-    deadline: "01/08/2024",
-    workType: "Toàn thời gian",
-    level: "Senior / Chuyên viên",
-    gender: "Không yêu cầu",
-    description: [
-      "Xây dựng và bảo trì REST API với NodeJS và Express.",
-      "Thiết kế và tối ưu cơ sở dữ liệu SQL Server.",
-      "Triển khai hệ thống trên AWS/GCP.",
-      "Viết unit test và tài liệu kỹ thuật.",
-    ],
-    requirements: [
-      { label: "KINH NGHIỆM", value: "Ít nhất 3 năm với NodeJS" },
-      { label: "KỸ NĂNG", value: "NodeJS, SQL Server, REST API" },
-      { label: "NGOẠI NGỮ", value: "Tiếng Anh kỹ thuật" },
-      { label: "BẰNG CẤP", value: "CNTT hoặc ngành liên quan" },
-    ],
-  },
-];
 
 // ─── Component ────────────────────────────────────────────────────────────────
 const JobDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-
-  // Khai báo state bên trong component
-  const job = React.useMemo(() => mockJobs.find((j) => j.id === Number(id)) || null, [id]);
   const [saved, setSaved] = useState(false);
   const [applied, setApplied] = useState(false);
+   const [job, setJob] = useState(null);
+   
+
+  const [loading,setLoading] = useState(true);
+  
+
+    useEffect(() => {
+        if (!id || id === "undefined") return;
+
+      const fetchJob = async () => {
+        try {
+          const res = await axios.get(`http://localhost:5000/api/companies/jobs/${id}`);
+          setJob(res.data);
+
+        } catch (error) {
+            console.error("Lỗi khi lấy dữ liệu:", error);
+        } finally {
+            setLoading(false);
+        }
+      };
+
+      fetchJob();
+    }, [id]);
 
 
   // Hàm xử lý ứng tuyển
   const handleApply = () => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("user");
     if (token) {
-      setApplied(true); // Cập nhật trạng thái đã bấm
-      navigate("/candidate/CreateCV"); // Điều hướng đến trang tạo CV
+      setApplied(true); 
+      navigate("/candidate/ApplyJob", { state: { jobId: id, jobTitle: job.JobTitle } });
     } else {
       navigate("/login");
     }
@@ -214,11 +150,12 @@ const JobDetail = () => {
     benDesc:   (dark) => ({ fontSize: 12.5, color: dark ? "rgba(255,255,255,0.8)" : "#6b7280", lineHeight: 1.5, marginTop: 4 }),
     coverBox:  { background: "linear-gradient(135deg,#0a5c9e,#1e40af,#1d4ed8)", height: 90, position: "relative", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "10px 10px 0 0", overflow: "hidden" },
     compBody:  { padding: "0 18px 18px" },
-    logoBox:   { width: 52, height: 52, background: "linear-gradient(135deg,#0a5c9e,#1d4ed8)", borderRadius: 8, border: "3px solid #fff", marginTop: -20, marginBottom: 10, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" },
     tableRow:  { borderBottom: "1px solid #f3f4f6" },
     tdLabel:   { padding: "9px 0", fontSize: 12.5, color: "#9ca3af", width: "50%" },
     tdValue:   { padding: "9px 0", fontSize: 13, color: "#1f2937", fontWeight: 500 },
   };
+
+  console.log("Dữ liệu thực tế từ API:", job);
 
   return (
     <div style={s.page}>
@@ -226,9 +163,7 @@ const JobDetail = () => {
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap');`}</style>
 
       <div style={s.container}>
-        {/* ── LEFT ── */}
         <div style={s.left}>
-          {/* Header Card */}
           <div style={s.card}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
               <div style={{ flex: 1 }}>
@@ -236,19 +171,19 @@ const JobDetail = () => {
                   <span style={s.hotBadge}>HOT JOB</span>
                   <span style={{ color: "#9ca3af", fontSize: 12 }}>⏱ Đăng {job.postedAgo}</span>
                 </div>
-                <h1 style={{ fontSize: 20, fontWeight: 800, color: "#111827", lineHeight: 1.3, marginBottom: 10 }}>{job.title}</h1>
+                <h1 style={{ fontSize: 20, fontWeight: 800, color: "#111827", lineHeight: 1.3, marginBottom: 10 }}>{job.JobTitle}</h1>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
                   <div style={{ width: 20, height: 20, background: "#0a5c9e", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <BuildingIcon />
                   </div>
-                  <span style={{ color: "#0a5c9e", fontWeight: 600, fontSize: 13 }}>{job.company}</span>
+                  <span style={{ color: "#0a5c9e", fontWeight: 600, fontSize: 13 }}>{job.CompanyName}</span>
                 </div>
                 <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 5, color: "#16a34a", fontWeight: 600, fontSize: 13 }}>
-                    <SalaryIcon />{job.salary}
+                    <SalaryIcon />{job.SalaryRange}
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 5, color: "#6b7280", fontSize: 13 }}>
-                    <LocationIcon />{job.location}
+                    <LocationIcon />{job.Location}
                   </div>
                 </div>
               </div>
@@ -264,27 +199,46 @@ const JobDetail = () => {
           </div>
 
           <div style={s.card}>
-            <div style={s.sectionTitle}>Mô tả công việc</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
-              {job.description.map((item, i) => (
-                <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                  <CheckIcon />
-                  <span style={{ fontSize: 13.5, color: "#374151", lineHeight: 1.6 }}>{item}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+          <div style={s.sectionTitle} >Mô tả công việc</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
 
+            {job.Description ? (
+           
+              job.Description.split('\n').map((item, i) => (
+                item.trim() && ( // Chỉ hiển thị nếu dòng đó có chữ
+                  <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                    <CheckIcon />
+                    <span style={{ fontSize: 13.5, color: "#374151", lineHeight: 1.6 }}>
+                      {item}
+                    </span>
+                  </div>
+                )
+              ))
+            ) : (
+              <div style={{ fontSize: 13.5, color: "#9ca3af" }}>Đang tải mô tả...</div>
+            )}
+          </div>
+        </div>
           <div style={s.card}>
-            <div style={s.sectionTitle}>Yêu cầu ứng viên</div>
-            <div style={s.reqGrid}>
-              {job.requirements.map(({ label, value }) => (
-                <div key={label} style={s.reqItem}>
-                  <div style={s.reqLabel}>{label}</div>
-                  <div style={s.reqValue}>{value}</div>
+            <div style={s.sectionTitle} >Yêu cầu ứng viên</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {job.Requirements ? (
+                      job.Requirements.split('\n').map((item, i) => (
+                        item.trim() && ( // Chỉ hiển thị nếu dòng đó có chữ
+                          <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                            <CheckIcon />
+                            <span style={{ fontSize: 13.5, color: "#374151", lineHeight: 1.6 }}>
+                              {item}
+                            </span>
+                          </div>
+                        )
+                      ))
+                    ) : (
+                      <div style={{ fontSize: 13.5, color: "#9ca3af", fontStyle: "italic" }}>
+                        Chưa có yêu cầu cụ thể cho vị trí này.
+                      </div>
+                    )}
                 </div>
-              ))}
-            </div>
           </div>
 
           <div style={s.card}>
@@ -306,25 +260,17 @@ const JobDetail = () => {
         {/* ── RIGHT ── */}
         <div style={s.right}>
           <div style={{ background: "#fff", borderRadius: 10, overflow: "hidden", boxShadow: "0 1px 8px rgba(0,0,0,0.07)" }}>
-            <div style={s.coverBox}>
-              <div style={{ position: "absolute", inset: 0, opacity: 0.12, backgroundImage: "repeating-linear-gradient(45deg,transparent,transparent 8px,rgba(255,255,255,0.4) 8px,rgba(255,255,255,0.4) 9px)" }} />
-              <div style={{ display: "flex", gap: 8, position: "relative" }}>
-                {["COMPANY", "CULTURE", "WORK"].map((t) => (
-                  <div key={t} style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(4px)", borderRadius: 4, padding: "4px 8px", color: "#fff", fontSize: 10, fontWeight: 700, letterSpacing: 0.5 }}>{t}</div>
-                ))}
-              </div>
-            </div>
             <div style={s.compBody}>
-              <div style={s.logoBox}>
+              <div style={{ width: 80, height: 80, background: "linear-gradient(135deg,#0a5c9e,#1d4ed8)", borderRadius: 8, border: "3px solid #fff", marginTop: -20, marginBottom: 10, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}>
                 <span style={{ color: "#fff", fontWeight: 800, fontSize: 16 }}>
-                  {job.company.split(" ").slice(0, 2).map(w => w[0]).join("")}
+                  {job.LogoURL}
                 </span>
               </div>
-              <div style={{ fontWeight: 700, fontSize: 14, color: "#1f2937", marginBottom: 2 }}>{job.company}</div>
+              <div style={{ fontWeight: 700, fontSize: 14, color: "#1f2937", marginBottom: 2 }}>{job.CompanyName}</div>
               <div style={{ color: "#6b7280", fontSize: 12, fontStyle: "italic", marginBottom: 12 }}>"{job.companySlogan}"</div>
-              <div style={s.infoRow}><BuildingIcon />{job.companySize}</div>
-              <div style={s.infoRow}><GlobeIcon /><span style={{ color: "#0a5c9e" }}>{job.companyWeb}</span></div>
-              <div style={s.infoRow}><LocationIcon />{job.companyAddress}</div>
+              <div style={s.infoRow}><BuildingIcon />{job.Size}</div>
+              <div style={s.infoRow}><GlobeIcon /><span style={{ color: "#0a5c9e" }}>{job.WebsiteURL}</span></div>
+              <div style={s.infoRow}><LocationIcon />{job.Location}</div>
             </div>
           </div>
 
@@ -333,10 +279,10 @@ const JobDetail = () => {
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <tbody>
                 {[
-                  ["Hình thức", job.workType],
-                  ["Cấp bậc", job.level],
-                  ["Giới tính", job.gender],
-                  ["Hạn nộp hồ sơ", job.deadline],
+                  ["Hình thức", job.JobType],
+                  ["Cấp bậc", job.JobLevel],
+                  ["Giới tính", job.Gender],
+                  ["Hạn nộp hồ sơ", job.ApplicationDeadline],
                 ].map(([label, value]) => (
                   <tr key={label} style={s.tableRow}>
                     <td style={s.tdLabel}>{label}</td>

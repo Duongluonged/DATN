@@ -155,17 +155,18 @@ const Navbar = () => {
           ) : (
             <div className="flex items-center gap-3">
               <Link 
-                to="/login" 
+                to="/login_employer" 
                 className="px-5 py-2 text-sm font-medium text-blue-600 bg-white border border-blue-600 rounded-full hover:bg-blue-50 transition-all active:scale-95"
+              >
+                Dành cho nhà tuyển dụng
+              </Link>
+              <Link 
+                to="/login" 
+                className="px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-full hover:bg-blue-700 shadow-md transition-all active:scale-95"
               >
                 Đăng Nhập
               </Link>
-              <Link 
-                to="/register" 
-                className="px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-full hover:bg-blue-700 shadow-md transition-all active:scale-95"
-              >
-                Đăng Ký
-              </Link>
+             
             </div>
           )}
         </div>

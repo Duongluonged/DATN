@@ -10,7 +10,7 @@ const TopCompaniesSection = () => {
     const fetchCompanies = async () => {
       try {
         // Gọi đến API Node.js của bạn
-        const response = await axios.get("http://localhost:5000/api/top-companies");
+        const response = await axios.get("http://localhost:5000/api/companies/top-companies");
         setCompanies(response.data);
       } catch (error) {
         console.error("Lỗi khi lấy dữ liệu công ty:", error);
@@ -33,14 +33,14 @@ const TopCompaniesSection = () => {
           {companies.map((company) => (
             <JobCard
               key={company.CompanyID}
-              id={company.CompanyID} // ID từ DB
-              logoUrl={company.LogoURL} // Link ảnh từ DB
-              companyName={company.CompanyName} // Tên từ DB
-              description={company.Description} // Mô tả từ DB
-              // Giả sử Backend chưa có JobCount và Skills, ta để mặc định hoặc bổ sung sau
-              jobCount={company.JobCount || 0} 
-              skills={company.Skills ? company.Skills.split(',') : []}
-              highlight={company.IsHot ? "hot" : null}
+              id={company.CompanyID}
+              companyName={company.CompanyName}
+              logoUrl={company.LogoURL}
+              description={company.Description}
+              // TRUYỀN DỮ LIỆU SKILLS Ở ĐÂY
+              skills={company.CompanySkills} 
+              JobCount={company.JobCount}
+              highlight={company.IsHot}
             />
           ))}
         </div>

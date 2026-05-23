@@ -1,11 +1,12 @@
-import { useState } from "react";
-// Sửa lại cho đúng cấu trúc thư mục thực tế của bạn
+import { useState, useEffect } from "react";
 import Sidebar from "../../components/common/Candidate_c/Sidebar";
 import Navbar from "../../components/common/Navbar";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Building, MapPin, BriefcaseBusiness, FileText, User, PenLine, Info } from 'lucide-react';
+import axios from "axios";
+
 /* ─── CONSTANTS ─── */
 const STEPS = [
-  { icon: "📋", label: "Application Info" },
   { icon: "📄", label: "CV & Portfolio" },
   { icon: "👤", label: "Personal Details" },
   { icon: "✉️", label: "Cover Letter" },
@@ -48,14 +49,104 @@ function FormInput({ label, value, onChange, type = "text" }) {
   );
 }
 
+
 /* ─── MAIN PAGE ─── */
 export default function ApplyJob() {
-  const [cvOption, setCvOption] = useState("existing"); // "existing" | "upload"
+  const [cvOption, setCvOption] = useState("existing");
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: "Nguyễn Văn A", phone: "080 1234 567", city: "Hồ Chí Minh", coverLetter: "" });
 
+  // 1. Phải khai báo location trước
+  const location = useLocation();
+  // Lấy userId từ localStorage
+  const userObj = JSON.parse(localStorage.getItem("user") || "{}");
+  const userId = userObj?.id || null;
+
+  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState({ name: "", phone: "", city: "Hồ Chí Minh", coverLetter: "" });
+  const [job, setJob] = useState();
   const updateForm = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
+  // 2. Sau đó mới lấy dữ liệu từ location.state
+  const { jobId, jobTitle, companyName, location: jobLocation, jobType } = location.state || {};
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!userId) return;
+      try {
+        const res = await axios.get(`http://localhost:5000/api/auth/profile/${userId}`);
+        const profile = res.data;
+        if (profile) {
+          setForm((prev) => ({
+            ...prev,
+            name: profile.Username || "",
+            phone: profile.Phone || "",
+            city: CITIES.includes(profile.Address) ? profile.Address : "Hồ Chí Minh",
+          }));
+        }
+      } catch (err) {
+        console.error("Lỗi lấy thông tin cá nhân ứng viên:", err);
+      }
+    };
+
+    fetchUserProfile();
+  }, [userId]);
+
+  useEffect(() => {
+    // Nếu không có jobId từ state thì không gọi API
+    if (!jobId) {
+      setLoading(false);
+      return;
+    }
+
+    const fetchJobData = async () => {
+      try {
+        const res = await axios.get(`http://localhost:5000/api/companies/jobs/${jobId}`);
+        // Nếu API trả về array thì lấy phần tử đầu tiên
+        const data = Array.isArray(res.data) ? res.data[0] : res.data;
+        setJob(data);
+      } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu job:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchJobData();
+  }, [jobId]);
+
+  const handleSubmit = async () => {
+    if (!jobId) {
+      alert("Không tìm thấy thông tin công việc!");
+      return;
+    }
+    try {
+      // Lấy userId từ localStorage
+      const userObj = JSON.parse(localStorage.getItem("user") || "{}");
+      const userId = userObj?.id || null;
+
+      const dataToSubmit = {
+        jobId,
+        userId,
+        name: form.name,
+        phone: form.phone,
+        city: form.city,
+        coverLetter: form.coverLetter,
+        cvPath: cvOption === "existing" ? "existing_cv.pdf" : "new_upload.pdf"
+      };
+
+      const res = await axios.post("http://localhost:5000/api/applications/apply", dataToSubmit);
+
+      if (res.status === 201) {
+        // Điều hướng thẳng đến "Việc làm của tôi" → counter tự động +1
+        navigate("/candidate/Vieclamcuatoi", {
+          state: { successMsg: `Nộp đơn thành công cho vị trí "${job?.JobTitle}"!` }
+        });
+      }
+    } catch (error) {
+      const msg = error.response?.data?.message || "Có lỗi xảy ra, vui lòng thử lại.";
+      alert(msg);
+    }
+  };
   return (
     <div style={{ fontFamily: "'Be Vietnam Pro', sans-serif", background: c.bg, color: c.text, minheight: "100vh", display: "flex", flexDirection: "column", overflow: "hidden", fontSize: 13 }}>
       <Navbar />
@@ -68,21 +159,31 @@ export default function ApplyJob() {
         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 16, minWidth: 0 }}>
 
           {/* Job banner */}
-          <div style={{ background: "linear-gradient(120deg,#1a56db,#2563eb 60%,#3b82f6)", borderRadius: 14, padding: "20px 22px", color: "#fff", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+          <div style={{ background: "linear-gradient(120deg,#1a56db,#2563eb 60%,#3b82f6)", borderRadius: 14, padding: "20px 22px", color: "#fff", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, textAlign: "left" }}>
             <div>
-              <span style={{ display: "inline-block", background: "rgba(255,255,255,.2)", fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 20, marginBottom: 8, letterSpacing: .4 }}>FULL-TIME</span>
-              <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 6 }}>Senior UI Designer</div>
+              <span style={{ display: "inline-block", background: "rgba(255,255,255,.2)", fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 20, marginBottom: 8, letterSpacing: .4 }}>{job?.JobType}</span>
+              <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 6 }}>{job?.JobTitle}</div>
               <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, opacity: .9 }}>
-                <span>🏢</span><span>TechCorp Solutions</span>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+
+
+                  <Building size={20} />
+                  <span>{job?.CompanyName}</span>
+                </span>
                 <span style={{ opacity: .5 }}>·</span>
-                <span>📍 Quận 1, TP. Hồ Chí Minh</span>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                  <MapPin size={20} />
+                  <span>{job?.Location || "Đang cập nhật"}</span>
+                </span>
               </div>
             </div>
-            <div style={{ width: 54, height: 54, borderRadius: 12, background: "rgba(255,255,255,.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>💼</div>
+            <div style={{ width: 54, height: 54, borderRadius: 12, background: "rgba(255,255,255,.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>
+              <BriefcaseBusiness size={20} />
+            </div>
           </div>
 
           {/* CV Section */}
-          <SectionCard icon="📄" title="Hồ sơ ứng tuyển (CV)">
+          <SectionCard icon={<FileText size={20} />} title="Hồ sơ ứng tuyển (CV)">
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               {/* Use existing CV */}
               <div onClick={() => setCvOption("existing")} style={{ border: `2px solid ${cvOption === "existing" ? c.blue : c.border}`, borderRadius: 12, padding: "14px 16px", cursor: "pointer", background: cvOption === "existing" ? "#f0f5ff" : c.white, transition: "all .15s" }}>
@@ -114,7 +215,7 @@ export default function ApplyJob() {
           </SectionCard>
 
           {/* Personal Info */}
-          <SectionCard icon="👤" title="Thông tin cá nhân">
+          <SectionCard icon={<User size={20} />} title="Thông tin cá nhân">
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
               <FormInput label="Họ và Tên" value={form.name} onChange={updateForm("name")} />
               <FormInput label="Số điện thoại" value={form.phone} onChange={updateForm("phone")} />
@@ -128,7 +229,7 @@ export default function ApplyJob() {
           </SectionCard>
 
           {/* Cover Letter */}
-          <SectionCard icon="✍️" title="Thư giới thiệu bản thân">
+          <SectionCard icon={<PenLine size={20} />} title="Thư giới thiệu bản thân">
             <p style={{ fontSize: 12, color: c.muted, lineHeight: 1.6 }}>
               Hãy chia sẻ ngắn gọn về lý do bạn phù hợp với vị trí này hoặc những thành tựu nổi bật của bạn.
             </p>
@@ -139,7 +240,8 @@ export default function ApplyJob() {
               style={{ width: "100%", border: `1px solid ${c.border}`, borderRadius: 8, padding: "10px 12px", fontSize: 13, fontFamily: "inherit", color: c.text, outline: "none", resize: "vertical", minHeight: 110, lineHeight: 1.6 }}
             />
             <div style={{ fontSize: 11, color: c.muted, display: "flex", alignItems: "center", gap: 4 }}>
-              ℹ️ Một thư giới thiệu ấn tượng thường dài khoảng 420 từ, mạch lạc, phù hợp vị trí.
+              <Info size={16} />
+              Một thư giới thiệu ấn tượng thường dài khoảng 420 từ, mạch lạc, phù hợp vị trí.
             </div>
           </SectionCard>
 
@@ -148,7 +250,7 @@ export default function ApplyJob() {
             <button onClick={() => navigate(-1)} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, color: c.muted, cursor: "pointer", background: "none", border: "none", fontFamily: "inherit" }}>
               ← Quay lại
             </button>
-            <button style={{ display: "flex", alignItems: "center", gap: 8, background: c.blue, color: "#fff", border: "none", borderRadius: 10, padding: "11px 24px", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+            <button onClick={handleSubmit} style={{ display: "flex", alignItems: "center", gap: 8, background: c.blue, color: "#fff", border: "none", borderRadius: 10, padding: "11px 24px", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
               Nộp hồ sơ ứng tuyển ✈
             </button>
           </div>

@@ -5,6 +5,7 @@ import axios from 'axios';
 const Register = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -20,10 +21,11 @@ const Register = () => {
 
     setLoading(true);
     try {
-      await axios.post("http://localhost:5000/api/register", {
+      await axios.post("http://localhost:5000/api/auth/register", {
         username,
         password,
-        email
+        email,
+        phone
       });
       alert("Đăng ký thành công!");
       navigate("/login");
@@ -37,19 +39,19 @@ const Register = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      {/* Container chính - Đồng bộ h-[600px] và shadow-xl */}
+      {/* Container chính - Đồng bộ h-[650px] và shadow-xl */}
       <div className="max-w-5xl w-full bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row h-[650px]">
-        
+
         {/* Cột trái: Hình ảnh & Thương hiệu (Đổi sang bên trái giống Login) */}
         <div className="hidden md:flex md:w-1/2 relative flex-col justify-end">
           {/* Ảnh nền 3D Artist/Tech chuyên nghiệp */}
-          <div 
+          <div
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: "url('https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80')" }}
           ></div>
           {/* Lớp phủ gradient xanh lam đặc trưng */}
           <div className="absolute inset-0 bg-gradient-to-t from-blue-700 via-blue-600/60 to-transparent mix-blend-multiply"></div>
-          
+
           {/* Nội dung chữ trên nền ảnh */}
           <div className="relative z-10 p-10 text-white">
             <h1 className="text-4xl font-bold mb-4 leading-tight">
@@ -63,45 +65,58 @@ const Register = () => {
 
         {/* Cột phải: Form Đăng ký */}
         <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center bg-white">
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Tạo tài khoản mới</h2>
-            <p className="text-gray-500 text-sm">Điền thông tin bên dưới để đăng ký thành viên.</p>
+          <div className="mb-4">
+            <h2 className="text-2xl font-bold text-gray-900 mb-1">Tạo tài khoản mới</h2>
+            <p className="text-gray-500 text-xs">Điền thông tin bên dưới để đăng ký thành viên.</p>
           </div>
 
-          <form className="space-y-4" onSubmit={handleRegister}>
+          <form className="space-y-3.5" onSubmit={handleRegister}>
             {/* Input Họ và tên */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Họ và tên</label>
-              <input 
-                type="text" 
-                placeholder="Nguyễn Văn A" 
+              <label className="block text-sm font-semibold text-gray-700 mb-0.5">Họ và tên</label>
+              <input
+                type="text"
+                placeholder="Nguyễn Văn A"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-2.5 bg-gray-100 border border-transparent rounded-lg focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                className="w-full px-4 py-2 bg-gray-100 border border-transparent rounded-lg focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-sm"
                 required
               />
             </div>
 
-            {/* Input Email */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
-              <input 
-                type="email" 
-                placeholder="name@company.com" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2.5 bg-gray-100 border border-transparent rounded-lg focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
-                required
-              />
+            {/* Grid Email và Số điện thoại */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-0.5">Email</label>
+                <input
+                  type="email"
+                  placeholder="name@company.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-4 py-2 bg-gray-100 border border-transparent rounded-lg focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-sm"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-0.5">Số điện thoại</label>
+                <input
+                  type="tel"
+                  placeholder="080 1234 567"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full px-4 py-2 bg-gray-100 border border-transparent rounded-lg focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-sm"
+                  required
+                />
+              </div>
             </div>
 
             {/* Grid Mật khẩu và Xác nhận */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Mật khẩu</label>
-                <input 
-                  type="password" 
-                  placeholder="••••••••" 
+                <input
+                  type="password"
+                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-4 py-2.5 bg-gray-100 border border-transparent rounded-lg focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
@@ -110,9 +125,9 @@ const Register = () => {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Xác nhận</label>
-                <input 
-                  type="password" 
-                  placeholder="••••••••" 
+                <input
+                  type="password"
+                  placeholder="••••••••"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="w-full px-4 py-2.5 bg-gray-100 border border-transparent rounded-lg focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
@@ -122,8 +137,8 @@ const Register = () => {
             </div>
 
             {/* Nút Submit - Sử dụng loading state */}
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={loading}
               className={`w-full mt-2 py-3 px-4 ${loading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'} text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all`}
             >
