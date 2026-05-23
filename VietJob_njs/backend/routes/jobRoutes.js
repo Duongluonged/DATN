@@ -1,12 +1,31 @@
-﻿const express = require('express');
+const express = require('express');
 const router = express.Router();
-const authorize = require('../middlewares/authorize');
-const auth = require('../middlewares/auth'); // Middleware check JWT
+const {
+    searchJobs,
+    getJobDetail,
+    getJobsByEmployer,
+    createJob,
+    updateJob,
+    deleteJob
+} = require('../controllers/Jobcontroller');
 
-// Chỉ Employer mới được đăng tin
-router.post('/create', auth, authorize('employer'), jobController.createJob);
+// ─── QUAN TRỌNG: Specific routes phải đứng TRƯỚC generic /:id ──
+// Tìm kiếm việc làm: GET /api/jobs/search?keyword=...
+router.get('/search', searchJobs);
 
-// Chỉ Admin mới được xóa tin
-router.delete('/:id', auth, authorize('admin'), jobController.deleteJob);
+// Lấy danh sách tin của NTD: GET /api/jobs/employer/:userId
+router.get('/employer/:userId', getJobsByEmployer);
+
+// Đăng tin mới: POST /api/jobs/employer/:userId
+router.post('/employer/:userId', createJob);
+
+// Cập nhật tin: PUT /api/jobs/:jobId
+router.put('/:jobId', updateJob);
+
+// Ẩn/xóa tin: DELETE /api/jobs/:jobId
+router.delete('/:jobId', deleteJob);
+
+// Chi tiết việc làm (public): GET /api/jobs/:id  ← phải đứng CUỐI
+router.get('/:id', getJobDetail);
 
 module.exports = router;
