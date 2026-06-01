@@ -9,7 +9,6 @@ import Tongquan from "../../pages/candidate/Tong_quan";
 import HSo_Dinh_Kem from "../../pages/candidate/HSo_Dinh_Kem";
 import Hoso from "../../pages/candidate/Hoso";
 import ViecLamCuaToi from "../../pages/candidate/Vieclamcuatoi";
-import Loimoicongviec from "../../pages/candidate/Loimoicv";
 import Thongbao from "../../pages/candidate/Thongbao";
 import Caidat from "../../pages/candidate/Caidat";
 import ApplyJob from "../../pages/candidate/CreateCV";
@@ -30,7 +29,6 @@ const Router = () => {
           <Route path="/HSo_Dinh_Kem" element={<HSo_Dinh_Kem />} />
           <Route path="/candidate/Hoso" element={<Hoso />} />
           <Route path="/candidate/Vieclamcuatoi" element={<ViecLamCuaToi />} />
-          <Route path="/candidate/Loimoicv" element={<Loimoicongviec />} />
           <Route path="/candidate/Thongbao" element={<Thongbao />} />
           <Route path="/candidate/Caidat" element={<Caidat />} />
           <Route path="/candidate/CreateCV" element={<ApplyJob />} />

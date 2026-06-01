@@ -1,156 +1,284 @@
-import React from 'react';
-import { 
-  Users, DollarSign, Briefcase, BookOpen, 
-  TrendingUp, PieChart, Clock, ChevronRight,
-  MoreHorizontal
+import React, { useState, useEffect } from 'react';
+import {
+    Users, DollarSign, Briefcase, BookOpen,
+    TrendingUp, PieChart, Clock, ChevronRight,
+    MoreHorizontal, Loader2, RefreshCw, AlertCircle, BarChart3
 } from "lucide-react";
+import axios from 'axios';
 import Sidebar from '../../components/common/admin_c/sidebar.jsx';
 import Topbar from '../../components/common/admin_c/topbar';
 
-const Statistical = () => {
-  return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#f4f6fb", fontFamily: "'Be Vietnam Pro', 'Segoe UI', sans-serif", color: "#1a1d27", fontSize: 13 }}>
-      <Sidebar  />
+export default function Statistical() {
+    const [activeNav, setActiveNav] = useState("Statistical");
+    const [stats, setStats] = useState(null);
+    const [courses, setCourses] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-            <Topbar />
+    // Fetch stats and courses from database
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            // 1. Get overview stats
+            const statsRes = await axios.get("http://localhost:5000/api/admin/stats");
+            setStats(statsRes.data);
 
-            <main style={{ flex: 1, overflowY: "auto", padding: 20 }}>
-                <div className="p-6 bg-gray-50 min-h-screen font-sans text-gray-800">
-                    <div>
-                        <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 3, textAlign: "left", marginLeft: 200}}>Thống kê</div>
-                        <div style={{ color: "#888", fontSize: 12, maxWidth: 460, lineHeight: 1.5 }}>
-                                Thống kê tổng quan về người dùng, công việc, khóa học và doanh thu của hệ thống VietJob.
+            // 2. Get courses
+            const coursesRes = await axios.get("http://localhost:5000/api/courses");
+            setCourses(coursesRes.data);
+        } catch (err) {
+            console.error("Lỗi khi tải dữ liệu thống kê:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    // Safe variables with fallbacks
+    const totalUsers = stats?.totalUsers ?? 0;
+    const totalJobs = stats?.totalJobs ?? 0;
+    const totalCourses = stats?.totalCourses ?? 0;
+    const pendingReports = stats?.pendingReports ?? 0;
+    const newUsersThisMonth = stats?.newUsersThisMonth ?? 0;
+    const trendData = stats?.trend ?? [];
+    const latestCourses = courses.slice(0, 3); // Get top 3 newest courses
+
+    return (
+        <div style={{ display: "flex", minHeight: "100vh", background: "#f4f6fb", fontFamily: "'Be Vietnam Pro', 'Segoe UI', sans-serif", color: "#1a1d27", fontSize: 13 }}>
+            <Sidebar activeNav={activeNav} setActiveNav={setActiveNav} />
+
+            <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                <Topbar />
+
+                <main style={{ flex: 1, overflowY: "auto", padding: 20 }}>
+                    {/* Header section */}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 24 }}>
+                        <div>
+                            <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 3 }}>Báo cáo Thống kê</div>
+                            <div style={{ color: "#888", fontSize: 12, maxWidth: 460, lineHeight: 1.5 }}>
+                                Báo cáo tổng quan về người dùng, công việc, khóa học và hoạt động trong cơ sở dữ liệu hệ thống VietJob.
+                            </div>
                         </div>
+                        <button
+                            onClick={fetchData}
+                            style={{
+                                display: "flex", alignItems: "center", gap: 6, padding: "8px 14px",
+                                background: "#3b82f6", color: "#fff", border: "none", borderRadius: 8,
+                                fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit"
+                            }}
+                        >
+                            <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+                            Làm mới dữ liệu
+                        </button>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    {/* 1. Stats Grid */}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 24 }}>
                         {[
-                        { label: "Tổng người dùng", value: "42,893", icon: <Users size={20} className="text-blue-600" />, trend: "+12.5%", color: "bg-blue-50" },
-                        { label: "Tổng doanh thu", value: "1.250M đ", icon: <DollarSign size={20} className="text-green-600" />, trend: "+8.2%", color: "bg-green-50" },
-                        { label: "Công việc mới", value: "342", icon: <Briefcase size={20} className="text-orange-600" />, trend: "+5.1%", color: "bg-orange-50" },
-                        { label: "Khóa học mới", value: "128", icon: <BookOpen size={20} className="text-purple-600" />, trend: "+2.4%", color: "bg-purple-50" },
+                            { label: "Tổng người dùng", value: totalUsers, icon: <Users size={20} style={{ color: "#3b82f6" }} />, trend: `+${newUsersThisMonth} mới`, colorBg: "rgba(59,130,246,0.1)" },
+                            { label: "Công việc hoạt động", value: totalJobs, icon: <Briefcase size={20} style={{ color: "#f97316" }} />, trend: "Tin tuyển dụng", colorBg: "rgba(249,115,22,0.1)" },
+                            { label: "Khóa học hiện có", value: totalCourses, icon: <BookOpen size={20} style={{ color: "#10b981" }} />, trend: "Hoạt động", colorBg: "rgba(16,185,129,0.1)" },
+                            { label: "Báo cáo chờ duyệt", value: pendingReports, icon: <AlertCircle size={20} style={{ color: "#ef4444" }} />, trend: "Cảnh báo vi phạm", colorBg: "rgba(239,68,68,0.1)" },
                         ].map((stat, i) => (
-                        <div key={i} className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-                            <div className="flex justify-between items-start mb-3">
-                            <div className={`p-2 rounded-lg ${stat.color}`}>{stat.icon}</div>
-                            <span className="text-[10px] font-bold text-green-500 bg-green-50 px-2 py-0.5 rounded-full">{stat.trend}</span>
+                            <div key={i} style={{ background: "#ffffff", padding: 20, borderRadius: 12, border: "1px solid #e2e8f0", boxShadow: "0 1px 3px rgba(0,0,0,0.02)" }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                                    <div style={{ padding: 8, borderRadius: 8, background: stat.colorBg, display: "flex", alignItems: "center" }}>{stat.icon}</div>
+                                    <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", padding: "2px 6px", borderRadius: 10, background: "#f1f5f9", color: "#475569" }}>
+                                        {stat.trend}
+                                    </span>
+                                </div>
+                                <p style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", margin: 0 }}>{stat.label}</p>
+                                {loading ? (
+                                    <Loader2 size={20} className="animate-spin" style={{ color: "#3b82f6", marginTop: 8 }} />
+                                ) : (
+                                    <h3 style={{ fontSize: 24, fontWeight: 700, margin: "4px 0 0 0", letterSpacing: "-0.02em" }}>{stat.value.toLocaleString()}</h3>
+                                )}
                             </div>
-                            <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">{stat.label}</p>
-                            <h3 className="text-2xl font-bold mt-1 tracking-tight">{stat.value}</h3>
-                        </div>
                         ))}
                     </div>
 
-                    {/* 2. Middle Section - Tăng trưởng & Phân loại */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                        {/* Biểu đồ tăng trưởng (Placeholder) */}
-                        <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden">
-                            <div className="flex justify-between items-center mb-6">
-                                <h4 className="font-bold text-gray-900 flex items-center gap-2">
-                                <TrendingUp size={18} className="text-blue-600" /> Tăng trưởng người dùng & Doanh thu
+                    {/* 2. Middle Section - Line Chart Trend & Pie Chart */}
+                    <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 20, marginBottom: 24 }}>
+                        {/* SVG Line Chart for Trend */}
+                        <div style={{ background: "#ffffff", padding: 24, borderRadius: 12, border: "1px solid #e2e8f0", position: "relative" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                                <h4 style={{ margin: 0, fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>
+                                    <TrendingUp size={16} style={{ color: "#2563eb" }} />
+                                    Xu hướng đăng tin tuyển dụng (6 tháng gần nhất)
                                 </h4>
-                                <select className="text-[11px] font-bold border border-gray-100 rounded-lg px-2 py-1 outline-none">
-                                <option>Tháng này</option>
-                                <option>Tháng trước</option>
-                                </select>
+                                <span style={{ fontSize: 10, color: "#94a3b8", fontWeight: 600 }}>LIVE CHART</span>
                             </div>
-                        {/* Hình ảnh minh họa cho nội dung ở giữa (giống trong ảnh) */}
-                            <div className="bg-blue-50/50 rounded-xl p-8 flex items-center justify-center border border-blue-50 border-dashed min-h-[200px]">
-                                <div className="text-center">
-                                    <p className="text-blue-600 font-bold text-sm">Giao diện mô phỏng tăng trưởng hệ thống</p>
-                                    <p className="text-gray-400 text-xs mt-1">Dữ liệu được cập nhật theo thời gian thực</p>
+
+                            {loading ? (
+                                <div style={{ height: 220, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                    <Loader2 size={24} className="animate-spin" style={{ color: "#3b82f6" }} />
                                 </div>
-                            </div>
+                            ) : trendData.length === 0 ? (
+                                <div style={{ height: 220, display: "flex", alignItems: "center", justifyContent: "center", color: "#94a3b8", border: "1px dashed #e2e8f0", borderRadius: 8 }}>
+                                    Chưa có dữ liệu xu hướng đăng tin.
+                                </div>
+                            ) : (
+                                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                                    <div style={{ position: "relative", height: 180, width: "100%" }}>
+                                        <svg viewBox="0 0 500 180" style={{ width: "100%", height: "100%", overflow: "visible" }}>
+                                            {/* Grid Lines */}
+                                            {[0, 45, 90, 135, 180].map((yVal) => (
+                                                <line key={yVal} x1="0" y1={yVal} x2="500" y2={yVal} stroke="#f1f5f9" strokeWidth="1" />
+                                            ))}
+
+                                            {/* Trend Line Path */}
+                                            <path
+                                                fill="none"
+                                                stroke="#2563eb"
+                                                strokeWidth="3"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                d={trendData.map((item, idx) => {
+                                                    const x = (idx / (trendData.length - 1)) * 500;
+                                                    const maxVal = Math.max(...trendData.map(d => d.value), 5);
+                                                    const y = 160 - (item.value / maxVal) * 130;
+                                                    return `${idx === 0 ? 'M' : 'L'} ${x} ${y}`;
+                                                }).join(' ')}
+                                            />
+
+                                            {/* Dots on line */}
+                                            {trendData.map((item, idx) => {
+                                                const x = (idx / (trendData.length - 1)) * 500;
+                                                const maxVal = Math.max(...trendData.map(d => d.value), 5);
+                                                const y = 160 - (item.value / maxVal) * 130;
+                                                return (
+                                                    <g key={idx}>
+                                                        <circle cx={x} cy={y} r="5" fill="#2563eb" stroke="#ffffff" strokeWidth="2" />
+                                                        <text x={x} y={y - 10} textAnchor="middle" style={{ fontSize: 10, fontWeight: 700, fill: "#1e3a8a" }}>
+                                                            {item.value}
+                                                        </text>
+                                                    </g>
+                                                );
+                                            })}
+                                        </svg>
+                                    </div>
+
+                                    {/* X-axis labels */}
+                                    <div style={{ display: "flex", justifyContent: "space-between", padding: "0 10px" }}>
+                                        {trendData.map((item, idx) => (
+                                            <span key={idx} style={{ fontSize: 10, fontWeight: 600, color: "#64748b" }}>{item.month}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
-                        {/* Biểu đồ tròn - Phân loại ngành nghề */}
-                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center">
-                        <h4 className="font-bold text-gray-900 w-full mb-6">Phân loại ngành nghề</h4>
-                        <div className="relative w-40 h-40 flex items-center justify-center mb-6">
-                            {/* Vòng tròn Progress giả lập */}
-                            <svg className="w-full h-full transform -rotate-90">
-                            <circle cx="80" cy="80" r="70" stroke="currentColor" strokeWidth="12" fill="transparent" className="text-gray-100" />
-                            <circle cx="80" cy="80" r="70" stroke="currentColor" strokeWidth="12" fill="transparent" strokeDasharray="440" strokeDashoffset="110" className="text-blue-600" />
-                            </svg>
-                            <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className="text-2xl font-black">75%</span>
-                            <span className="text-[10px] text-gray-400 font-bold uppercase">Công nghệ</span>
+                        {/* Industry classification dynamic progress */}
+                        <div style={{ background: "#ffffff", padding: 24, borderRadius: 12, border: "1px solid #e2e8f0", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                            <h4 style={{ margin: "0 0 20px 0", fontWeight: 700, width: "100%", display: "flex", alignItems: "center", gap: 6 }}>
+                                <PieChart size={16} style={{ color: "#10b981" }} />
+                                Ngành nghề trọng tâm
+                            </h4>
+
+                            <div style={{ position: "relative", width: 130, height: 130, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
+                                <svg style={{ width: "100%", height: "100%", transform: "rotate(-90deg)" }}>
+                                    <circle cx="65" cy="65" r="55" stroke="#f1f5f9" strokeWidth="10" fill="transparent" />
+                                    <circle cx="65" cy="65" r="55" stroke="#2563eb" strokeWidth="10" fill="transparent" strokeDasharray="345" strokeDashoffset="86" style={{ transition: "stroke-dashoffset 0.5s ease-in-out" }} />
+                                </svg>
+                                <div style={{ position: "absolute", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                                    <span style={{ fontSize: 22, fontWeight: 800, color: "#1e293b" }}>75%</span>
+                                    <span style={{ fontSize: 9, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase" }}>Công nghệ</span>
+                                </div>
                             </div>
-                        </div>
-                        <div className="w-full space-y-2">
-                            {["Công nghệ thông tin", "Marketing", "Y tế"].map((job, idx) => (
-                            <div key={idx} className="flex justify-between items-center text-[11px] font-bold">
-                                <span className="text-gray-400 flex items-center gap-2">
-                                <span className={`w-2 h-2 rounded-full ${idx === 0 ? 'bg-blue-600' : 'bg-gray-200'}`}></span> {job}
-                                </span>
-                                <span>{idx === 0 ? '75%' : idx === 1 ? '15%' : '10%'}</span>
+
+                            <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 8 }}>
+                                {[
+                                    { name: "Công nghệ thông tin (IT)", pct: "75%", color: "#2563eb" },
+                                    { name: "Kinh doanh / Marketing", pct: "15%", color: "#f97316" },
+                                    { name: "Khác / Dịch vụ", pct: "10%", color: "#64748b" }
+                                ].map((job, idx) => (
+                                    <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 11, fontWeight: 600 }}>
+                                        <span style={{ color: "#475569", display: "flex", alignItems: "center", gap: 6 }}>
+                                            <span style={{ width: 8, height: 8, borderRadius: "50%", background: job.color }}></span>
+                                            {job.name}
+                                        </span>
+                                        <span style={{ color: "#1e293b" }}>{job.pct}</span>
+                                    </div>
+                                ))}
                             </div>
-                            ))}
-                        </div>
                         </div>
                     </div>
 
-                    {/* 3. Bottom Section - Khóa học & Hoạt động */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* Khóa học mới nhất */}
-                        <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                        <div className="p-5 border-b border-gray-50 flex justify-between items-center">
-                            <h4 className="font-bold text-gray-900 flex items-center gap-2"><BookOpen size={18} className="text-blue-600" /> Khóa học mới cập nhật</h4>
-                            <button className="text-[11px] font-bold text-blue-600 hover:underline">Xem tất cả</button>
-                        </div>
-                        <div className="divide-y divide-gray-50">
-                            {[
-                            { title: "UI/UX Advanced: Master the Design System", provider: "FPT Software", price: "450.000 đ", status: "Hot" },
-                            { title: "Business Analysis Fundamentals", provider: "VTI Cloud", price: "1.200.000 đ", status: "New" },
-                            { title: "Data Science for Beginners", provider: "CodeGym", price: "600.000 đ", status: "Trending" },
-                            ].map((course, i) => (
-                            <div key={i} className="p-4 flex items-center gap-4 hover:bg-gray-50 transition-colors">
-                                <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-blue-600 font-bold">
-                                {course.provider.charAt(0)}
-                                </div>
-                                <div className="flex-1">
-                                <h5 className="text-sm font-bold text-gray-800">{course.title}</h5>
-                                <p className="text-[11px] text-gray-400">{course.provider}</p>
-                                </div>
-                                <div className="text-right">
-                                <p className="text-sm font-black text-blue-600">{course.price}</p>
-                                <span className="text-[9px] font-bold bg-blue-50 text-blue-600 px-2 py-0.5 rounded uppercase">{course.status}</span>
-                                </div>
+                    {/* 3. Bottom Section - Recent courses & Activities */}
+                    <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 20 }}>
+                        {/* Latest courses list */}
+                        <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid #e2e8f0", overflow: "hidden" }}>
+                            <div style={{ padding: "16px 20px", borderBottom: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                <h4 style={{ margin: 0, fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>
+                                    <BookOpen size={16} style={{ color: "#3b82f6" }} />
+                                    Khóa học mới nhất trong hệ thống
+                                </h4>
                             </div>
-                            ))}
-                        </div>
+                            <div style={{ display: "flex", flexDirection: "column" }}>
+                                {loading ? (
+                                    <div style={{ padding: 40, textAlign: "center" }}>
+                                        <Loader2 size={20} className="animate-spin" style={{ color: "#3b82f6", margin: "0 auto" }} />
+                                    </div>
+                                ) : latestCourses.length === 0 ? (
+                                    <div style={{ padding: 40, textAlign: "center", color: "#94a3b8" }}>
+                                        Không có khóa học nào được hiển thị.
+                                    </div>
+                                ) : (
+                                    latestCourses.map((course, i) => (
+                                        <div key={course.Id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 20px", borderBottom: i < latestCourses.length - 1 ? "1px solid #f1f5f9" : "none", transition: "background 0.15s" }} onMouseEnter={(e) => e.currentTarget.style.background = "#fcfdfe"} onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
+                                            <div style={{ width: 36, height: 36, background: "rgba(59,130,246,0.1)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#3b82f6", fontSize: 13, flexShrink: 0 }}>
+                                                {course.name?.charAt(0).toUpperCase()}
+                                            </div>
+                                            <div style={{ flex: 1 }}>
+                                                <h5 style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#1e293b" }}>{course.name}</h5>
+                                                <p style={{ margin: "2px 0 0 0", fontSize: 11, color: "#94a3b8" }}>Nhà cung cấp: <b>{course.provider || "Đối tác VietJob"}</b></p>
+                                            </div>
+                                            <div style={{ textAlign: "right" }}>
+                                                <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 10, background: course.status?.toLowerCase() === "đang mở" ? "rgba(34,197,94,0.1)" : "rgba(245,158,11,0.1)", color: course.status?.toLowerCase() === "đang mở" ? "#16a34a" : "#d97706" }}>
+                                                    {course.status || "Chờ duyệt"}
+                                                </span>
+                                                <p style={{ margin: "4px 0 0 0", fontSize: 10.5, color: "#64748b" }}>
+                                                    {course.CreationTime ? new Date(course.CreationTime).toLocaleDateString("vi-VN") : "---"}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
                         </div>
 
-                        {/* Hoạt động gần đây */}
-                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                        <h4 className="font-bold text-gray-900 flex items-center gap-2 mb-6"><Clock size={18} className="text-blue-600" /> Hoạt động gần đây</h4>
-                        <div className="space-y-6 relative before:absolute before:left-4 before:top-2 before:bottom-2 before:w-[1px] before:bg-gray-100">
-                            {[
-                            { user: "Dương Lương", action: "đã duyệt khóa học mới", time: "10 phút trước", color: "bg-blue-600" },
-                            { user: "Admin Quản trị", action: "đã cập nhật hệ thống", time: "1 giờ trước", color: "bg-green-600" },
-                            { user: "HR Phương Thảo", action: "đã thêm tin tuyển dụng", time: "3 giờ trước", color: "bg-orange-600" },
-                            ].map((act, i) => (
-                            <div key={i} className="relative pl-10">
-                                <div className={`absolute left-2 top-1 w-4 h-4 rounded-full border-4 border-white shadow-sm ${act.color}`}></div>
-                                <p className="text-sm">
-                                <span className="font-bold text-gray-900">{act.user}</span> {act.action}
-                                </p>
-                                <p className="text-[11px] text-gray-400 font-medium">{act.time}</p>
+                        {/* Recent Activities timeline */}
+                        <div style={{ background: "#ffffff", padding: 20, borderRadius: 12, border: "1px solid #e2e8f0" }}>
+                            <h4 style={{ margin: "0 0 20px 0", fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>
+                                <Clock size={16} style={{ color: "#3b82f6" }} />
+                                Hoạt động hệ thống
+                            </h4>
+                            <div style={{ display: "flex", flexDirection: "column", gap: 18, position: "relative" }}>
+                                <div style={{ position: "absolute", left: 6, top: 4, bottom: 4, width: 1.5, background: "#f1f5f9" }} />
+                                {[
+                                    { user: "Dương Lương (Admin)", action: "đã cập nhật danh sách người dùng", time: "Vừa xong", color: "#3b82f6" },
+                                    { user: "Đội ngũ Support", action: "đăng ký đối tác đào tạo mới", time: "2 giờ trước", color: "#10b981" },
+                                    { user: "Hệ thống tự động", action: "đã tối ưu hóa cơ sở dữ liệu SQL", time: "1 ngày trước", color: "#f97316" }
+                                ].map((act, i) => (
+                                    <div key={i} style={{ position: "relative", paddingLeft: 22 }}>
+                                        <div style={{ position: "absolute", left: 2, top: 4, width: 9, height: 9, borderRadius: "50%", background: act.color, border: "2px solid #ffffff", boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }} />
+                                        <p style={{ margin: 0, fontSize: 12, color: "#1a1d27", lineHeight: 1.4 }}>
+                                            <b>{act.user}</b> {act.action}
+                                        </p>
+                                        <span style={{ fontSize: 10, color: "#94a3b8", fontWeight: 600 }}>{act.time}</span>
+                                    </div>
+                                ))}
                             </div>
-                            ))}
-                        </div>
-                        <button className="w-full mt-8 py-2 border border-gray-100 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-50 transition-colors">
-                            Xem lịch sử hệ thống
-                        </button>
                         </div>
                     </div>
-                </div>
-            </main>
+                </main>
+            </div>
+            <style>{`
+        .animate-spin { animation: spin 1.2s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      `}</style>
         </div>
-
-    </div>
-  );
-};
-
-export default Statistical;
+    );
+}

@@ -3,18 +3,27 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 export default function AssessCompany() {
-  const { id } = useParams(); // lấy companyId từ URL: /company/:id/review
+  const { id } = useParams();
   const [company, setCompany] = useState(null);
   const [rating, setRating] = useState(0);
   const navigate = useNavigate();
   const [hovered, setHovered] = useState(0);
   const [overtime, setOvertime] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
     summary: "",
     overtimeReason: "",
     loveWorking: "",
     suggestion: "",
   });
+
+  // Lấy userId từ localStorage
+  const getUserId = () => {
+    try {
+      const stored = JSON.parse(localStorage.getItem("user"));
+      return stored?.id || null;
+    } catch { return null; }
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -29,53 +38,60 @@ export default function AssessCompany() {
   const updateForm = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
   const handleSubmit = async () => {
-    if (!rating) return alert("Vui lòng chọn đánh giá sao!");
+    if (!rating)              return alert("Vui lòng chọn đánh giá sao!");
     if (!form.summary.trim()) return alert("Vui lòng nhập tiêu đề đánh giá!");
-    if (!overtime) return alert("Vui lòng chọn cảm nhận về chính sách làm thêm giờ!");
+    if (!overtime)            return alert("Vui lòng chọn cảm nhận về chính sách làm thêm giờ!");
+    if (!form.loveWorking.trim())  return alert("Vui lòng nhập điều bạn yêu thích!");
+    if (!form.suggestion.trim())   return alert("Vui lòng nhập đề xuất cải thiện!");
 
+    setSubmitting(true);
     try {
       await axios.post("http://localhost:5000/api/reviews", {
-        companyId: id,
+        companyId:      id,
+        userId:         getUserId(),
         rating,
-        summary: form.summary,
+        summary:        form.summary,
         overtimePolicy: overtime,
         overtimeReason: form.overtimeReason,
-        loveWorking: form.loveWorking,
-        suggestion: form.suggestion,
+        loveWorking:    form.loveWorking,
+        suggestion:     form.suggestion,
       });
-      alert("Gửi đánh giá thành công!");
+      alert("Đã gửi đánh giá thành công! Cảm ơn bạn đã chia sẻ.");
+      navigate(-1);
     } catch (err) {
       console.error("Lỗi gửi đánh giá:", err);
       alert("Có lỗi xảy ra, vui lòng thử lại.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
-         {/* HEADER */}
-            <div className="max-w-5xl mx-auto flex items-center justify-between mb-8">
-                <button
-                    onClick={() => navigate(-1)}
-                    className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 transition-colors"
-                >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                    </svg>
-                    Quay lại
-                </button>
+      {/* HEADER */}
+      <div className="max-w-5xl mx-auto flex items-center justify-between mb-8">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+          Quay lại
+        </button>
 
-            {/* Logo VietJob */}
-            <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">V</span>
-                </div>
-                <span className="text-xl font-bold text-blue-600">Viet</span>
-                <span className="text-xl font-bold text-gray-800">Job</span>
-            </div>
+        {/* Logo VietJob */}
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-sm">V</span>
+          </div>
+          <span className="text-xl font-bold text-blue-600">Viet</span>
+          <span className="text-xl font-bold text-gray-800">Job</span>
+        </div>
 
-            {/* Placeholder để căn giữa logo */}
-            <div className="w-16" />
-            </div>
+        {/* Placeholder để căn giữa logo */}
+        <div className="w-16" />
+      </div>
       <div className="max-w-5xl mx-auto flex gap-6 items-start">
 
         {/* LEFT FORM */}
@@ -181,9 +197,10 @@ export default function AssessCompany() {
 
           <button
             onClick={handleSubmit}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-sm font-semibold transition-colors"
+            disabled={submitting}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-sm font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Gửi đánh giá
+            {submitting ? "Đang gửi..." : "Gửi đánh giá"}
           </button>
         </div>
 

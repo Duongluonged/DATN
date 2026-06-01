@@ -19,12 +19,27 @@ const getUserId = () => {
 };
 
 const STATUS_CONFIG = {
-    "Đang bán": { label: "ĐANG BÁN", color: "#16a34a", bg: "#dcfce7" },
-    "Nháp":     { label: "NHÁP", color: "#d97706", bg: "#fef3c7" },
-    "Đã ẩn":    { label: "ĐÃ ẨN", color: "#6b7280", bg: "#f3f4f6" },
+    "Đang bán":  { label: "ĐANG BÁN", color: "#16a34a", bg: "#dcfce7" },
+    "Nháp":      { label: "NHÁP", color: "#6b7280", bg: "#f3f4f6" },
+    "Chờ duyệt": { label: "CHỜ DUYỆT", color: "#d97706", bg: "#fef3c7" },
+    "Đã ẩn":     { label: "ĐÃ ẨN", color: "#ef4444", bg: "#fee2e2" },
 };
 
 const getStatusCfg = (status) => STATUS_CONFIG[status] || { label: "KHÁC", color: "#4f46e5", bg: "#eef2ff" };
+
+const categoryOptions = [
+    { value: "web", label: "Lập trình Web" },
+    { value: "mobile", label: "Lập trình Mobile" },
+    { value: "data-ai", label: "Dữ liệu & AI" },
+    { value: "design-gamedev", label: "Thiết kế & Gamedev" }
+];
+
+const levelOptions = [
+    { value: "Mọi trình độ", label: "Mọi trình độ" },
+    { value: "Cơ bản", label: "Cơ bản" },
+    { value: "Trung cấp", label: "Trung cấp" },
+    { value: "Nâng cao", label: "Nâng cao" }
+];
 
 export default function Quan_Ly_Khoa_Hoc() {
     const [courses, setCourses] = useState([]);
@@ -36,7 +51,19 @@ export default function Quan_Ly_Khoa_Hoc() {
     const [showModal, setShowModal] = useState(false);
     const [modalMode, setModalMode] = useState("create"); // "create" | "edit"
     const [selectedCourse, setSelectedCourse] = useState(null);
-    const [form, setForm] = useState({ tieuDe: "", moTa: "", trangThai: "Nháp" });
+    const [form, setForm] = useState({
+        tieuDe: "",
+        moTa: "",
+        trangThai: "Chờ duyệt",
+        category: "web",
+        duration: "45 giờ",
+        lecturesCount: 50,
+        level: "Mọi trình độ",
+        instructorName: "Đỗ Phương Thảo",
+        instructorRole: "Đối tác Đào tạo VietJob",
+        price: 1500000,
+        oldPrice: 3000000
+    });
     const [formErrors, setFormErrors] = useState({});
     const [saving, setSaving] = useState(false);
 
@@ -75,7 +102,19 @@ export default function Quan_Ly_Khoa_Hoc() {
     // Handle Open Create Modal
     const handleOpenCreate = () => {
         setModalMode("create");
-        setForm({ tieuDe: "", moTa: "", trangThai: "Nháp" });
+        setForm({
+            tieuDe: "",
+            moTa: "",
+            trangThai: "Chờ duyệt",
+            category: "web",
+            duration: "45 giờ",
+            lecturesCount: 50,
+            level: "Mọi trình độ",
+            instructorName: "Đỗ Phương Thảo",
+            instructorRole: "Đối tác Đào tạo VietJob",
+            price: 1500000,
+            oldPrice: 3000000
+        });
         setFormErrors({});
         setShowModal(true);
     };
@@ -87,7 +126,15 @@ export default function Quan_Ly_Khoa_Hoc() {
         setForm({
             tieuDe: course.TieuDe || "",
             moTa: course.MoTa || "",
-            trangThai: course.TrangThai || "Nháp",
+            trangThai: course.TrangThai || "Chờ duyệt",
+            category: course.Category || "web",
+            duration: course.Duration || "45 giờ",
+            lecturesCount: course.LecturesCount || 50,
+            level: course.Level || "Mọi trình độ",
+            instructorName: course.InstructorName || "Đỗ Phương Thảo",
+            instructorRole: course.InstructorRole || "Đối tác Đào tạo VietJob",
+            price: course.Price || 1500000,
+            oldPrice: course.OldPrice || 3000000
         });
         setFormErrors({});
         setShowModal(true);
@@ -98,6 +145,10 @@ export default function Quan_Ly_Khoa_Hoc() {
         const errors = {};
         if (!form.tieuDe.trim()) errors.tieuDe = "Tiêu đề khóa học không được để trống";
         if (form.tieuDe.trim().length < 5) errors.tieuDe = "Tiêu đề quá ngắn (tối thiểu 5 ký tự)";
+        if (!form.instructorName.trim()) errors.instructorName = "Tên giảng viên không được để trống";
+        if (!form.duration.trim()) errors.duration = "Thời lượng không được để trống";
+        if (!form.lecturesCount || form.lecturesCount <= 0) errors.lecturesCount = "Số bài học phải lớn hơn 0";
+        if (form.price === undefined || form.price === "") errors.price = "Học phí khuyến mãi không được trống";
         return errors;
     };
 
@@ -166,87 +217,59 @@ export default function Quan_Ly_Khoa_Hoc() {
         }
     };
 
-    // Filter courses based on active tab
+    // Filter courses based on activeTab
     const filteredCourses = courses.filter((c) => {
         if (activeTab === "Tất cả") return true;
-        return c.TrangThai === activeTab;
+        if (activeTab === "Đang bán") return c.TrangThai === "Đang bán";
+        if (activeTab === "Chờ duyệt") return c.TrangThai === "Chờ duyệt";
+        if (activeTab === "Nháp") return c.TrangThai === "Nháp";
+        if (activeTab === "Đã ẩn") return c.TrangThai === "Đã ẩn";
+        return true;
     });
 
-    // Counts for tabs
-    const tabCounts = {
-        "Tất cả": courses.length,
-        "Đang bán": courses.filter(c => c.TrangThai === "Đang bán").length,
-        "Nháp": courses.filter(c => c.TrangThai === "Nháp").length,
-        "Đã ẩn": courses.filter(c => c.TrangThai === "Đã ẩn").length,
-    };
-
     return (
-        <div style={{ display: "flex", height: "100vh", fontFamily: "'Be Vietnam Pro','Segoe UI',sans-serif", background: "#f5f6fa", color: "#1a1a2e" }}>
-            {/* Sidebar */}
+        <div style={{ display: "flex", background: "#f8fafc", minHeight: "100vh", fontFamily: "'Inter', sans-serif" }}>
             <Sidebar_empl />
 
-            {/* Main */}
-            <main style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-                {/* Header */}
+            <main style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
                 <Topbar_empl />
 
-                <div style={{ flex: 1, overflowY: "auto", padding: "24px" }}>
-                    {/* Title */}
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
+                <div style={{ padding: "30px 40px", flex: 1 }}>
+                    {/* Header */}
+                    <div style={{ display: "flex", justifyContent: "between", alignItems: "center", marginBottom: 28, gap: 16 }}>
                         <div>
-                            <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>Quản lý khóa học</h1>
-                            <p style={{ fontSize: 13, color: "#888", margin: "4px 0 0" }}>Theo dõi và tối ưu hóa hiệu suất các chương trình đào tạo của bạn.</p>
+                            <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: "#0f172a" }}>Quản Lý Khoá Học</h1>
+                            <p style={{ margin: "4px 0 0", fontSize: 13.5, color: "#64748b" }}>Đăng tải và tùy chỉnh lộ trình học tập tiếp cận hàng ngàn học viên VietJob.</p>
                         </div>
-                        <div style={{ display: "flex", gap: 10 }}>
-                            <button onClick={fetchCourses} style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 8, border: "1px solid #e0e0e0", background: "#fff", fontSize: 13, color: "#555", cursor: "pointer", fontWeight: 500 }}>
-                                🔄 Làm mới
-                            </button>
-                            <button onClick={handleOpenCreate} style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 8, border: "none", background: "#2563eb", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-                                + Đăng khóa học mới
-                            </button>
-                        </div>
+                        <button onClick={handleOpenCreate} style={{
+                            padding: "10px 22px", borderRadius: 10, border: "none",
+                            background: "linear-gradient(135deg, #2563eb, #1d4ed8)", color: "#fff",
+                            fontSize: 13.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
+                            boxShadow: "0 4px 12px rgba(37,99,235,0.2)"
+                        }}>
+                            <span>+</span> Đăng khóa học mới
+                        </button>
                     </div>
 
-                    {/* Stats summary cards */}
-                    <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr 1fr", gap: 14, marginBottom: 22 }}>
-                        <div style={{ background: "linear-gradient(135deg,#2563eb,#1d4ed8)", borderRadius: 14, padding: "20px 22px", color: "#fff", position: "relative", overflow: "hidden" }}>
-                            <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 6 }}>📚 Tổng khóa học đã tạo</div>
-                            <div style={{ fontSize: 24, fontWeight: 800, lineHeight: 1.15 }}>{courses.length} Khóa học</div>
-                            <div style={{ marginTop: 10, display: "inline-flex", alignItems: "center", gap: 4, background: "rgba(255,255,255,0.2)", borderRadius: 20, padding: "3px 10px", fontSize: 11.5, fontWeight: 600 }}>
-                                Phổ biến kiến thức chất lượng
-                            </div>
-                            <div style={{ position: "absolute", right: -16, top: -16, width: 72, height: 72, borderRadius: "50%", background: "rgba(255,255,255,0.08)" }} />
-                        </div>
-                        {[
-                            { label: "Đang hoạt động", value: tabCounts["Đang bán"], icon: "🟢", color: "#16a34a" },
-                            { label: "Bản nháp", value: tabCounts["Nháp"], icon: "✏️", color: "#d97706" },
-                            { label: "Đã tạm ẩn", value: tabCounts["Đã ẩn"], icon: "🔒", color: "#6b7280" },
-                        ].map((s) => (
-                            <div key={s.label} style={{ background: "#fff", borderRadius: 14, padding: "18px 20px", border: "1px solid #e8eaf0" }}>
-                                <div style={{ fontSize: 20, marginBottom: 6 }}>{s.icon}</div>
-                                <div style={{ fontSize: 11.5, color: "#aaa", marginBottom: 4 }}>{s.label}</div>
-                                <div style={{ fontSize: 22, fontWeight: 700, color: s.color }}>{s.value}</div>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Tabs + Sorting bar */}
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                        <div style={{ display: "flex", gap: 2, background: "#f1f3f8", borderRadius: 10, padding: 4 }}>
-                            {["Tất cả", "Đang bán", "Nháp", "Đã ẩn"].map((tab) => (
-                                <button key={tab} onClick={() => setActiveTab(tab)} style={{
-                                    padding: "6px 14px", borderRadius: 7, border: "none", cursor: "pointer",
-                                    background: activeTab === tab ? "#fff" : "transparent",
-                                    color: activeTab === tab ? "#1a1a2e" : "#888",
-                                    fontWeight: activeTab === tab ? 600 : 400, fontSize: 13,
-                                    boxShadow: activeTab === tab ? "0 1px 4px rgba(0,0,0,0.08)" : "none",
-                                    transition: "all 0.15s",
-                                }}>
-                                    {tab} <span style={{ fontSize: 11, color: activeTab === tab ? "#2563eb" : "#bbb" }}>({tabCounts[tab] || 0})</span>
+                    {/* Navigation tabs */}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #e2e8f0", marginBottom: 20 }}>
+                        <div style={{ display: "flex", gap: 8 }}>
+                            {["Tất cả", "Đang bán", "Chờ duyệt", "Nháp", "Đã ẩn"].map((tab) => (
+                                <button
+                                    key={tab}
+                                    onClick={() => setActiveTab(tab)}
+                                    style={{
+                                        padding: "12px 20px", fontSize: 13.5, fontWeight: activeTab === tab ? 700 : 500,
+                                        color: activeTab === tab ? "#2563eb" : "#64748b", border: "none", background: "none",
+                                        borderBottom: activeTab === tab ? "2px solid #2563eb" : "2px solid transparent",
+                                        cursor: "pointer", transition: "all 0.15s"
+                                    }}
+                                >
+                                    {tab}
                                 </button>
                             ))}
                         </div>
-                        <div style={{ fontSize: 13, color: "#888" }}>
+                        <div style={{ fontSize: 12.5, color: "#64748b", fontWeight: 600 }}>
                             Hiển thị: <strong>{filteredCourses.length}</strong> khóa học
                         </div>
                     </div>
@@ -291,8 +314,14 @@ export default function Quan_Ly_Khoa_Hoc() {
                                             <p style={{ margin: "0 0 6px", fontSize: 12.5, color: "#666", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                                 {c.MoTa || "Chưa có mô tả ngắn gọn cho khóa học này."}
                                             </p>
-                                            <div style={{ fontSize: 11.5, color: "#aaa" }}>
-                                                📅 Đăng ngày: {c.CreationTime ? new Date(c.CreationTime).toLocaleDateString("vi-VN") : "—"}
+                                            <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", fontSize: 11, color: "#888" }}>
+                                                <span>⏱️ {c.Duration || "45 giờ"}</span>
+                                                <span>•</span>
+                                                <span>📚 {c.LecturesCount || 50} bài học</span>
+                                                <span>•</span>
+                                                <span>👤 GV: {c.InstructorName || "Đỗ Phương Thảo"}</span>
+                                                <span>•</span>
+                                                <span style={{ color: "#2563eb", fontWeight: 700 }}>💵 {c.Price ? c.Price.toLocaleString() : "0"}đ</span>
                                             </div>
                                         </div>
                                         <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
@@ -327,7 +356,7 @@ export default function Quan_Ly_Khoa_Hoc() {
                     backdropFilter: "blur(4px)",
                 }}>
                     <div style={{
-                        background: "#fff", borderRadius: 16, width: "100%", maxWidth: 520,
+                        background: "#fff", borderRadius: 16, width: "90%", maxWidth: 640,
                         boxShadow: "0 24px 60px rgba(0,0,0,0.15)", overflow: "hidden"
                     }}>
                         {/* Header */}
@@ -347,7 +376,9 @@ export default function Quan_Ly_Khoa_Hoc() {
                         </div>
 
                         {/* Form */}
-                        <form onSubmit={handleSaveCourse} style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
+                        <form onSubmit={handleSaveCourse} style={{ padding: "24px", display: "flex", flexDirection: "column", gap: 16, maxHeight: "80vh", overflowY: "auto" }}>
+
+                            {/* Tiêu đề & Mô tả */}
                             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                                 <label style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>Tiêu đề khóa học <span style={{ color: "#ef4444" }}>*</span></label>
                                 <input
@@ -367,7 +398,7 @@ export default function Quan_Ly_Khoa_Hoc() {
                                 <label style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>Mô tả ngắn khóa học</label>
                                 <textarea
                                     placeholder="Mô tả tóm tắt nội dung học viên sẽ được trang bị..."
-                                    rows={4}
+                                    rows={3}
                                     value={form.moTa}
                                     onChange={e => setForm({ ...form, moTa: e.target.value })}
                                     style={{
@@ -377,8 +408,121 @@ export default function Quan_Ly_Khoa_Hoc() {
                                 />
                             </div>
 
+                            {/* Grid 2 cột: Chuyên mục & Trình độ */}
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                                    <label style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>Chuyên mục <span style={{ color: "#ef4444" }}>*</span></label>
+                                    <select
+                                        value={form.category}
+                                        onChange={e => setForm({ ...form, category: e.target.value })}
+                                        style={{ border: "1.5px solid #e2e8f0", borderRadius: 8, padding: "10px 12px", fontSize: 13.5, outline: "none" }}
+                                    >
+                                        {categoryOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                                    </select>
+                                </div>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                                    <label style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>Trình độ <span style={{ color: "#ef4444" }}>*</span></label>
+                                    <select
+                                        value={form.level}
+                                        onChange={e => setForm({ ...form, level: e.target.value })}
+                                        style={{ border: "1.5px solid #e2e8f0", borderRadius: 8, padding: "10px 12px", fontSize: 13.5, outline: "none" }}
+                                    >
+                                        {levelOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                                    </select>
+                                </div>
+                            </div>
+
+                            {/* Grid 2 cột: Thời lượng & Số bài học */}
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                                    <label style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>Thời lượng <span style={{ color: "#ef4444" }}>*</span></label>
+                                    <input
+                                        type="text"
+                                        placeholder="Ví dụ: 45 giờ"
+                                        value={form.duration}
+                                        onChange={e => setForm({ ...form, duration: e.target.value })}
+                                        style={{
+                                            border: `1.5px solid ${formErrors.duration ? "#ef4444" : "#e2e8f0"}`,
+                                            borderRadius: 8, padding: "10px 12px", fontSize: 13.5, outline: "none"
+                                        }}
+                                    />
+                                    {formErrors.duration && <span style={{ fontSize: 12, color: "#ef4444" }}>⚠️ {formErrors.duration}</span>}
+                                </div>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                                    <label style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>Số bài học <span style={{ color: "#ef4444" }}>*</span></label>
+                                    <input
+                                        type="number"
+                                        placeholder="Ví dụ: 50"
+                                        value={form.lecturesCount}
+                                        onChange={e => setForm({ ...form, lecturesCount: e.target.value })}
+                                        style={{
+                                            border: `1.5px solid ${formErrors.lecturesCount ? "#ef4444" : "#e2e8f0"}`,
+                                            borderRadius: 8, padding: "10px 12px", fontSize: 13.5, outline: "none"
+                                        }}
+                                    />
+                                    {formErrors.lecturesCount && <span style={{ fontSize: 12, color: "#ef4444" }}>⚠️ {formErrors.lecturesCount}</span>}
+                                </div>
+                            </div>
+
+                            {/* Grid 2 cột: Giảng viên & Đối tác */}
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                                    <label style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>Giảng viên chính <span style={{ color: "#ef4444" }}>*</span></label>
+                                    <input
+                                        type="text"
+                                        placeholder="Ví dụ: Đỗ Phương Thảo"
+                                        value={form.instructorName}
+                                        onChange={e => setForm({ ...form, instructorName: e.target.value })}
+                                        style={{
+                                            border: `1.5px solid ${formErrors.instructorName ? "#ef4444" : "#e2e8f0"}`,
+                                            borderRadius: 8, padding: "10px 12px", fontSize: 13.5, outline: "none"
+                                        }}
+                                    />
+                                    {formErrors.instructorName && <span style={{ fontSize: 12, color: "#ef4444" }}>⚠️ {formErrors.instructorName}</span>}
+                                </div>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                                    <label style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>Đơn vị / Vai trò giảng viên</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Ví dụ: Đối tác Đào tạo VietJob"
+                                        value={form.instructorRole}
+                                        onChange={e => setForm({ ...form, instructorRole: e.target.value })}
+                                        style={{ border: "1.5px solid #e2e8f0", borderRadius: 8, padding: "10px 12px", fontSize: 13.5, outline: "none" }}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Grid 2 cột: Học phí hiện tại & Học phí gốc */}
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                                    <label style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>Học phí khuyến mãi (đ) <span style={{ color: "#ef4444" }}>*</span></label>
+                                    <input
+                                        type="number"
+                                        placeholder="Ví dụ: 1500000"
+                                        value={form.price}
+                                        onChange={e => setForm({ ...form, price: e.target.value })}
+                                        style={{
+                                            border: `1.5px solid ${formErrors.price ? "#ef4444" : "#e2e8f0"}`,
+                                            borderRadius: 8, padding: "10px 12px", fontSize: 13.5, outline: "none"
+                                        }}
+                                    />
+                                    {formErrors.price && <span style={{ fontSize: 12, color: "#ef4444" }}>⚠️ {formErrors.price}</span>}
+                                </div>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                                    <label style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>Học phí gốc chưa giảm (đ)</label>
+                                    <input
+                                        type="number"
+                                        placeholder="Ví dụ: 3000000"
+                                        value={form.oldPrice}
+                                        onChange={e => setForm({ ...form, oldPrice: e.target.value })}
+                                        style={{ border: "1.5px solid #e2e8f0", borderRadius: 8, padding: "10px 12px", fontSize: 13.5, outline: "none" }}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Trạng thái khóa học */}
                             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                                <label style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>Trạng thái khóa học</label>
+                                <label style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>Trạng thái hiển thị</label>
                                 <select
                                     value={form.trangThai}
                                     onChange={e => setForm({ ...form, trangThai: e.target.value })}
@@ -388,9 +532,12 @@ export default function Quan_Ly_Khoa_Hoc() {
                                         background: "#fff", cursor: "pointer"
                                     }}
                                 >
-                                    <option value="Nháp">Bản nháp (Chưa bán)</option>
-                                    <option value="Đang bán">Đang hoạt động (Đang bán)</option>
+                                    <option value="Chờ duyệt">Gửi yêu cầu duyệt (Chờ duyệt)</option>
+                                    <option value="Nháp">Bản nháp (Lưu trữ nội bộ)</option>
                                     <option value="Đã ẩn">Ẩn khóa học</option>
+                                    {modalMode === "edit" && selectedCourse?.TrangThai === "Đang bán" && (
+                                        <option value="Đang bán">Đang hoạt động (Đang bán)</option>
+                                    )}
                                 </select>
                             </div>
 

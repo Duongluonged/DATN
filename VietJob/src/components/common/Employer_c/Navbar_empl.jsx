@@ -103,10 +103,6 @@ const Navbar = () => {
                                         Việc làm của tôi
                                     </Link>
 
-                                    <Link to="/candidate/Loimoicv" className="flex items-center gap-2 px-4 py-2 text-sm text-left text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
-                                        <Mail size={16} />
-                                        Lời mời công việc
-                                    </Link>
 
                                     <Link to="/candidate/Thongbao" className="flex items-center gap-2 px-4 py-2 text-sm text-left text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
                                         <Bell size={16} />

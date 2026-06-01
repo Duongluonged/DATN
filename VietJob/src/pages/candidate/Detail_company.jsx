@@ -10,8 +10,8 @@ import axios from "axios";
 export default function Detail_company() {
   const { id } = useParams();
   const [following, setFollowing] = useState(false);
-    const navigate = useNavigate();
-    const [company, setCompanyDetail] = useState(null);
+  const navigate = useNavigate();
+  const [company, setCompanyDetail] = useState(null);
   const [job, setJob] = useState(null); // Mảng chứa công việc từ database
   const [loading, setLoading] = useState(true);
   const [assess, setAssess] = useState();
@@ -19,7 +19,7 @@ export default function Detail_company() {
   const handleAssess = () => {
     const token = localStorage.getItem("user");
     if (token) {
-      setAssess(true); 
+      setAssess(true);
       navigate(`/candidate/Assess/${id}`);
     } else {
       navigate("/login");
@@ -28,26 +28,39 @@ export default function Detail_company() {
 
   useEffect(() => {
     const fetchData = async () => {
-        try {
-            // 1. Phải có đầy đủ /api/companies/ trước biến ${id}
-            const companyRes = await axios.get(`http://localhost:5000/api/companies/${id}`);
-            setCompanyDetail(companyRes.data);
+      try {
+        // 1. Phải có đầy đủ /api/companies/ trước biến ${id}
+        const companyRes = await axios.get(`http://localhost:5000/api/companies/${id}`);
+        setCompanyDetail(companyRes.data);
 
-            // 2. Phải có đầy đủ /api/companies/ trước ${id}/jobs
-            const jobsRes = await axios.get(`http://localhost:5000/api/companies/${id}/jobs`);
-            setJob(jobsRes.data);
-            
-        } catch (error) {
-            console.error("Lỗi khi lấy dữ liệu:", error);
-        } finally {
-            setLoading(false);
-        }
+        // 2. Phải có đầy đủ /api/companies/ trước ${id}/jobs
+        const jobsRes = await axios.get(`http://localhost:5000/api/companies/${id}/jobs`);
+        setJob(jobsRes.data);
+
+      } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu:", error);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchData();
   }, [id]);
 
   if (loading) return <div>Đang tải...</div>;
-  
+
+  const getOfficePhotos = () => {
+    if (!company || !company.OfficePhotos) return [];
+    try {
+      if (company.OfficePhotos.startsWith('[') && company.OfficePhotos.endsWith(']')) {
+        return JSON.parse(company.OfficePhotos);
+      }
+    } catch (e) { }
+    return company.OfficePhotos.split(',')
+      .map(p => p.trim())
+      .filter(p => p.length > 0);
+  };
+  const officePhotos = getOfficePhotos();
+
 
   return (
     <div style={{ fontFamily: "'DM Sans', 'Segoe UI', sans-serif", background: "#f5f6fa", minHeight: "100vh", color: "#1a1a2e" }}>
@@ -75,7 +88,7 @@ export default function Detail_company() {
         .more-jobs-link:hover { text-decoration: underline; }
       `}</style>
 
-      <Navbar  />
+      <Navbar />
 
       {/* Hero / Company Banner */}
       <div style={{ maxWidth: 1600, margin: "28px auto 0", padding: "0 24px" }}>
@@ -97,7 +110,7 @@ export default function Detail_company() {
               <button className={`follow-btn${following ? " following" : ""}`} onClick={() => setFollowing(!following)}>
                 {following ? "✓ Đang theo dõi" : "+ Theo dõi"}
               </button>
-              <button style={{ background: "#f5f6fa", color: "#333", border: "1.5px solid #e0e0e0", padding: "7px 20px", borderRadius: 20, fontSize: 13, fontWeight: 600, cursor: "pointer"}} onClick={handleAssess}>
+              <button style={{ background: "#f5f6fa", color: "#333", border: "1.5px solid #e0e0e0", padding: "7px 20px", borderRadius: 20, fontSize: 13, fontWeight: 600, cursor: "pointer" }} onClick={handleAssess}>
                 Viết đánh giá</button>
             </div>
           </div>
@@ -167,133 +180,160 @@ export default function Detail_company() {
               </p>
               {/* Product preview mockup */}
               <div style={{ marginTop: 16, background: "#f5f6fa", borderRadius: 10, padding: 16, border: "1px solid #e8ecf0" }}>
-                <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-                  {["#ff6b6b","#ffd93d","#6bcb77"].map(c => <div key={c} style={{ width: 10, height: 10, borderRadius: "50%", background: c }} />)}
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 10 }}>
-                  <div>
-                    <div style={{ height: 60, background: "#e0e8ff", borderRadius: 6, marginBottom: 6 }} />
-                    <div style={{ height: 40, background: "#e8f4fd", borderRadius: 6 }} />
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    {["#ff6b6b", "#ffd93d", "#6bcb77"].map(c => <div key={c} style={{ width: 10, height: 10, borderRadius: "50%", background: c }} />)}
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                    <div style={{ height: 20, background: "#e0e8ff", borderRadius: 4 }} />
-                    <div style={{ height: 14, background: "#f0f0f0", borderRadius: 4, width: "70%" }} />
-                    <div style={{ height: 14, background: "#f0f0f0", borderRadius: 4, width: "90%" }} />
-                    <div style={{ height: 14, background: "#f0f0f0", borderRadius: 4, width: "60%" }} />
-                  </div>
+                  {officePhotos.length > 0 && (
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "#1a73e8", background: "#e8f0fe", padding: "2px 8px", borderRadius: 12 }}>
+                      Hình ảnh văn phòng thực tế ({officePhotos.length})
+                    </span>
+                  )}
                 </div>
+
+                {officePhotos.length > 0 ? (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 10 }}>
+                    {officePhotos.map((photoUrl, idx) => (
+                      <div key={idx} style={{ position: "relative", borderRadius: 8, overflow: "hidden", height: 110, border: "1px solid #e2e8f0", boxShadow: "0 2px 6px rgba(0,0,0,0.05)", background: "#fff" }}>
+                        <img
+                          src={photoUrl.startsWith("http") || photoUrl.startsWith("data:") ? photoUrl : `http://localhost:5000${photoUrl}`}
+                          alt={`Văn phòng ${idx + 1}`}
+                          style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.3s" }}
+                          onMouseEnter={e => e.currentTarget.style.transform = "scale(1.08)"}
+                          onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+                          onError={(e) => {
+                            e.currentTarget.src = "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=400&q=80";
+                          }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 10 }}>
+                    <div>
+                      <div style={{ height: 60, background: "#e0e8ff", borderRadius: 6, marginBottom: 6 }} />
+                      <div style={{ height: 40, background: "#e8f4fd", borderRadius: 6 }} />
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      <div style={{ height: 20, background: "#e0e8ff", borderRadius: 4 }} />
+                      <div style={{ height: 14, background: "#f0f0f0", borderRadius: 4, width: "70%" }} />
+                      <div style={{ height: 14, background: "#f0f0f0", borderRadius: 4, width: "90%" }} />
+                      <div style={{ height: 14, background: "#f0f0f0", borderRadius: 4, width: "60%" }} />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
           {/* Right column - Job listings */}
           <div>
-                <h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "20px", color: "#111" }}>
-                        {company.JobCount} Việc làm đang tuyển dụng
-                </h2>
+            <h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "20px", color: "#111" }}>
+              {company.JobCount} Việc làm đang tuyển dụng
+            </h2>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: "16px", maxHeight: "800px", overflowY: "auto", paddingRight: "4px" }}>
-                    {job.map((job) => (
-                    <div 
-                        key={job.JobID || job.id} 
-                        onClick={() => {
-                            navigate(`/job-detail/${job.JobID}`); // Viết thường chữ n ở đây
-                        }}
-                        className="job-card" 
-                        style={{
-                            background: "white", 
-                            borderRadius: "12px", 
-                            padding: "20px", 
-                            border: "1px solid #eee",
-                            boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-                            flexShrink: 0,
-                            
-                            // 2. Chuyển con trỏ chuột thành dạng bàn tay
-                            cursor: "pointer",
-                            
-                            // 3. Hiệu ứng chuyển cảnh mượt mà
-                            transition: "all 0.2s ease-in-out",
-                        }}
-                        // 4. Thêm hiệu ứng Hover trực tiếp bằng inline style (hoặc dùng CSS class)
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.borderColor = "#1a73e8";
-                            e.currentTarget.style.boxShadow = "0 4px 12px rgba(26,115,232,0.12)";
-                            e.currentTarget.style.transform = "translateY(-2px)";
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = "#eee";
-                            e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.04)";
-                            e.currentTarget.style.transform = "translateY(0)";
-                        }}
-                    >
-                        {/* Thời gian đăng tin */}
-                        <div style={{ fontSize: "13px", color: "#999", marginBottom: "12px" }}>
-                        Đăng 15 ngày trước
-                        </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px", maxHeight: "800px", overflowY: "auto", paddingRight: "4px" }}>
+              {job.map((job) => (
+                <div
+                  key={job.JobID || job.id}
+                  onClick={() => {
+                    navigate(`/job-detail/${job.JobID}`); // Viết thường chữ n ở đây
+                  }}
+                  className="job-card"
+                  style={{
+                    background: "white",
+                    borderRadius: "12px",
+                    padding: "20px",
+                    border: "1px solid #eee",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+                    flexShrink: 0,
 
-                        {/* Tiêu đề công việc */}
-                        <h3 style={{ fontSize: "18px", fontWeight: "700", color: "#111", marginBottom: "16px" }}>
-                        {job.JobTitle || "Chưa có tiêu đề công việc"}
-                        </h3>
+                    // 2. Chuyển con trỏ chuột thành dạng bàn tay
+                    cursor: "pointer",
 
-                        {/* Logo và Tên công ty */}
-                        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
-                        <div style={{ width: "40px", height: "40px", border: "1px solid #eee", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", padding: "5px" }}>
-                            <div style={{ background: "#1a1a2e", borderRadius: "50%", width: "24px", height: "24px", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "8px" }}>{company.LogoURL}</div>
-                        </div>
-                        <span style={{ fontSize: "15px", color: "#555" }}>{company.CompanyName || "Chưa có tên công ty"}</span>
-                        </div>
+                    // 3. Hiệu ứng chuyển cảnh mượt mà
+                    transition: "all 0.2s ease-in-out",
+                  }}
+                  // 4. Thêm hiệu ứng Hover trực tiếp bằng inline style (hoặc dùng CSS class)
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = "#1a73e8";
+                    e.currentTarget.style.boxShadow = "0 4px 12px rgba(26,115,232,0.12)";
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "#eee";
+                    e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.04)";
+                    e.currentTarget.style.transform = "translateY(0)";
+                  }}
+                >
+                  {/* Thời gian đăng tin */}
+                  <div style={{ fontSize: "13px", color: "#999", marginBottom: "12px" }}>
+                    Đăng 15 ngày trước
+                  </div>
 
-                        {/* Mức lương / Quyền lợi */}
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#28a745", fontWeight: "600", fontSize: "15px", marginBottom: "16px", borderBottom: "1px dashed #eee", paddingBottom: "16px" }}>
-                        <div style={{ background: "#28a745", borderRadius: "50%", padding: "2px" }}>
-                            <Banknote size={14} color="white" />
-                        </div>
-                        {job.SalaryRange || "Mức lương chưa được công bố"}
-                        </div>
+                  {/* Tiêu đề công việc */}
+                  <h3 style={{ fontSize: "18px", fontWeight: "700", color: "#111", marginBottom: "16px" }}>
+                    {job.JobTitle || "Chưa có tiêu đề công việc"}
+                  </h3>
 
-                        {/* Thông tin chi tiết: Ngành nghề & Địa điểm */}
-                        <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "10px", color: "#666", fontSize: "14px" }}>
-                            <Briefcase size={16} />
-                            <span style={{ textDecoration: "underline", textDecorationStyle: "dotted" }}>{job.JobCategory || "Chưa có ngành nghề"}</span>
-                        </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: "10px", color: "#666", fontSize: "14px" }}>
-                            <MapPin size={16} />
-                            <span>{job.WorkLocation || "Chưa có địa điểm làm việc"}</span>
-                            <span style={{ color: "#ccc" }}>•</span>
-                            <span>{company.Location || "Chưa có địa điểm công ty"}</span>
-                        </div>
-                        </div>
-
-                        {/* Tags kỹ năng */}
-                        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                          {/* 1. Kiểm tra Skills tồn tại, 2. Split chuỗi thành mảng, 3. Map qua từng phần tử */}
-                          {job.Skills?.split(",").map((tag, index) => (
-                            <span
-                              key={`${job.id}-${tag}-${index}`} // Tạo key duy nhất kết hợp với index
-                              style={{
-                                background: "#f8f9fa",
-                                color: "#666",
-                                padding: "4px 14px",
-                                borderRadius: "20px",
-                                fontSize: "13px",
-                                border: "1px solid #eee"
-                              }}
-                            >
-                              {tag.trim()} {/* Dùng .trim() để xóa khoảng trắng dư thừa */}
-                            </span>
-                          ))}
-
-                          {/* Chỉ hiển thị +2 nếu cần thiết, hoặc có thể ẩn đi nếu đã map hết */}
-                          <span style={{ background: "#f8f9fa", color: "#666", padding: "4px 10px", borderRadius: "20px", fontSize: "13px", border: "1px solid #eee" }}>
-                            +2
-                          </span>
-                        </div>
+                  {/* Logo và Tên công ty */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
+                    <div style={{ width: "40px", height: "40px", border: "1px solid #eee", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", padding: "5px" }}>
+                      <div style={{ background: "#1a1a2e", borderRadius: "50%", width: "24px", height: "24px", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "8px" }}>{company.LogoURL}</div>
                     </div>
+                    <span style={{ fontSize: "15px", color: "#555" }}>{company.CompanyName || "Chưa có tên công ty"}</span>
+                  </div>
+
+                  {/* Mức lương / Quyền lợi */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#28a745", fontWeight: "600", fontSize: "15px", marginBottom: "16px", borderBottom: "1px dashed #eee", paddingBottom: "16px" }}>
+                    <div style={{ background: "#28a745", borderRadius: "50%", padding: "2px" }}>
+                      <Banknote size={14} color="white" />
+                    </div>
+                    {job.SalaryRange || "Mức lương chưa được công bố"}
+                  </div>
+
+                  {/* Thông tin chi tiết: Ngành nghề & Địa điểm */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", color: "#666", fontSize: "14px" }}>
+                      <Briefcase size={16} />
+                      <span style={{ textDecoration: "underline", textDecorationStyle: "dotted" }}>{job.JobCategory || "Chưa có ngành nghề"}</span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", color: "#666", fontSize: "14px" }}>
+                      <MapPin size={16} />
+                      <span>{job.WorkLocation || "Chưa có địa điểm làm việc"}</span>
+                      <span style={{ color: "#ccc" }}>•</span>
+                      <span>{company.Location || "Chưa có địa điểm công ty"}</span>
+                    </div>
+                  </div>
+
+                  {/* Tags kỹ năng */}
+                  <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                    {/* 1. Kiểm tra Skills tồn tại, 2. Split chuỗi thành mảng, 3. Map qua từng phần tử */}
+                    {job.Skills?.split(",").map((tag, index) => (
+                      <span
+                        key={`${job.id}-${tag}-${index}`} // Tạo key duy nhất kết hợp với index
+                        style={{
+                          background: "#f8f9fa",
+                          color: "#666",
+                          padding: "4px 14px",
+                          borderRadius: "20px",
+                          fontSize: "13px",
+                          border: "1px solid #eee"
+                        }}
+                      >
+                        {tag.trim()} {/* Dùng .trim() để xóa khoảng trắng dư thừa */}
+                      </span>
                     ))}
+
+                    {/* Chỉ hiển thị +2 nếu cần thiết, hoặc có thể ẩn đi nếu đã map hết */}
+                    <span style={{ background: "#f8f9fa", color: "#666", padding: "4px 10px", borderRadius: "20px", fontSize: "13px", border: "1px solid #eee" }}>
+                      +2
+                    </span>
+                  </div>
                 </div>
-        </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 

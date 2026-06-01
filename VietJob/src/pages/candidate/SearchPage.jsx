@@ -307,12 +307,12 @@ function SearchPage() {
                         </div>
 
                         <h2 className="text-[24px] font-bold mt-3 leading-snug">
-                          {job.Title}
+                          {job.JobTitle}
                         </h2>
 
                         <div className="flex items-center gap-4">
                           <img
-                            src={job.CompanyLogo}
+                            src={job.LogoURL}
                             alt="Logo"
                             className="w-16 h-16 object-contain border border-gray-200 rounded-md bg-white p-1"
                           />
@@ -429,13 +429,13 @@ function SearchPage() {
                       <>
                         <div className="flex gap-5">
                           <img
-                            src={selectedJob.CompanyLogo}
+                            src={selectedJob.LogoURL}
                             alt=""
                             className="w-24 h-24 object-contain border rounded-xl"
                           />
                           <div className="flex-1">
                             <h1 className="text-3xl font-bold leading-snug">
-                              {selectedJob.Title}
+                              {selectedJob.JobTitle}
                             </h1>
                             <p className="mt-3 text-lg font-medium">
                               {selectedJob.CompanyName}

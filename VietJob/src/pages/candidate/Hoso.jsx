@@ -168,30 +168,42 @@ export default function Hoso() {
   useEffect(() => {
     const init = async () => {
       try {
-        const stored = JSON.parse(localStorage.getItem("user"));
-        if (!stored?.token) return;
-        const decoded = parseJwt(stored.token);
-        if (!decoded?.id) return;
-        setUserId(decoded.id);
+        let stored = null;
+        try {
+          const storedUser = localStorage.getItem("user");
+          if (storedUser) {
+            stored = JSON.parse(storedUser);
+          }
+        } catch (e) {
+          console.error("Lỗi parse user từ localStorage:", e);
+        }
+
+        const resolvedUserId = stored?.id || parseJwt(stored?.token)?.id;
+        if (!resolvedUserId) {
+          console.warn("Không tìm thấy userId hợp lệ trong Hoso.jsx.");
+          setLoading(false);
+          return;
+        }
+        setUserId(resolvedUserId);
 
         const [profileRes, cvRes, eduRes, expRes] = await Promise.all([
-          axios.get(`${API}/auth/profile/${decoded.id}`),
-          axios.get(`${API}/cv/${decoded.id}`),
-          axios.get(`${API}/cv/${decoded.id}/education`),
-          axios.get(`${API}/cv/${decoded.id}/experience`),
+          axios.get(`${API}/auth/profile/${resolvedUserId}`),
+          axios.get(`${API}/cv/${resolvedUserId}`),
+          axios.get(`${API}/cv/${resolvedUserId}/education`),
+          axios.get(`${API}/cv/${resolvedUserId}/experience`),
         ]);
 
         setProfile(profileRes.data);
-        const bioVal = cvRes.data.bio || "";
+        const bioVal = cvRes.data?.bio || "";
         setBio(bioVal);
         setBioForm(bioVal);
         // Skills là chuỗi "ReactJS, Node.js" → tách thành mảng
-        const rawSkills = cvRes.data.skills || "";
+        const rawSkills = cvRes.data?.skills || "";
         setSkills(rawSkills ? rawSkills.split(",").map(s => s.trim()).filter(Boolean) : []);
-        setEducations(eduRes.data);
-        setExperiences(expRes.data);
+        setEducations(eduRes.data || []);
+        setExperiences(expRes.data || []);
       } catch (err) {
-        console.error("Lỗi khởi tạo:", err);
+        console.error("Lỗi khởi tạo hồ sơ ứng viên:", err);
       } finally {
         setLoading(false);
       }
@@ -361,7 +373,7 @@ export default function Hoso() {
                       <div style={{ fontSize: 11, color: "#6b7280" }}>{fmtMonth(edu.StartDate)} – {fmtMonth(edu.EndDate)}</div>
                     </div>
                     <div style={{ display: "flex", gap: 4 }}>
-                      <SmBtn icon={Pen} onClick={() => { setEduForm({ id: edu.Id, school: edu.SchoolName, major: edu.Major, from: edu.StartDate?.slice(0,7), to: edu.EndDate?.slice(0,7) }); setModal("edu"); }} />
+                      <SmBtn icon={Pen} onClick={() => { setEduForm({ id: edu.Id, school: edu.SchoolName, major: edu.Major, from: edu.StartDate?.slice(0, 7), to: edu.EndDate?.slice(0, 7) }); setModal("edu"); }} />
                       <SmBtn icon={Trash2} onClick={() => deleteEducation(edu.Id)} />
                     </div>
                   </div>
@@ -392,7 +404,7 @@ export default function Hoso() {
                       {exp.Description && <div style={{ fontSize: 11, color: "#6b7280", marginTop: 4, lineHeight: 1.6 }}>{exp.Description}</div>}
                     </div>
                     <div style={{ display: "flex", gap: 4 }}>
-                      <SmBtn icon={Pen} onClick={() => { setExpForm({ id: exp.Id, company: exp.CompanyName, position: exp.Position, from: exp.StartDate?.slice(0,7), to: exp.EndDate?.slice(0,7), description: exp.Description }); setModal("exp"); }} />
+                      <SmBtn icon={Pen} onClick={() => { setExpForm({ id: exp.Id, company: exp.CompanyName, position: exp.Position, from: exp.StartDate?.slice(0, 7), to: exp.EndDate?.slice(0, 7), description: exp.Description }); setModal("exp"); }} />
                       <SmBtn icon={Trash2} onClick={() => deleteExperience(exp.Id)} />
                     </div>
                   </div>

@@ -13,9 +13,9 @@ import HSo_Dinh_Kem from './pages/candidate/HSo_Dinh_Kem';
 import HoSoDinhKem from './pages/candidate/HSo_Dinh_Kem';
 import Hoso from './pages/candidate/Hoso';
 import ViecLamCuaToi from './pages/candidate/Vieclamcuatoi';
-import Loimoicongviec from './pages/candidate/Loimoicv';
 import Thongbao from './pages/candidate/Thongbao';
 import Caidat from './pages/candidate/Caidat';
+import CandidateMessages from './pages/candidate/Quan_ly_tin_nhan.jsx';
 import ApplyJob from './pages/candidate/ApplyJob';
 import AdminDashboard from './pages/admin/AdminDashboard.jsx';
 import Home_candidate from './pages/candidate/home_page_candidate.jsx';
@@ -24,8 +24,11 @@ import JobPosting_Manager from './pages/admin/JobPosting_Manager.jsx';
 import CourseManager from './pages/admin/Course_manager.jsx';
 import Report_Management from './pages/admin/Report_Management.jsx';
 import Statistical from './pages/admin/Statistical.jsx';
+import RevenueManager from './pages/admin/Revenue_Manager.jsx';
 import Detail_company from './pages/candidate/Detail_company.jsx';
 import SearchPage from './pages/candidate/SearchPage.jsx';
+import CoursesPage from './pages/candidate/CoursesPage.jsx';
+import MyLearningPath from './pages/candidate/MyLearningPath.jsx';
 import EmployerRegisterForm from './pages/Auth/EmployerRegisterForm.jsx';
 import Quan_ly_tin_tuyen_dung from './pages/employer/Quan_ly_tin_tuyen_dung.jsx';
 import Quan_ly_ung_vien from './pages/employer/Quan_ly_ung_vien.jsx';
@@ -34,6 +37,7 @@ import Vi_tien from './pages/employer/Vi_tien.jsx';
 import Quan_ly_tin_nhan from './pages/employer/Quan_ly_tin_nhan.jsx';
 import Thongke_ntd from './pages/employer/Thong_ke_ntd.jsx';
 import Quan_ly_Hoso_Cty from './pages/employer/Quan_ly_Hoso_Cty.jsx';
+import AssessCompany from "./pages/candidate/Assess.jsx";
 
 
 const App = () => {
@@ -68,9 +72,11 @@ const App = () => {
         <Route path="/candidate/HSo_Dinh_Kem" element={<HoSoDinhKem />} />
         <Route path="/candidate/Hoso" element={<Hoso />} />
         <Route path="/candidate/Vieclamcuatoi" element={<ViecLamCuaToi />} />
-        <Route path="/candidate/Loimoicv" element={<Loimoicongviec />} />
+        <Route path="/candidate/MyLearningPath" element={<MyLearningPath />} />
         <Route path="/candidate/Thongbao" element={<Thongbao />} />
         <Route path="/candidate/Caidat" element={<Caidat />} />
+        <Route path="/candidate/Assess/:id" element={<AssessCompany />} />
+        <Route path="/candidate/Quan_ly_tin_nhan" element={<CandidateMessages />} />
         <Route path="/candidate/ApplyJob" element={<ApplyJob />} />
         <Route path="/candidate/home_page_candidate" element={<Home_candidate />} />
         <Route path="/admin/User_Manager" element={<User_Manager />} />
@@ -78,7 +84,10 @@ const App = () => {
         <Route path="/admin/Course_Manager" element={<CourseManager />} />
         <Route path="/admin/Report_Management" element={<Report_Management />} />
         <Route path="/admin/Statistical" element={<Statistical />} />
+        <Route path="/admin/Revenue_Manager" element={<RevenueManager />} />
         <Route path="/search" element={<SearchPage />} />
+        <Route path="/courses" element={<CoursesPage />} />
+        <Route path="/courses/:category" element={<CoursesPage />} />
         <Route path="/EmployerRegisterForm" element={<EmployerRegisterForm />} />
 
 

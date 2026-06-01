@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Sidebar_Empl from "../../components/common/Employer_c/Sidebar_empl";
 import Topbar_empl from "../../components/common/Employer_c/Topbar_empl";
 
@@ -346,7 +347,7 @@ function CandidateDetailModal({ app, onClose, onStatusChange }) {
 }
 
 // ═══ CANDIDATE CARD ══════════════════════════════════════════════
-function CandidateCard({ app, onStatusChange, onViewDetail }) {
+function CandidateCard({ app, onStatusChange, onViewDetail, onChat }) {
     const [menuOpen, setMenuOpen] = useState(false);
 
     return (
@@ -380,6 +381,14 @@ function CandidateCard({ app, onStatusChange, onViewDetail }) {
                     📅 {app.AppliedAt ? new Date(app.AppliedAt).toLocaleDateString("vi-VN") : "—"}
                 </div>
                 <div style={{ display: "flex", gap: 6, position: "relative" }}>
+                    {/* Nút nhắn tin */}
+                    {app.CandidateUserId && (
+                        <button
+                            onClick={e => { e.stopPropagation(); onChat(app.CandidateUserId); }}
+                            style={{ fontSize: 11.5, color: "#16a34a", background: "#dcfce7", border: "1px solid #bbf7d0", borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontWeight: 600 }}>
+                            Nhắn tin
+                        </button>
+                    )}
                     {/* Nút xem */}
                     <button
                         onClick={e => { e.stopPropagation(); onViewDetail(app); }}
@@ -435,6 +444,7 @@ function CandidateCard({ app, onStatusChange, onViewDetail }) {
 }
 
 export default function Quan_ly_ung_vien() {
+    const navigate = useNavigate();
     const [applications, setApplications] = useState([]);
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -450,6 +460,14 @@ export default function Quan_ly_ung_vien() {
     const showToast = (msg, ok = true) => {
         setToast({ msg, ok });
         setTimeout(() => setToast(null), 3000);
+    };
+
+    const handleChatWithCandidate = (candidateUserId) => {
+        if (!candidateUserId) {
+            showToast("Ứng viên này nộp đơn tự do hoặc chưa kích hoạt tài khoản.", false);
+            return;
+        }
+        navigate(`/employer/Quan_ly_tin_nhan?partnerId=${candidateUserId}`);
     };
 
     // Fetch applications
@@ -588,7 +606,7 @@ export default function Quan_ly_ung_vien() {
                     ) : (
                         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
                             {applications.map(app => (
-                                <CandidateCard key={app.ApplicationID} app={app} onStatusChange={handleStatusChange} onViewDetail={setSelectedApp} />
+                                <CandidateCard key={app.ApplicationID} app={app} onStatusChange={handleStatusChange} onViewDetail={setSelectedApp} onChat={handleChatWithCandidate} />
                             ))}
                         </div>
                     )}

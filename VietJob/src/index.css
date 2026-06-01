@@ -124,3 +124,9 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+/* Badge thông báo nhấp nháy */
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.15); opacity: 0.85; }
+}

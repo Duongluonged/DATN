@@ -179,13 +179,13 @@ function BannerSearch() {
           </div>
 
           {hasFilters && (
-              <button
-                onClick={clearFilters}
-                className="text-sm text-blue-800 hover:text-blue-700 px-3 py-1.5 rounded-full border border-blue-200 hover:border-blue-400 bg-white transition-colors"
-              >
-                Xóa bộ lọc
-              </button>
-            )}
+            <button
+              onClick={clearFilters}
+              className="text-sm text-blue-800 hover:text-blue-700 px-3 py-1.5 rounded-full border border-blue-200 hover:border-blue-400 bg-white transition-colors"
+            >
+              Xóa bộ lọc
+            </button>
+          )}
 
         </div>
       </div>

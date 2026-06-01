@@ -15,11 +15,11 @@ const c = {
 
 /* ─── Chuyển đổi Status từ DB sang hiển thị ─── */
 const STATUS_MAP = {
-  "Mới":          { label: "ĐANG CHỜ",       color: "#a16207", bg: "#fef9c3" },
-  "Đang xem xét": { label: "ĐANG XEM XÉT",   color: "#4338ca", bg: "#e0e7ff" },
-  "Phỏng vấn":    { label: "HẸN PHỎNG VẤN",  color: "#15803d", bg: "#dcfce7" },
-  "Đã tuyển":     { label: "ĐÃ TUYỂN",        color: "#0369a1", bg: "#e0f2fe" },
-  "Từ chối":      { label: "TỪ CHỐI",         color: "#b91c1c", bg: "#fee2e2" },
+  "Mới": { label: "ĐANG CHỜ", color: "#a16207", bg: "#fef9c3" },
+  "Đang xem xét": { label: "ĐANG XEM XÉT", color: "#4338ca", bg: "#e0e7ff" },
+  "Phỏng vấn": { label: "HẸN PHỎNG VẤN", color: "#15803d", bg: "#dcfce7" },
+  "Đã tuyển": { label: "ĐÃ TUYỂN", color: "#0369a1", bg: "#e0f2fe" },
+  "Từ chối": { label: "TỪ CHỐI", color: "#b91c1c", bg: "#fee2e2" },
 };
 
 /* ─── SUB-COMPONENTS ─── */
@@ -38,7 +38,7 @@ function StatCard({ icon: Icon, num, label, badge, badgeColor, badgeBg, iconColo
   );
 }
 
-function JobCard({ app, navigate }) {
+function JobCard({ app, navigate, onChat }) {
   const statusInfo = STATUS_MAP[app.Status] || STATUS_MAP["Mới"];
   const isRejected = app.Status === "Từ chối";
   const isInterview = app.Status === "Phỏng vấn";
@@ -118,12 +118,22 @@ function JobCard({ app, navigate }) {
             ? <><Mail size={12} /> Nhà tuyển dụng đã từ chối hồ sơ</>
             : <><Clock size={12} /> Ứng tuyển: {timeAgo}</>}
         </span>
-        <span
-          onClick={() => navigate(`/jobs/${app.JobID}`)}
-          style={{ fontSize: 12, fontWeight: 700, color: c.blue, cursor: "pointer", display: "flex", alignItems: "center", gap: 3 }}
-        >
-          <ExternalLink size={13} /> Xem tin
-        </span>
+        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          {app.CompanyID && (
+            <span
+              onClick={() => onChat(app.CompanyID, app.CompanyName)}
+              style={{ fontSize: 12, fontWeight: 700, color: "#16a34a", cursor: "pointer", display: "flex", alignItems: "center", gap: 3 }}
+            >
+              <MessageCircle size={13} /> Nhắn tin
+            </span>
+          )}
+          <span
+            onClick={() => navigate(`/job-detail/${app.JobID}`)}
+            style={{ fontSize: 12, fontWeight: 700, color: c.blue, cursor: "pointer", display: "flex", alignItems: "center", gap: 3 }}
+          >
+            <ExternalLink size={13} /> Xem tin
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -133,6 +143,46 @@ function JobCard({ app, navigate }) {
 export default function ViecLamCuaToi() {
   const navigate = useNavigate();
   const location = useLocation();
+
+  const [chatModalOpen, setChatModalOpen] = useState(false);
+  const [chatCompany, setChatCompany] = useState(null); // { id: 1, name: "Company" }
+  const [chatMessage, setChatMessage] = useState("");
+  const [sendingChat, setSendingChat] = useState(false);
+
+  const handleChatWithEmployer = (companyId, companyName) => {
+    if (!companyId) {
+      alert("Không tìm thấy thông tin công ty.");
+      return;
+    }
+    setChatCompany({ id: companyId, name: companyName });
+    setChatMessage("");
+    setChatModalOpen(true);
+  };
+
+  const submitChatMessage = async () => {
+    if (!userId || !chatCompany || !chatMessage.trim()) return;
+    setSendingChat(true);
+    try {
+      const res = await axios.get(`${API}/messages/employer-of-company/${chatCompany.id}`);
+      const employerUserId = res.data.Id;
+
+      await axios.post(`${API}/messages/send`, {
+        senderId: userId,
+        receiverId: employerUserId,
+        messageContent: chatMessage
+      });
+
+      setChatModalOpen(false);
+      setChatMessage("");
+      navigate(`/candidate/Quan_ly_tin_nhan?partnerId=${employerUserId}`);
+    } catch (err) {
+      console.error("Lỗi gửi tin nhắn nhanh:", err);
+      alert("Doanh nghiệp này chưa kích hoạt tài khoản nhắn tin tuyển dụng.");
+    } finally {
+      setSendingChat(false);
+    }
+  };
+
   const [activeTab, setActiveTab] = useState(0);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -284,8 +334,83 @@ export default function ViecLamCuaToi() {
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
               {filtered.map((app) => (
-                <JobCard key={app.ApplicationID} app={app} navigate={navigate} />
+                <JobCard key={app.ApplicationID} app={app} navigate={navigate} onChat={handleChatWithEmployer} />
               ))}
+            </div>
+          )}
+
+          {chatModalOpen && chatCompany && (
+            <div style={{
+              position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
+              background: "rgba(15,23,42,0.6)", display: "flex", alignItems: "center", justifyContent: "center",
+              zIndex: 9999, backdropFilter: "blur(4px)", animation: "fadeIn 0.2s ease"
+            }}>
+              <div style={{
+                background: "#fff", borderRadius: 20, width: 460, padding: 24,
+                boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)",
+                fontFamily: "'Be Vietnam Pro',sans-serif"
+              }}>
+                <h3 style={{ fontSize: 16, fontWeight: 800, color: "#1e293b", marginBottom: 6 }}>
+                  Nhắn tin cho nhà tuyển dụng
+                </h3>
+                <p style={{ fontSize: 12.5, color: "#64748b", marginBottom: 16 }}>
+                  Gửi lời chào hoặc câu hỏi đến <strong style={{ color: "#1a56db" }}>{chatCompany.name}</strong>. Tin nhắn của bạn sẽ được gửi và lưu trực tiếp vào mục Tin nhắn.
+                </p>
+
+                {/* Gợi ý tin nhắn mẫu */}
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>Lời chào gợi ý</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    {[
+                      "Xin chào, tôi muốn hỏi thăm về trạng thái hồ sơ ứng tuyển của mình.",
+                      "Chào anh/chị, tôi rất quan tâm đến vị trí tuyển dụng và muốn trao đổi thêm.",
+                      "Chào công ty, tôi đã ứng tuyển và muốn gửi lời chào đến HR đại diện."
+                    ].map((txt, idx) => (
+                      <div
+                        key={idx}
+                        onClick={() => setChatMessage(txt)}
+                        style={{ fontSize: 11.5, background: "#f8fafc", border: "1px solid #e2e8f0", padding: "8px 12px", borderRadius: 8, cursor: "pointer", color: "#475569", transition: "all 0.1s" }}
+                        onMouseEnter={e => e.currentTarget.style.background = "#f1f5f9"}
+                        onMouseLeave={e => e.currentTarget.style.background = "#f8fafc"}
+                      >
+                        {txt}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <textarea
+                  placeholder="Nhập tin nhắn khởi đầu của bạn tại đây..."
+                  value={chatMessage}
+                  onChange={e => setChatMessage(e.target.value)}
+                  style={{
+                    width: "100%", height: 100, border: "1.5px solid #cbd5e1", borderRadius: 12,
+                    padding: "10px 12px", fontSize: 13, outline: "none", resize: "none", marginBottom: 16,
+                    fontFamily: "inherit"
+                  }}
+                />
+
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+                  <button
+                    onClick={() => { setChatModalOpen(false); setChatMessage(""); }}
+                    style={{ padding: "8px 16px", borderRadius: 10, border: "1px solid #cbd5e1", background: "#fff", color: "#64748b", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}
+                  >
+                    Hủy bỏ
+                  </button>
+                  <button
+                    onClick={submitChatMessage}
+                    disabled={sendingChat || !chatMessage.trim()}
+                    style={{
+                      padding: "8px 20px", borderRadius: 10, border: "none",
+                      background: "linear-gradient(135deg,#16a34a,#10b981)", color: "#fff",
+                      fontSize: 12.5, fontWeight: 700, cursor: "pointer",
+                      display: "flex", alignItems: "center", gap: 6, opacity: (sendingChat || !chatMessage.trim()) ? 0.6 : 1
+                    }}
+                  >
+                    {sendingChat ? "Đang gửi..." : "Gửi tin nhắn"}
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 

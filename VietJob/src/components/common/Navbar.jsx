@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import {LayoutDashboard,FileText,User,Briefcase,Mail,Bell,Settings} from "lucide-react";
+import { LayoutDashboard, FileText, User, Briefcase, Mail, Bell, Settings, BookOpen } from "lucide-react";
 
 const Navbar = () => {
   const [user, setUser] = useState(null);
@@ -10,16 +10,16 @@ const Navbar = () => {
 
   // Hàm kiểm tra trạng thái đăng nhập
   const checkAuth = () => {
-  const storedUser = localStorage.getItem("user"); // Lấy object 'user'
-  
-  if (storedUser) {
-    const userData = JSON.parse(storedUser);
-    // Đảm bảo userData có trường username (hoặc name tùy backend trả về)
-    setUser(userData); 
-  } else {
-    setUser(null);
-  }
-};
+    const storedUser = localStorage.getItem("user"); // Lấy object 'user'
+
+    if (storedUser) {
+      const userData = JSON.parse(storedUser);
+      // Đảm bảo userData có trường username (hoặc name tùy backend trả về)
+      setUser(userData);
+    } else {
+      setUser(null);
+    }
+  };
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -38,16 +38,16 @@ const Navbar = () => {
   }, [showDropdown]);
 
   const handleLogout = () => {
-  localStorage.removeItem("user");
-  setUser(null);
-  setShowDropdown(false); 
-  navigate("/"); 
+    localStorage.removeItem("user");
+    setUser(null);
+    setShowDropdown(false);
+    navigate("/");
   };
-  
+
   return (
     <header className="w-full bg-white border-b-4 border-blue-500 shadow-sm sticky top-0 z-50">
       <div className="w-full px-4 py-4 flex justify-between items-center">
-        
+
         {/* NHÓM BÊN TRÁI: Logo và Menu */}
         <div className="flex items-center gap-12">
           <Link to="/" className="text-2xl font-bold text-black tracking-wide hover:text-blue-600 transition-colors">
@@ -80,6 +80,8 @@ const Navbar = () => {
               <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 flex flex-col py-2 z-50">
                 <Link to="/courses/web" className="px-4 py-2 hover:bg-blue-50 hover:text-blue-600 transition-colors">Lập trình Web</Link>
                 <Link to="/courses/mobile" className="px-4 py-2 hover:bg-blue-50 hover:text-blue-600 transition-colors">Lập trình Mobile</Link>
+                <Link to="/courses/data-ai" className="px-4 py-2 hover:bg-blue-50 hover:text-blue-600 transition-colors">Dữ liệu & AI</Link>
+                <Link to="/courses/design-gamedev" className="px-4 py-2 hover:bg-blue-50 hover:text-blue-600 transition-colors">Thiết kế & Gamedev</Link>
               </div>
             </div>
           </nav>
@@ -93,7 +95,7 @@ const Navbar = () => {
               <span className="text-sm font-semibold text-gray-700 hidden sm:inline-block max-w-[100px] truncate">
                 {user.username}
               </span>
-              <div 
+              <div
                 className="w-9 h-9 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold shadow-sm border-2 border-blue-100 transition-transform hover:scale-105"
                 onClick={() => setShowDropdown(!showDropdown)}
               >
@@ -104,7 +106,7 @@ const Navbar = () => {
               {showDropdown && (
                 <div className="absolute top-full right-0 mt-1 w-52 bg-white rounded-md shadow-xl border border-gray-100 flex flex-col py-2 z-50">
                   <div className="px-4 py-2 border-b border-gray-50 mb-1">
-                    
+
                     <p className="text-sm font-bold text-blue-600 truncate">{user.username}</p>
                     <p className="text-sm font-bold text-blue-600 truncate">{user.email}</p>
                   </div>
@@ -128,9 +130,9 @@ const Navbar = () => {
                     Việc làm của tôi
                   </Link>
 
-                  <Link to="/candidate/Loimoicv" className="flex items-center gap-2 px-4 py-2 text-sm text-left text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
-                    <Mail size={16} />
-                    Lời mời công việc
+                  <Link to="/candidate/MyLearningPath" className="flex items-center gap-2 px-4 py-2 text-sm text-left text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                    <BookOpen size={16} />
+                    Lộ trình của tôi
                   </Link>
 
                   <Link to="/candidate/Thongbao" className="flex items-center gap-2 px-4 py-2 text-sm text-left text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
@@ -143,7 +145,7 @@ const Navbar = () => {
                     Cài đặt
                   </Link>
                   <hr className="my-1 border-gray-100" />
-                  <button 
+                  <button
                     onClick={handleLogout}
                     className="px-4 py-2 text-sm text-left text-red-600 hover:bg-red-50 font-bold transition-colors"
                   >
@@ -154,19 +156,19 @@ const Navbar = () => {
             </div>
           ) : (
             <div className="flex items-center gap-3">
-              <Link 
-                to="/login_employer" 
+              <Link
+                to="/login_employer"
                 className="px-5 py-2 text-sm font-medium text-blue-600 bg-white border border-blue-600 rounded-full hover:bg-blue-50 transition-all active:scale-95"
               >
                 Dành cho nhà tuyển dụng
               </Link>
-              <Link 
-                to="/login" 
+              <Link
+                to="/login"
                 className="px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-full hover:bg-blue-700 shadow-md transition-all active:scale-95"
               >
                 Đăng Nhập
               </Link>
-             
+
             </div>
           )}
         </div>

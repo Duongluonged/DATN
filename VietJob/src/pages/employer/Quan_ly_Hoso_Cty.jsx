@@ -80,40 +80,61 @@ export default function Quan_ly_HoSo_Cty() {
   const [photoUploading, setPhotoUploading] = useState(false);
 
   const handlePhotoUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      showToast("Dung lượng ảnh phải nhỏ hơn 5MB", "error");
-      return;
-    }
+    const validFiles = files.filter(file => {
+      if (file.size > 5 * 1024 * 1024) {
+        showToast(`Bỏ qua file "${file.name}" vì dung lượng vượt quá 5MB.`, "error");
+        return false;
+      }
+      return true;
+    });
+
+    if (validFiles.length === 0) return;
 
     try {
       setPhotoUploading(true);
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onloadend = async () => {
-        const base64data = reader.result;
+
+      const readAsBase64 = (file) => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => resolve({ base64: reader.result, fileName: file.name });
+          reader.onerror = (err) => reject(err);
+        });
+      };
+
+      const base64Files = await Promise.all(validFiles.map(readAsBase64));
+
+      const uploadPromises = base64Files.map(async (fileObj) => {
         try {
           const res = await axios.post(`${API}/upload`, {
-            base64: base64data,
-            fileName: file.name
+            base64: fileObj.base64,
+            fileName: fileObj.fileName
           });
-          if (res.data && res.data.url) {
-            setPhotos(prev => [...prev, res.data.url]);
-            showToast("Tải ảnh văn phòng lên thành công!", "success");
-          }
+          return res.data?.url;
         } catch (uploadErr) {
-          console.error(uploadErr);
-          showToast("Tải ảnh lên máy chủ thất bại.", "error");
-        } finally {
-          setPhotoUploading(false);
+          console.error(`Lỗi tải file ${fileObj.fileName}:`, uploadErr);
+          return null;
         }
-      };
+      });
+
+      const uploadedUrls = await Promise.all(uploadPromises);
+      const successfulUrls = uploadedUrls.filter(Boolean);
+
+      if (successfulUrls.length > 0) {
+        setPhotos(prev => [...prev, ...successfulUrls]);
+        showToast(`Tải lên thành công ${successfulUrls.length} ảnh văn phòng!`, "success");
+      } else {
+        showToast("Tải ảnh lên máy chủ thất bại.", "error");
+      }
     } catch (err) {
       console.error(err);
-      showToast("Có lỗi xảy ra khi đọc tệp tin.", "error");
+      showToast("Có lỗi xảy ra khi xử lý và tải ảnh lên.", "error");
+    } finally {
       setPhotoUploading(false);
+      e.target.value = "";
     }
   };
 
@@ -425,8 +446,8 @@ export default function Quan_ly_HoSo_Cty() {
                     <h3 className="font-bold text-lg text-[#111827]">Hình ảnh văn hóa & văn phòng</h3>
                     <p className="text-sm text-gray-500 mt-0.5">Giúp ứng viên hình dung chân thực về môi trường làm việc của bạn.</p>
                   </div>
-                  
-                  <button 
+
+                  <button
                     type="button"
                     onClick={() => document.getElementById("gallery-upload-input").click()}
                     className="text-blue-600 hover:text-blue-700 font-semibold text-sm transition cursor-pointer"
@@ -435,8 +456,9 @@ export default function Quan_ly_HoSo_Cty() {
                   </button>
                 </div>
 
-                <input 
+                <input
                   type="file"
+                  multiple
                   accept="image/*"
                   id="gallery-upload-input"
                   className="hidden"
@@ -451,10 +473,10 @@ export default function Quan_ly_HoSo_Cty() {
                         alt={`Văn phòng ${idx + 1}`}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
-                      
+
                       {/* Delete Overlay */}
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
-                        <button 
+                        <button
                           type="button"
                           onClick={() => setPhotos(prev => prev.filter((_, i) => i !== idx))}
                           className="w-10 h-10 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center transition shadow-md cursor-pointer"
@@ -473,7 +495,7 @@ export default function Quan_ly_HoSo_Cty() {
                       <p className="text-sm text-blue-600 font-medium mt-3">Đang tải ảnh lên máy chủ...</p>
                     </div>
                   ) : (
-                    <div 
+                    <div
                       onClick={() => document.getElementById("gallery-upload-input").click()}
                       className="border border-dashed border-[#cbd5e1] hover:border-blue-400 hover:bg-blue-50/20 rounded-[22px] h-[220px] flex flex-col items-center justify-center bg-[#f8fafc] p-4 text-center cursor-pointer transition"
                     >
