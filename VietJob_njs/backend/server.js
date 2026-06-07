@@ -1,3 +1,4 @@
+require('dotenv').config(); // Load .env variables
 const express = require("express");
 const cors = require("cors");
 // Import các Route
@@ -7,6 +8,13 @@ const jobRoutes = require('./routes/jobRoutes');
 const cvRoutes = require('./routes/cvRoutes');
 const applicationRoutes = require('./routes/applicationRoutes');
 const courseRoutes = require('./routes/courseRoutes');
+const messageRoutes = require('./routes/messageRoutes');
+const reportRoutes = require('./routes/reportRoutes');
+const reviewRoutes  = require('./routes/reviewRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+const adminRoutes = require('./routes/admin');
+const walletRoutes = require('./routes/walletRoutes');
+const userCourseRoutes = require('./routes/userCourseRoutes');
 
 const path = require("path");
 const fs = require("fs");
@@ -15,8 +23,8 @@ const app = express();
 
 // Middleware
 app.use(cors());
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ limit: "10mb", extended: true }));
+app.use(express.json({ limit: "20mb" }));
+app.use(express.urlencoded({ limit: "20mb", extended: true }));
 
 // Serve static uploaded files
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
@@ -29,9 +37,10 @@ app.post("/api/upload", (req, res) => {
             return res.status(400).json({ error: "Vui lòng cung cấp dữ liệu tệp tin." });
         }
 
-        const matches = base64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+        // Regex tổng quát: khớp mọi MIME type (kể cả .docx, .pdf, ...)
+        const matches = base64.match(/^data:([^;]+);base64,([\s\S]+)$/);
         if (!matches || matches.length !== 3) {
-            return res.status(400).json({ error: "Định dạng ảnh không hợp lệ." });
+            return res.status(400).json({ error: "Định dạng file không hợp lệ." });
         }
 
         const fileBuffer = Buffer.from(matches[2], "base64");
@@ -61,6 +70,13 @@ app.use('/api/jobs', jobRoutes);
 app.use('/api/cv', cvRoutes);
 app.use('/api/applications', applicationRoutes); // Ứng tuyển & quản lý hồ sơ
 app.use('/api/courses', courseRoutes); // Quản lý khóa học
+app.use('/api/messages', messageRoutes); // Nhắn tin ứng viên & nhà tuyển dụng
+app.use('/api/reports', reportRoutes); // Khiếu nại/Báo cáo tin tuyển dụng vi phạm
+app.use('/api/reviews', reviewRoutes);  // Đánh giá công ty
+app.use('/api/notifications', notificationRoutes); // Thông báo
+app.use('/api/admin', adminRoutes); // Admin routes
+app.use('/api/wallet', walletRoutes); // Ví tiền nhà tuyển dụng
+app.use('/api/user-courses', userCourseRoutes); // Lộ trình học tập
 
 // Xử lý lỗi 404 cho các route không tồn tại
 app.use((req, res) => {

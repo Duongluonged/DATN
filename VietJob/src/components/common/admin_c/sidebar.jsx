@@ -17,18 +17,13 @@ function Sidebar() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // 1. Xóa toàn bộ thông tin user và token trong LocalStorage
+    // Xóa toàn bộ thông tin phiên đăng nhập
     localStorage.removeItem("user");
     localStorage.removeItem("token");
+    localStorage.removeItem("username");
 
-    // Nếu bạn muốn xóa sạch mọi thứ liên quan đến phiên làm việc:
-    // localStorage.clear();
-
-    // 2. Thông báo cho người dùng (Tùy chọn)
-    alert("Bạn đã đăng xuất thành công!");
-
-    // 3. Điều hướng về trang Login
-    navigate("/home_page_candidate"); // Hoặc navigate("/login") nếu bạn muốn về trang login
+    // Điều hướng về trang Login
+    navigate("/login");
   };
 
   const menuItems = [

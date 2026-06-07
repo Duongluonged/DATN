@@ -38,6 +38,10 @@ import Quan_ly_tin_nhan from './pages/employer/Quan_ly_tin_nhan.jsx';
 import Thongke_ntd from './pages/employer/Thong_ke_ntd.jsx';
 import Quan_ly_Hoso_Cty from './pages/employer/Quan_ly_Hoso_Cty.jsx';
 import AssessCompany from "./pages/candidate/Assess.jsx";
+import LinkedInCallback from './pages/Auth/LinkedInCallback.jsx';
+import GoogleCallback from './pages/Auth/GoogleCallback.jsx';
+
+
 
 
 const App = () => {
@@ -89,6 +93,9 @@ const App = () => {
         <Route path="/courses" element={<CoursesPage />} />
         <Route path="/courses/:category" element={<CoursesPage />} />
         <Route path="/EmployerRegisterForm" element={<EmployerRegisterForm />} />
+        <Route path="/auth/google/callback"   element={<GoogleCallback />} />
+        <Route path="/auth/linkedin/callback" element={<LinkedInCallback />} />
+
 
 
       </Routes>

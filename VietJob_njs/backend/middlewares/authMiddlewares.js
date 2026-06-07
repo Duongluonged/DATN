@@ -1,4 +1,4 @@
-﻿const jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 const { pool, poolConnect, sql } = require('../config/db');
 
 const auth = (req, res, next) => {
@@ -21,18 +21,18 @@ const auth = (req, res, next) => {
 };
 
 
-exports.verifyToken = (req, res, next) => {
+const verifyToken = (req, res, next) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ message: 'Chưa đăng nhập' });
     try {
-        req.user = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = jwt.verify(token, process.env.JWT_SECRET || "BiMatVietJob2026");
         next();
     } catch {
         res.status(401).json({ message: 'Token không hợp lệ' });
     }
 };
 
-exports.isAdmin = async (req, res, next) => {
+const isAdmin = async (req, res, next) => {
     await poolConnect;
     // Kiểm tra role từ DB thay vì chỉ dựa vào token
     const result = await pool.request()
@@ -49,5 +49,8 @@ exports.isAdmin = async (req, res, next) => {
     next();
 };
 
-// QUAN TRỌNG: Phải có dòng này
+// Đảm bảo vừa callable vừa có thuộc tính
+auth.verifyToken = verifyToken;
+auth.isAdmin = isAdmin;
+
 module.exports = auth;

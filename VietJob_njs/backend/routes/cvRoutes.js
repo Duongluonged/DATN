@@ -19,4 +19,8 @@ router.post("/:userId/experience", cv.addExperience);
 router.put("/:userId/experience/:id", cv.updateExperience);
 router.delete("/:userId/experience/:id", cv.deleteExperience);
 
+// ── File CV đính kèm (lưu vào CandidateCv) ───────────────────────────────────
+router.put("/:userId/cv-file", cv.saveCvFile);
+router.delete("/:userId/cv-file", cv.deleteCvFile);
+
 module.exports = router;

@@ -10,11 +10,11 @@ const ProtectedRoute = ({ allowedRoles }) => {
         return <Navigate to="/login" replace />;
     }
 
-    // 2. Nếu đã đăng nhập nhưng không có quyền phù hợp -> Đẩy về trang báo lỗi hoặc trang chủ
-    const hasAccess = user.roles.some(role => allowedRoles.includes(role));
-    
+    // 2. Nếu đã đăng nhập nhưng không có quyền phù hợp -> Đẩy về trang chủ
+    const hasAccess = user.roles && user.roles.some(role => allowedRoles.includes(role));
+
     if (!hasAccess) {
-        return <Navigate to="/unauthorized" replace />;
+        return <Navigate to="/" replace />;
     }
 
     // 3. Nếu thỏa mãn tất cả -> Cho phép truy cập vào các Route con (Outlet)

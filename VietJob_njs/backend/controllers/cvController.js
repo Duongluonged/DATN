@@ -1,5 +1,22 @@
 const { sql, pool, poolConnect } = require("../config/db");
 
+// ─── Helper: tự động thêm cột CvFilePath, CvFileName nếu chưa tồn tại ─────────
+async function ensureCvFileColumns() {
+    await poolConnect;
+    await pool.request().query(`
+        IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+                       WHERE TABLE_NAME = 'CandidateCv' AND COLUMN_NAME = 'CvFilePath')
+        BEGIN
+            ALTER TABLE dbo.CandidateCv ADD CvFilePath  NVARCHAR(2000) NULL
+        END
+        IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+                       WHERE TABLE_NAME = 'CandidateCv' AND COLUMN_NAME = 'CvFileName')
+        BEGIN
+            ALTER TABLE dbo.CandidateCv ADD CvFileName  NVARCHAR(500)  NULL
+        END
+    `);
+}
+
 // ─── Helper: lấy hoặc tạo CandidateCv cho user ───────────────────────────────
 async function getOrCreateCvId(userId) {
     await poolConnect;
@@ -32,16 +49,22 @@ function toDate(val) {
 exports.getCv = async (req, res) => {
     const { userId } = req.params;
     try {
-        await poolConnect;
+        await ensureCvFileColumns();
         const result = await pool.request()
             .input("UserId", sql.Int, Number(userId))
-            .query("SELECT Id, Bio, Skills FROM dbo.CandidateCv WHERE UserId = @UserId");
+            .query("SELECT Id, Bio, Skills, CvFilePath, CvFileName FROM dbo.CandidateCv WHERE UserId = @UserId");
 
         if (result.recordset.length === 0) {
-            return res.json({ cvId: null, bio: "", skills: "" });
+            return res.json({ cvId: null, bio: "", skills: "", cvFilePath: null, cvFileName: null });
         }
         const row = result.recordset[0];
-        res.json({ cvId: row.Id, bio: row.Bio || "", skills: row.Skills || "" });
+        res.json({
+            cvId:       row.Id,
+            bio:        row.Bio        || "",
+            skills:     row.Skills     || "",
+            cvFilePath: row.CvFilePath || null,
+            cvFileName: row.CvFileName || null,
+        });
     } catch (err) {
         console.error("getCv:", err);
         res.status(500).json({ error: "Lỗi hệ thống" });
@@ -285,6 +308,57 @@ exports.deleteExperience = async (req, res) => {
         res.json({ message: "Đã xóa" });
     } catch (err) {
         console.error("deleteExperience:", err);
+        res.status(500).json({ error: "Lỗi hệ thống" });
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LƯU FILE CV UPLOAD
+// PUT /api/cv/:userId/cv-file   body: { fileUrl, fileName }
+// ═══════════════════════════════════════════════════════════════════════════════
+exports.saveCvFile = async (req, res) => {
+    const { userId } = req.params;
+    const { fileUrl, fileName } = req.body;
+    if (!fileUrl || !fileName) {
+        return res.status(400).json({ error: "Thiếu fileUrl hoặc fileName." });
+    }
+    try {
+        await ensureCvFileColumns();
+        const cvId = await getOrCreateCvId(Number(userId));
+        await pool.request()
+            .input("CvId",     sql.Int,      cvId)
+            .input("FileUrl",  sql.NVarChar,  fileUrl)
+            .input("FileName", sql.NVarChar,  fileName)
+            .query(`
+                UPDATE dbo.CandidateCv
+                SET CvFilePath = @FileUrl, CvFileName = @FileName
+                WHERE Id = @CvId
+            `);
+        res.json({ message: "Lưu file CV thành công" });
+    } catch (err) {
+        console.error("saveCvFile:", err);
+        res.status(500).json({ error: "Lỗi hệ thống" });
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// XÓA FILE CV UPLOAD
+// DELETE /api/cv/:userId/cv-file
+// ═══════════════════════════════════════════════════════════════════════════════
+exports.deleteCvFile = async (req, res) => {
+    const { userId } = req.params;
+    try {
+        await ensureCvFileColumns();
+        await pool.request()
+            .input("UserId", sql.Int, Number(userId))
+            .query(`
+                UPDATE dbo.CandidateCv
+                SET CvFilePath = NULL, CvFileName = NULL
+                WHERE UserId = @UserId
+            `);
+        res.json({ message: "Đã xóa file CV" });
+    } catch (err) {
+        console.error("deleteCvFile:", err);
         res.status(500).json({ error: "Lỗi hệ thống" });
     }
 };

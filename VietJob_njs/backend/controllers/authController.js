@@ -5,6 +5,7 @@ const JWT_SECRET = "BiMatVietJob2026"; // Nên để trong file .env
 const crypto = require('crypto');
 const transporter = require('../config/mailer');
 const { v4: uuidv4 } = require('uuid');
+const axios = require('axios');
 
 exports.registerEmployer = async (req, res) => {
     await poolConnect;
@@ -40,9 +41,9 @@ exports.registerEmployer = async (req, res) => {
             .input('location', sql.NVarChar, address || null)
             .input('description', sql.NVarChar, description || null)
             .query(`
-                INSERT INTO Companies (CompanyName, WebsiteURL, Location, Description, CreatedAt)
+                INSERT INTO Companies (CompanyName, WebsiteURL, Location, Description, CreatedAt, IsHot)
                 OUTPUT INSERTED.CompanyID
-                VALUES (@companyName, @websiteURL, @location, @description, GETDATE())
+                VALUES (@companyName, @websiteURL, @location, @description, GETDATE(), 0)
             `);
 
         const companyId = companyResult.recordset[0].CompanyID;
@@ -338,17 +339,368 @@ exports.getProfile = async (req, res) => {
 // Cập nhật phone, address
 exports.updateProfile = async (req, res) => {
     const { userId } = req.params;
-    const { phone, address } = req.body;
+    const { phone, address, username } = req.body;
     try {
         await poolConnect;
         await pool.request()
-            .input('Id', sql.Int, Number(userId))
-            .input('Phone', sql.NVarChar, phone || null)
-            .input('Address', sql.NVarChar, address || null)
-            .query(`UPDATE Users SET Phone = @Phone, Address = @Address WHERE Id = @Id`);
+            .input('Id',       sql.Int,      Number(userId))
+            .input('Phone',    sql.NVarChar,  phone    || null)
+            .input('Address',  sql.NVarChar,  address  || null)
+            .input('Username', sql.NVarChar,  username || null)
+            .query(`UPDATE Users SET Phone = @Phone, Address = @Address, Username = COALESCE(@Username, Username) WHERE Id = @Id`);
         res.json({ message: 'Cập nhật thành công' });
     } catch (err) {
         console.error('Lỗi updateProfile:', err);
         res.status(500).json({ error: 'Lỗi hệ thống' });
+    }
+};
+
+// Đổi mật khẩu
+exports.changePassword = async (req, res) => {
+    const { userId } = req.params;
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword)
+        return res.status(400).json({ error: 'Vui lòng nhập đủ mật khẩu cũ và mật khẩu mới.' });
+    if (newPassword.length < 6)
+        return res.status(400).json({ error: 'Mật khẩu mới phải có ít nhất 6 ký tự.' });
+    try {
+        await poolConnect;
+        const result = await pool.request()
+            .input('Id', sql.Int, Number(userId))
+            .query(`SELECT Password FROM Users WHERE Id = @Id`);
+        if (result.recordset.length === 0)
+            return res.status(404).json({ error: 'Không tìm thấy người dùng.' });
+        const isMatch = await bcrypt.compare(currentPassword, result.recordset[0].Password);
+        if (!isMatch)
+            return res.status(400).json({ error: 'Mật khẩu hiện tại không đúng.' });
+        const hashed = await bcrypt.hash(newPassword, 10);
+        await pool.request()
+            .input('Id',       sql.Int,     Number(userId))
+            .input('Password', sql.NVarChar, hashed)
+            .query(`UPDATE Users SET Password = @Password WHERE Id = @Id`);
+        res.json({ message: 'Đổi mật khẩu thành công!' });
+    } catch (err) {
+        console.error('Lỗi changePassword:', err);
+        res.status(500).json({ error: 'Lỗi hệ thống' });
+    }
+};
+
+// Khóa/Vô hiệu hóa người dùng (Status = 'locked')
+exports.deleteUser = async (req, res) => {
+    const { userId } = req.params;
+    try {
+        await poolConnect;
+        await pool.request()
+            .input('Id', sql.Int, Number(userId))
+            .query(`UPDATE Users SET Status = 'locked' WHERE Id = @Id`);
+        res.json({ message: 'Đã khóa tài khoản người dùng thành công!' });
+    } catch (err) {
+        console.error('Lỗi deleteUser:', err);
+        res.status(500).json({ error: 'Lỗi hệ thống khi khóa người dùng.' });
+    }
+};
+
+// ============================================================
+// SOCIAL LOGIN: Đăng nhập bằng Google hoặc LinkedIn
+// POST /api/auth/social-login
+// Body: { provider: 'google' | 'linkedin', accessToken: '...' }
+// ============================================================
+exports.socialLogin = async (req, res) => {
+    const { provider, accessToken } = req.body;
+
+    if (!provider || !accessToken) {
+        return res.status(400).json({ error: 'Thiếu provider hoặc accessToken.' });
+    }
+
+    let socialEmail = null;
+    let socialName = null;
+    let socialId = null;
+
+    try {
+        // ──── XÁC MINH TOKEN THEO TỪNG PROVIDER ────
+        if (provider === 'google') {
+            // Gọi Google tokeninfo để lấy thông tin user
+            const googleRes = await axios.get(
+                `https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${accessToken}`
+            );
+            const info = googleRes.data;
+            if (!info.email) throw new Error('Không lấy được email từ Google.');
+            socialEmail = info.email;
+            socialName  = info.name || info.email.split('@')[0];
+            socialId    = info.sub; // Google user ID
+
+        } else if (provider === 'linkedin') {
+            // Gọi LinkedIn API lấy profile
+            const [profileRes, emailRes] = await Promise.all([
+                axios.get('https://api.linkedin.com/v2/me', {
+                    headers: { Authorization: `Bearer ${accessToken}` }
+                }),
+                axios.get('https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))', {
+                    headers: { Authorization: `Bearer ${accessToken}` }
+                })
+            ]);
+            socialId   = profileRes.data.id;
+            socialName = `${profileRes.data.localizedFirstName} ${profileRes.data.localizedLastName}`.trim();
+            const emailElement = emailRes.data.elements?.[0]?.['handle~']?.emailAddress;
+            if (!emailElement) throw new Error('Không lấy được email từ LinkedIn.');
+            socialEmail = emailElement;
+
+        } else {
+            return res.status(400).json({ error: 'Provider không hợp lệ. Chỉ hỗ trợ google hoặc linkedin.' });
+        }
+
+        // ──── KIỂM TRA / TẠO USER TRONG DATABASE ────
+        await poolConnect;
+
+        // Tìm user theo email
+        const existResult = await pool.request()
+            .input('Email', sql.NVarChar, socialEmail)
+            .query(`
+                SELECT u.Id, u.Username, u.Status, r.RoleName
+                FROM Users u
+                LEFT JOIN UserRoles ur ON u.Id = ur.UserId
+                LEFT JOIN Roles r ON ur.RoleId = r.RoleId
+                WHERE u.Email = @Email
+            `);
+
+        let userId, username, roles;
+
+        if (existResult.recordset.length > 0) {
+            // User đã tồn tại → lấy thông tin
+            const firstRow = existResult.recordset[0];
+            userId   = firstRow.Id;
+            username = firstRow.Username;
+            roles    = existResult.recordset.map(r => r.RoleName).filter(Boolean);
+
+            // Chặn Employer đăng nhập qua social login trên trang này
+            if (roles.includes('Employer')) {
+                return res.status(403).json({
+                    error: 'Tài khoản nhà tuyển dụng vui lòng sử dụng trang đăng nhập riêng.'
+                });
+            }
+        } else {
+            // Tạo user mới từ thông tin social
+            const safeUsername = socialName.replace(/\s+/g, '_').substring(0, 50);
+            const randomPass   = await bcrypt.hash(crypto.randomBytes(20).toString('hex'), 10);
+
+            const insertResult = await pool.request()
+                .input('Username', sql.NVarChar, safeUsername)
+                .input('Password', sql.NVarChar, randomPass)
+                .input('Email',    sql.NVarChar, socialEmail)
+                .query(`
+                    INSERT INTO Users (Username, Password, Email, Status, CreatedAt)
+                    OUTPUT INSERTED.Id
+                    VALUES (@Username, @Password, @Email, 'active', GETDATE())
+                `);
+
+            userId   = insertResult.recordset[0].Id;
+            username = safeUsername;
+
+            // Gán role Candidate
+            const roleResult = await pool.request()
+                .input('RoleName', sql.NVarChar, 'Candidate')
+                .query(`SELECT RoleId FROM Roles WHERE RoleName = @RoleName`);
+
+            if (roleResult.recordset.length > 0) {
+                const roleId = roleResult.recordset[0].RoleId;
+                await pool.request()
+                    .input('UserId', sql.Int, userId)
+                    .input('RoleId', sql.Int, roleId)
+                    .query(`INSERT INTO UserRoles (UserId, RoleId) VALUES (@UserId, @RoleId)`);
+            }
+            roles = ['Candidate'];
+        }
+
+        // ──── TẠO JWT VÀ TRẢ VỀ ────
+        const token = jwt.sign(
+            { id: userId, username, roles },
+            JWT_SECRET,
+            { expiresIn: '1d' }
+        );
+
+        return res.json({
+            message: 'Đăng nhập thành công qua ' + provider,
+            token,
+            id: userId,
+            username,
+            roles
+        });
+
+    } catch (err) {
+        console.error('Lỗi socialLogin:', err.message);
+        // Lỗi từ provider (token sai, hết hạn...)
+        if (err.response?.status === 400 || err.response?.status === 401) {
+            return res.status(401).json({ error: 'Token xác thực không hợp lệ hoặc đã hết hạn.' });
+        }
+        res.status(500).json({ error: 'Lỗi hệ thống khi đăng nhập bằng mạng xã hội.' });
+    }
+};
+
+// ============================================================
+// LINKEDIN CALLBACK: Đổi authorization code → access token
+// POST /api/auth/linkedin-callback
+// Body: { code: '...' }
+// LinkedIn không cho phép dùng implicit flow nên cần server exchange
+// ============================================================
+exports.linkedInCallback = async (req, res) => {
+    const { code } = req.body;
+
+    const LINKEDIN_CLIENT_ID     = process.env.LINKEDIN_CLIENT_ID     || 'YOUR_LINKEDIN_CLIENT_ID';
+    const LINKEDIN_CLIENT_SECRET = process.env.LINKEDIN_CLIENT_SECRET || 'YOUR_LINKEDIN_CLIENT_SECRET';
+    const LINKEDIN_REDIRECT_URI  = process.env.LINKEDIN_REDIRECT_URI  || 'http://localhost:5173/auth/linkedin/callback';
+
+    if (!code) {
+        return res.status(400).json({ error: 'Thiếu authorization code.' });
+    }
+
+    try {
+        // 1. Đổi code lấy access_token
+        const tokenRes = await axios.post(
+            'https://www.linkedin.com/oauth/v2/accessToken',
+            new URLSearchParams({
+                grant_type:    'authorization_code',
+                code,
+                client_id:     LINKEDIN_CLIENT_ID,
+                client_secret: LINKEDIN_CLIENT_SECRET,
+                redirect_uri:  LINKEDIN_REDIRECT_URI,
+            }).toString(),
+            { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+        );
+
+        const linkedInAccessToken = tokenRes.data.access_token;
+
+        // 2. Dùng lại socialLogin logic với LinkedIn token
+        req.body = { provider: 'linkedin', accessToken: linkedInAccessToken };
+        return exports.socialLogin(req, res);
+
+    } catch (err) {
+        console.error('Lỗi linkedInCallback:', err.response?.data || err.message);
+        res.status(500).json({ error: 'Không thể xác thực với LinkedIn. Vui lòng thử lại.' });
+    }
+};
+
+// ============================================================
+// GOOGLE CALLBACK: Đổi authorization code → tokens → user info
+// POST /api/auth/google-callback
+// Body: { code: '...' }
+// Không cần Firebase - dùng Google OAuth 2.0 trực tiếp
+// ============================================================
+exports.googleCallback = async (req, res) => {
+    const { code } = req.body;
+
+    const GOOGLE_CLIENT_ID     = process.env.GOOGLE_CLIENT_ID     || 'YOUR_GOOGLE_CLIENT_ID';
+    const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || 'YOUR_GOOGLE_CLIENT_SECRET';
+    const GOOGLE_REDIRECT_URI  = process.env.GOOGLE_REDIRECT_URI  || 'http://localhost:5173/auth/google/callback';
+
+    if (!code) {
+        return res.status(400).json({ error: 'Thiếu authorization code.' });
+    }
+
+    try {
+        // 1. Đổi code lấy access_token + id_token
+        const tokenRes = await axios.post(
+            'https://oauth2.googleapis.com/token',
+            new URLSearchParams({
+                code,
+                client_id:     GOOGLE_CLIENT_ID,
+                client_secret: GOOGLE_CLIENT_SECRET,
+                redirect_uri:  GOOGLE_REDIRECT_URI,
+                grant_type:    'authorization_code',
+            }).toString(),
+            { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+        );
+
+        const { access_token, id_token } = tokenRes.data;
+
+        // 2. Lấy thông tin user từ Google userinfo endpoint
+        const userInfoRes = await axios.get(
+            'https://www.googleapis.com/oauth2/v3/userinfo',
+            { headers: { Authorization: `Bearer ${access_token}` } }
+        );
+
+        const { email, name, sub: googleId } = userInfoRes.data;
+
+        if (!email) {
+            return res.status(400).json({ error: 'Không lấy được email từ Google.' });
+        }
+
+        // 3. Tìm hoặc tạo user trong SQL Server
+        await poolConnect;
+
+        const existResult = await pool.request()
+            .input('Email', sql.NVarChar, email)
+            .query(`
+                SELECT u.Id, u.Username, u.Status, r.RoleName
+                FROM Users u
+                LEFT JOIN UserRoles ur ON u.Id = ur.UserId
+                LEFT JOIN Roles r ON ur.RoleId = r.RoleId
+                WHERE u.Email = @Email
+            `);
+
+        let userId, username, roles;
+
+        if (existResult.recordset.length > 0) {
+            // User đã tồn tại → đăng nhập
+            const firstRow = existResult.recordset[0];
+            userId   = firstRow.Id;
+            username = firstRow.Username;
+            roles    = existResult.recordset.map(r => r.RoleName).filter(Boolean);
+
+            if (roles.includes('Employer')) {
+                return res.status(403).json({
+                    error: 'Tài khoản nhà tuyển dụng vui lòng sử dụng trang đăng nhập riêng.'
+                });
+            }
+        } else {
+            // Tạo user mới
+            const safeUsername = (name || email.split('@')[0]).replace(/\s+/g, '_').substring(0, 50);
+            const randomPass   = await bcrypt.hash(crypto.randomBytes(20).toString('hex'), 10);
+
+            const insertResult = await pool.request()
+                .input('Username', sql.NVarChar, safeUsername)
+                .input('Password', sql.NVarChar, randomPass)
+                .input('Email',    sql.NVarChar, email)
+                .query(`
+                    INSERT INTO Users (Username, Password, Email, Status, CreatedAt)
+                    OUTPUT INSERTED.Id
+                    VALUES (@Username, @Password, @Email, 'active', GETDATE())
+                `);
+
+            userId   = insertResult.recordset[0].Id;
+            username = safeUsername;
+
+            // Gán role Candidate
+            const roleResult = await pool.request()
+                .input('RoleName', sql.NVarChar, 'Candidate')
+                .query(`SELECT RoleId FROM Roles WHERE RoleName = @RoleName`);
+
+            if (roleResult.recordset.length > 0) {
+                const roleId = roleResult.recordset[0].RoleId;
+                await pool.request()
+                    .input('UserId', sql.Int, userId)
+                    .input('RoleId', sql.Int, roleId)
+                    .query(`INSERT INTO UserRoles (UserId, RoleId) VALUES (@UserId, @RoleId)`);
+            }
+            roles = ['Candidate'];
+        }
+
+        // 4. Tạo JWT hệ thống và trả về
+        const token = jwt.sign(
+            { id: userId, username, roles },
+            JWT_SECRET,
+            { expiresIn: '1d' }
+        );
+
+        return res.json({
+            message: 'Đăng nhập Google thành công',
+            token,
+            id: userId,
+            username,
+            roles
+        });
+
+    } catch (err) {
+        console.error('Lỗi googleCallback:', err.response?.data || err.message);
+        res.status(500).json({ error: 'Không thể xác thực với Google. Vui lòng thử lại.' });
     }
 };

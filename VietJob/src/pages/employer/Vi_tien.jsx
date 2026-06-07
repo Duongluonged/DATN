@@ -10,9 +10,10 @@ import {
 
 const suggestedAmounts = [2000000, 5000000, 10000000];
 
+// ⚠️ Thay account bằng số tài khoản thật của hệ thống
 const banks = [
-    { id: "vcb", name: "Vietcombank QR", icon: "🏦", color: "#16a34a" },
-    { id: "tpb", name: "TPBank QR", icon: "🏛️", color: "#7c3aed" },
+    { id: "vcb", name: "Vietcombank", bin: "970436", account: "1014597123", accountName: "VIETJOB SYSTEM", icon: "🏦", color: "#16a34a" },
+    { id: "tpb", name: "TPBank",      bin: "970423", account: "0987654321", accountName: "VIETJOB SYSTEM", icon: "🏛️", color: "#7c3aed" },
 ];
 
 export default function CareerCuratorWallet() {
@@ -25,6 +26,9 @@ export default function CareerCuratorWallet() {
     const [customAmount, setCustomAmount] = useState("");
     const [selectedBank, setSelectedBank] = useState("vcb");
     const [activeFilter, setActiveFilter] = useState("Tất cả");
+    const [showQR, setShowQR] = useState(false);
+    const [qrRefCode, setQrRefCode] = useState("");
+    const [confirmLoading, setConfirmLoading] = useState(false);
 
     // Dynamic state for highlighting and selling courses
     const [selectedJobId, setSelectedJobId] = useState("");
@@ -64,28 +68,32 @@ export default function CareerCuratorWallet() {
 
     const finalAmount = customAmount ? parseInt(customAmount.replace(/\D/g, "")) || 0 : selectedAmount;
 
-    // 1. Handle deposit money
-    const handleDeposit = async () => {
+    // 1. Hiển thị modal QR thanh toán
+    const handleShowQR = () => {
         if (!userId) return;
-        if (finalAmount <= 0) {
-            alert("Vui lòng chọn hoặc nhập số tiền hợp lệ!");
-            return;
-        }
+        if (finalAmount <= 0) { alert("Vui lòng chọn hoặc nhập số tiền hợp lệ!"); return; }
+        const ref = "NTD" + Math.floor(1000000 + Math.random() * 9000000);
+        setQrRefCode(ref);
+        setShowQR(true);
+    };
 
+    // 2. Xác nhận đã chuyển khoản → ghi vào DB
+    const handleConfirmPayment = async () => {
         const bankObj = banks.find(b => b.id === selectedBank);
-        const bankName = bankObj ? bankObj.name : "Ngân hàng";
-
+        setConfirmLoading(true);
         try {
             const res = await axios.post("http://localhost:5000/api/wallet/deposit", {
-                userId,
-                amount: finalAmount,
-                bankName
+                userId, amount: finalAmount,
+                bankName: bankObj?.name || "Ngân hàng"
             });
-            alert(`Nạp tiền thành công! Mã giao dịch: ${res.data.refCode}`);
+            setShowQR(false);
             setCustomAmount("");
             fetchWalletData();
+            alert(`✅ Nạp tiền thành công! Mã GD: ${res.data.refCode}`);
         } catch (err) {
-            alert("Lỗi nạp tiền: " + (err.response?.data?.message || err.message));
+            alert("Lỗi: " + (err.response?.data?.message || err.message));
+        } finally {
+            setConfirmLoading(false);
         }
     };
 
@@ -397,14 +405,14 @@ export default function CareerCuratorWallet() {
                             </div>
 
                             <button 
-                              onClick={handleDeposit}
+                              onClick={handleShowQR}
                               style={{ 
                                 width: "100%", padding: "12px 0", borderRadius: 10, border: "none", 
                                 background: "linear-gradient(135deg, #2563eb, #8b5cf6)", color: "#ffffff", 
                                 fontSize: 13.5, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 10px rgba(37, 99, 235, 0.2)" 
                               }}
                             >
-                                Xác nhận nạp tiền QR
+                                Hiện mã QR thanh toán
                             </button>
                         </div>
 
@@ -421,6 +429,57 @@ export default function CareerCuratorWallet() {
                     </div>
                 </div>
             </main>
+            {/* QR Payment Modal */}
+            {showQR && (() => {
+                const b = banks.find(x => x.id === selectedBank);
+                const qrUrl = `https://img.vietqr.io/image/${b.bin}-${b.account}-compact2.png?amount=${finalAmount}&addInfo=${qrRefCode}&accountName=${encodeURIComponent(b.accountName)}`;
+                return (
+                    <div onClick={e => e.target === e.currentTarget && setShowQR(false)}
+                        style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.6)", zIndex:9999,
+                            display:"flex", alignItems:"center", justifyContent:"center" }}>
+                        <div style={{ background:"#fff", borderRadius:20, padding:"28px 28px 20px",
+                            width:340, boxShadow:"0 20px 60px rgba(0,0,0,0.25)", textAlign:"center", position:"relative" }}>
+                            <button onClick={() => setShowQR(false)}
+                                style={{ position:"absolute", top:12, right:14, background:"none",
+                                    border:"none", fontSize:20, cursor:"pointer", color:"#94a3b8" }}>×</button>
+                            <div style={{ fontWeight:800, fontSize:15, color:"#1e293b", marginBottom:4 }}>
+                                {b.icon} Quét QR để nạp tiền
+                            </div>
+                            <div style={{ fontSize:12, color:"#64748b", marginBottom:14 }}>
+                                {b.name} · Mã: <b style={{color:"#7c3aed"}}>{qrRefCode}</b>
+                            </div>
+                            <img src={qrUrl} alt="QR" style={{ width:200, height:200,
+                                borderRadius:12, border:"2px solid #e2e8f0", objectFit:"contain", marginBottom:14 }} />
+                            <div style={{ background:"#f8fafc", borderRadius:10, padding:"10px 14px",
+                                marginBottom:14, textAlign:"left", fontSize:12, color:"#475569", lineHeight:1.8 }}>
+                                <div style={{display:"flex",justifyContent:"space-between"}}>
+                                    <span>Ngân hàng</span><b style={{color:"#1e293b"}}>{b.name}</b></div>
+                                <div style={{display:"flex",justifyContent:"space-between"}}>
+                                    <span>Số TK</span><b style={{color:"#1e293b"}}>{b.account}</b></div>
+                                <div style={{display:"flex",justifyContent:"space-between"}}>
+                                    <span>Chủ TK</span><b style={{color:"#1e293b"}}>{b.accountName}</b></div>
+                                <div style={{display:"flex",justifyContent:"space-between"}}>
+                                    <span>Số tiền</span><b style={{color:"#2563eb"}}>{finalAmount.toLocaleString()} VND</b></div>
+                                <div style={{display:"flex",justifyContent:"space-between"}}>
+                                    <span>Nội dung CK</span><b style={{color:"#7c3aed"}}>{qrRefCode}</b></div>
+                            </div>
+                            <button onClick={handleConfirmPayment} disabled={confirmLoading}
+                                style={{ width:"100%", padding:"11px 0", borderRadius:10, border:"none",
+                                    background: confirmLoading?"#94a3b8":"linear-gradient(135deg,#16a34a,#15803d)",
+                                    color:"#fff", fontSize:13, fontWeight:700,
+                                    cursor: confirmLoading?"not-allowed":"pointer",
+                                    display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
+                                {confirmLoading
+                                    ? <><Loader2 size={15} className="animate-spin" /> Đang xử lý...</>
+                                    : <><CheckCircle size={15} /> Tôi đã chuyển khoản xong</>}
+                            </button>
+                            <p style={{ margin:"8px 0 0", fontSize:11, color:"#94a3b8" }}>
+                                ⚠️ Chỉ bấm sau khi đã chuyển khoản thành công
+                            </p>
+                        </div>
+                    </div>
+                );
+            })()}
             <style>{`
                 .animate-spin { animation: spin 1s linear infinite; }
                 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }

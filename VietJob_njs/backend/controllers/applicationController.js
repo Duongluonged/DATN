@@ -55,6 +55,7 @@ const getApplicationsByEmployer = async (req, res) => {
             SELECT 
                 A.ApplicationID, A.CandidateName, A.Phone, A.City,
                 A.CoverLetter, A.CV_Path, A.Status, A.AppliedAt,
+                A.UserId AS CandidateUserId,
                 J.JobID, J.JobTitle,
                 C.CompanyName
             FROM Applications A
@@ -131,6 +132,50 @@ const updateApplicationStatus = async (req, res) => {
 
         // 3. Gửi email nếu có địa chỉ email và status cần thông báo
         const app = appResult.recordset[0];
+        // 3. Tự động tạo thông báo trong hệ thống
+        if (app && app.UserId) {
+            const notifMap = {
+                'Phỏng vấn': {
+                    type: 'invite',
+                    title: `Lời mời phỏng vấn từ ${app.CompanyName}`,
+                    content: `Đơn ứng tuyển vị trí "${app.JobTitle}" của bạn đã được ${app.CompanyName} chấp nhận. Họ mời bạn tham gia phỏng vấn!`,
+                },
+                'Từ chối': {
+                    type: 'system',
+                    title: `Kết quả ứng tuyển từ ${app.CompanyName}`,
+                    content: `Rất tiếc, hồ sơ ứng tuyển vị trí "${app.JobTitle}" tại ${app.CompanyName} chưa phù hợp lần này. Hãy tiếp tục cố gắng!`,
+                },
+                'Đã tuyển': {
+                    type: 'invite',
+                    title: `Chúc mừng! Bạn đã được tuyển dụng tại ${app.CompanyName}`,
+                    content: `Bạn đã chính thức được tuyển cho vị trí "${app.JobTitle}" tại ${app.CompanyName}. HR sẽ sớm liên hệ bạn!`,
+                },
+                'Đang xem xét': {
+                    type: 'system',
+                    title: `Hồ sơ đang được xem xét bởi ${app.CompanyName}`,
+                    content: `Nhà tuyển dụng ${app.CompanyName} đang xem xét hồ sơ ứng tuyển vị trí "${app.JobTitle}" của bạn.`,
+                },
+            };
+
+            const notif = notifMap[status];
+            if (notif) {
+                try {
+                    await pool.request()
+                        .input('userId',  sql.Int,      app.UserId)
+                        .input('type',    sql.NVarChar,  notif.type)
+                        .input('title',   sql.NVarChar,  notif.title)
+                        .input('content', sql.NVarChar,  notif.content)
+                        .input('relatedId', sql.Int,    parseInt(applicationId))
+                        .query(`
+                            INSERT INTO Notifications (UserId, Type, Title, Content, RelatedID)
+                            VALUES (@userId, @type, @title, @content, @relatedId)
+                        `);
+                } catch (notifErr) {
+                    console.error('⚠️ Lỗi tạo thông báo (trạng thái vẫn đã cập nhật):', notifErr.message);
+                }
+            }
+        }
+
         const shouldNotify = ['Phỏng vấn', 'Từ chối', 'Đã tuyển'].includes(status);
 
         if (app && app.Email && shouldNotify) {
@@ -254,7 +299,7 @@ const getApplicationsByCandidate = async (req, res) => {
                 SELECT 
                     A.ApplicationID, A.Status, A.AppliedAt,
                     J.JobID, J.JobTitle, J.Location, J.JobType, J.SalaryRange,
-                    C.CompanyName, C.LogoURL
+                    C.CompanyName, C.LogoURL, C.CompanyID
                 FROM Applications A
                 JOIN Jobs J ON A.JobID = J.JobID
                 JOIN Companies C ON J.CompanyID = C.CompanyID

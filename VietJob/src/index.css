@@ -16,12 +16,16 @@
   --social-bg: rgba(244, 243, 236, 0.5);
   --shadow: rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  /* ── FONT DUY NHẤT CHO TOÀN DỰ ÁN ── */
+  --font: 'Be Vietnam Pro', 'Segoe UI', system-ui, sans-serif;
+  --sans: var(--font);
+  --heading: var(--font);
   --mono: ui-monospace, Consolas, monospace;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.6;
+  letter-spacing: 0.1px;
   color-scheme: light dark;
   color: var(--text);
   background: var(--bg);
@@ -58,8 +62,14 @@
   }
 }
 
-/* 5. Các style tùy chỉnh khác */
-body {
+/* ── GLOBAL FONT RESET ──
+   Đảm bảo mọi element kể cả inline style đều dùng đúng font */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body, input, button, select, textarea, table {
+  font-family: 'Be Vietnam Pro', 'Segoe UI', system-ui, sans-serif !important;
   margin: 0;
 }
 

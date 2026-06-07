@@ -139,9 +139,9 @@ const updateCompanyByEmployer = async (req, res) => {
             .input('country', sql.NVarChar, country || null)
             .input('workingTime', sql.NVarChar, workingTime || null)
             .input('averageSalary', sql.NVarChar, averageSalary || null)
-            .input('longDescription', sql.NVarChar, longDescription || null)
+            .input('longDescription', sql.NVarChar(sql.MAX), longDescription || null)
             .input('hotline', sql.NVarChar, hotline || null)
-            .input('officePhotos', sql.NVarChar, officePhotos || null)
+            .input('officePhotos', sql.NVarChar(sql.MAX), officePhotos || null)
             .query(`
                 UPDATE Companies 
                 SET CompanyName = @companyName,

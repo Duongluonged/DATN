@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const companyController = require('../controllers/companyController');
-const jobController = require('../controllers/jobController');
+const jobController = require('../controllers/Jobcontroller');
 
 // Định nghĩa đường dẫn
 router.get('/top-companies', companyController.getTopCompanies);

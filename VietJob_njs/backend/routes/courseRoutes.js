@@ -4,8 +4,16 @@ const {
     getCoursesByEmployer,
     createCourse,
     updateCourse,
-    deleteCourse
+    deleteCourse,
+    getAllCourses,
+    updateCourseStatus
 } = require('../controllers/courseController');
+
+// Lấy toàn bộ danh sách khóa học cho Admin
+router.get('/', getAllCourses);
+
+// Admin duyệt/cập nhật trạng thái khóa học
+router.put('/:courseId/status', updateCourseStatus);
 
 // Lấy danh sách: GET /api/courses/employer/:userId?trangThai=Nháp
 router.get('/employer/:userId', getCoursesByEmployer);

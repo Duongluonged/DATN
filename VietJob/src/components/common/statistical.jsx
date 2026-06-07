@@ -1,12 +1,44 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
+// Hàm format số đẹp: 1500 → "1.5k", 25 → "25"
+const formatNumber = (n) => {
+  if (!n || n === 0) return '0';
+  if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (n >= 1000)    return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+  return n.toString();
+};
 
 const Stats = () => {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    axios.get('http://localhost:5000/api/admin/stats')
+      .then(res => setStats(res.data))
+      .catch(err => console.error('Lỗi lấy stats:', err))
+      .finally(() => setLoading(false));
+  }, []);
+
   const statData = [
-    { number: "2,400+", label: "VIỆC LÀM MỚI" },
-    { number: "850+", label: "DOANH NGHIỆP" },
-    { number: "15k+", label: "NGƯỜI DÙNG NGÀY" },
-    { number: "$4.5k", label: "LƯƠNG TB" },
+    {
+      number: stats ? formatNumber(stats.totalJobs) + '+' : '...',
+      label: 'VIỆC LÀM MỚI',
+    },
+    {
+      number: stats ? formatNumber(stats.totalCompanies) + '+' : '...',
+      label: 'DOANH NGHIỆP',
+    },
+    {
+      number: stats ? formatNumber(stats.totalUsers) + '+' : '...',
+      label: 'NGƯỜI DÙNG',
+    },
+    {
+      number: stats ? formatNumber(stats.totalCourses) + '+' : '...',
+      label: 'KHOÁ HỌC',
+    },
   ];
+
 
   return (
     <section className="w-full bg-[#f0f2f5] py-16 px-4">
@@ -15,7 +47,7 @@ const Stats = () => {
           {statData.map((stat, index) => (
             <div key={index} className="flex flex-col items-center text-center">
               {/* Con số nổi bật màu xanh */}
-              <h2 className="text-3xl md:text-4xl font-extrabold text-[#3BA3F2] mb-2 tracking-tight">
+              <h2 className={`text-3xl md:text-4xl font-extrabold text-[#3BA3F2] mb-2 tracking-tight transition-all duration-500 ${loading ? 'opacity-40 animate-pulse' : 'opacity-100'}`}>
                 {stat.number}
               </h2>
               {/* Chữ mô tả nhỏ phía dưới */}
