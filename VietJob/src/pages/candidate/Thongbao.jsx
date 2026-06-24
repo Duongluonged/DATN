@@ -45,8 +45,8 @@ const TYPE_CONFIG = {
 };
 
 const TABS = [
-  { key: "all",    label: "Tất cả" },
-  { key: "job",    label: "Việc làm mới" },
+  { key: "all", label: "Tất cả" },
+  { key: "job", label: "Việc làm mới" },
   { key: "invite", label: "Lời mời" },
   { key: "system", label: "Hệ thống" },
 ];
@@ -57,9 +57,9 @@ const Thongbao = () => {
   const userId = user?.id;
 
   const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading]             = useState(true);
-  const [activeTab, setActiveTab]         = useState("all");
-  const [markingAll, setMarkingAll]       = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("all");
+  const [markingAll, setMarkingAll] = useState(false);
 
   // Fetch thông báo từ API
   const fetchNotifications = useCallback(async (type = "all") => {
@@ -158,11 +158,10 @@ const Thongbao = () => {
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`px-5 py-2 text-[13px] font-semibold rounded-lg transition-all ${
-                  activeTab === tab.key
+                className={`px-5 py-2 text-[13px] font-semibold rounded-lg transition-all ${activeTab === tab.key
                     ? "bg-[#3B82F6] text-white shadow-md"
                     : "text-[#64748B] hover:bg-white/70"
-                }`}
+                  }`}
               >
                 {tab.label}
               </button>
@@ -247,26 +246,7 @@ const Thongbao = () => {
             </div>
           )}
 
-          {/* ── Professional Tip Banner ── */}
-          <div className="mt-10 bg-gradient-to-r from-[#1E40AF] to-[#3B82F6] rounded-[24px] p-8 text-white relative overflow-hidden shadow-lg">
-            <div className="relative z-10 max-w-lg">
-              <span className="bg-white/20 px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider mb-4 inline-block">
-                Mẹo nghề nghiệp
-              </span>
-              <h2 className="text-[22px] font-bold mb-3 leading-tight">
-                Hoàn thiện hồ sơ để nhận thông báo chính xác hơn
-              </h2>
-              <p className="text-[14px] text-blue-100 mb-6 opacity-90 leading-relaxed">
-                Các ứng viên có hồ sơ đầy đủ 100% nhận được lời mời phỏng vấn cao gấp 3 lần bình thường.
-              </p>
-              <button className="bg-white text-[#2563EB] px-8 py-3 rounded-xl font-bold text-[14px] hover:bg-blue-50 transition-all shadow-md">
-                Cập nhật ngay
-              </button>
-            </div>
-            <div className="absolute right-[-20px] bottom-[-20px] opacity-10">
-              <Briefcase size={250} strokeWidth={1} />
-            </div>
-          </div>
+
         </main>
       </div>
     </div>

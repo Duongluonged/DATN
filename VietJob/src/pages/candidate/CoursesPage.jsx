@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../../components/common/Navbar';
-import { 
-  BookOpen, Code, Cpu, Smartphone, Palette, Sparkles, 
+import {
+  BookOpen, Code, Cpu, Smartphone, Palette, Sparkles,
   Star, Clock, BookOpenCheck, User, Search, Award, Filter, ArrowRight,
-  CreditCard, AlertCircle, X, Mail, CheckCircle2, Loader2
+  CreditCard, AlertCircle, X, Mail, CheckCircle2, Loader2, Heart
 } from 'lucide-react';
 
 const mockCourses = [
@@ -41,7 +41,7 @@ const mockCourses = [
     instRole: 'Senior Frontend Developer',
     bgGradient: 'from-sky-600 to-indigo-500'
   },
-  
+
   // Lập trình Mobile
   {
     id: 'mobile-1',
@@ -169,7 +169,7 @@ export default function CoursesPage() {
   const [selectedCourseForCheckout, setSelectedCourseForCheckout] = useState(null);
   const [candidateBalance, setCandidateBalance] = useState(0);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
-  
+
   // Dynamic VietQR & Webhook mock states
   const [currentTxnId, setCurrentTxnId] = useState('');
   const [copiedField, setCopiedField] = useState(null); // 'stk' | 'noidung' | null
@@ -226,11 +226,11 @@ export default function CoursesPage() {
         if (res.ok) {
           const dbData = await res.json();
           const activeDBCourses = dbData.filter(c => c.status === 'Đang bán' || c.status === 'Đang mở' || c.status === 'Đang hoạt động' || !c.status);
-          
+
           const mappedDBCourses = activeDBCourses.map((c, index) => {
             const title = c.name || c.TieuDe || '';
             const desc = c.MoTa || c.moTa || 'Chương trình đào tạo công nghệ chất lượng cao, trang bị kiến thức thực tế giúp bạn nhanh chóng gia nhập thị trường việc làm.';
-            
+
             let cat = 'web';
             const titleLower = title.toLowerCase();
             if (titleLower.includes('mobile') || titleLower.includes('flutter') || titleLower.includes('react native') || titleLower.includes('android') || titleLower.includes('ios')) {
@@ -304,7 +304,7 @@ export default function CoursesPage() {
         showToast("Bạn đã đăng ký theo học khóa học này rồi!", true);
         return;
       }
-      
+
       // Remove from wishlist
       try {
         const res = await fetch('http://localhost:5000/api/user-courses/remove', {
@@ -330,7 +330,7 @@ export default function CoursesPage() {
           body: JSON.stringify({ userId: parsedUser.id, courseId: String(courseId) })
         });
         if (res.ok) {
-          showToast("Đã thêm vào lộ trình học tập quan tâm thành công! ❤️");
+          showToast("Đã thêm vào lộ trình học tập quan tâm thành công!");
           fetchUserCourses(parsedUser.id);
         } else {
           const errData = await res.json();
@@ -400,8 +400,8 @@ export default function CoursesPage() {
       const res = await fetch('http://localhost:5000/api/user-courses/enroll', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          userId: user.id, 
+        body: JSON.stringify({
+          userId: user.id,
           courseId: String(selectedCourseForCheckout.id),
           isBankTransfer: true,
           txnId: currentTxnId
@@ -440,9 +440,9 @@ export default function CoursesPage() {
   // Filter courses based on activeTab and searchQuery
   const filteredCourses = courses.filter(c => {
     const matchesTab = activeTab === 'all' || c.category === activeTab;
-    const matchesSearch = c.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          c.desc.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          c.instructor.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.desc.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.instructor.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesTab && matchesSearch;
   });
 
@@ -458,14 +458,14 @@ export default function CoursesPage() {
       <section className="relative w-full bg-gradient-to-r from-blue-700 via-indigo-800 to-blue-900 text-white py-16 px-6 overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500 rounded-full opacity-10 blur-3xl" />
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-cyan-400 rounded-full opacity-10 blur-3xl" />
-        
+
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-10 relative z-10">
           <div className="flex-1 space-y-6 text-center md:text-left">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-600/30 border border-blue-400/20 text-xs font-semibold text-blue-200 tracking-wide">
               <Sparkles className="w-3.5 h-3.5" />
               Nâng cấp Kỹ năng - Nâng tầm Sự nghiệp
             </span>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-tight">
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-tight text-white">
               Học Công nghệ <br />
               <span className="bg-gradient-to-r from-cyan-300 to-emerald-300 bg-clip-text text-transparent">
                 Chuẩn Thị Trường Việc Làm
@@ -485,7 +485,7 @@ export default function CoursesPage() {
               </div>
             </div>
           </div>
-          
+
           <div className="w-full max-w-md shrink-0 bg-white/10 border border-white/20 rounded-3xl p-6 backdrop-blur-md shadow-2xl relative">
             <div className="absolute -top-4 -right-4 w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center shadow-lg font-bold transform rotate-12 text-white">
               NEW
@@ -503,8 +503,8 @@ export default function CoursesPage() {
                   <span className="block font-bold text-white text-base">Học bổng VietJob Tech</span>
                   <span className="text-xs text-gray-300">Hỗ trợ 50% học phí</span>
                 </div>
-                <button 
-                  onClick={() => handleTabChange('data-ai')} 
+                <button
+                  onClick={() => handleTabChange('data-ai')}
                   className="px-4 py-2 bg-white text-indigo-900 rounded-xl font-bold text-xs hover:bg-indigo-50 transition-colors"
                 >
                   Khám phá
@@ -518,7 +518,7 @@ export default function CoursesPage() {
       {/* Main Navigation & Filter Panel */}
       <section className="w-full bg-white border-b border-gray-100 shadow-sm sticky top-[72px] z-40">
         <div className="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
-          
+
           <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
             {Object.keys(categoriesMap).map((key) => (
               <button
@@ -526,8 +526,8 @@ export default function CoursesPage() {
                 onClick={() => handleTabChange(key)}
                 className={`
                   flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 active:scale-95
-                  ${activeTab === key 
-                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20' 
+                  ${activeTab === key
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }
                 `}
@@ -556,7 +556,7 @@ export default function CoursesPage() {
 
       {/* Course List Layout */}
       <main className="max-w-6xl w-full mx-auto px-4 py-12 flex-grow">
-        
+
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-extrabold text-gray-800 tracking-tight flex items-center gap-2">
@@ -567,7 +567,7 @@ export default function CoursesPage() {
               Hiển thị <span className="font-bold text-gray-700">{filteredCourses.length}</span> khoá học phù hợp
             </p>
           </div>
-          
+
           <div className="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider bg-gray-100 px-3.5 py-1.5 rounded-lg">
             <Filter className="w-3.5 h-3.5" />
             Lọc & Sắp xếp
@@ -585,8 +585,8 @@ export default function CoursesPage() {
             <p className="text-gray-500 text-sm mt-2 max-w-md mx-auto">
               Không tìm thấy khoá học nào khớp với từ khoá tìm kiếm của bạn hoặc mục này tạm thời chưa được đăng tải.
             </p>
-            <button 
-              onClick={() => { setSearchQuery(''); handleTabChange('all'); }} 
+            <button
+              onClick={() => { setSearchQuery(''); handleTabChange('all'); }}
               className="mt-6 px-5 py-2.5 bg-blue-600 text-white rounded-full font-bold text-sm hover:bg-blue-700 transition-colors"
             >
               Xem tất cả khoá học
@@ -600,18 +600,18 @@ export default function CoursesPage() {
               const isEnrolled = learningRecord && learningRecord.Status === 'Đang theo học';
 
               return (
-                <div 
+                <div
                   key={c.id}
                   className="group bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full"
                 >
                   {/* Course Header Banner / Visual Gradient */}
                   <div className={`h-40 bg-gradient-to-br ${c.bgGradient} relative p-6 flex flex-col justify-between shrink-0`}>
-                    
+
                     <div className="flex justify-between items-start w-full">
                       <span className="text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 rounded bg-white/20 text-white backdrop-blur-sm">
                         {categoriesMap[c.category]?.label}
                       </span>
-                      
+
                       {/* Heart Wishlist icon */}
                       <button
                         onClick={(e) => { e.preventDefault(); handleWishlist(c.id); }}
@@ -619,19 +619,13 @@ export default function CoursesPage() {
                         title={isWishlisted ? "Gỡ khỏi lộ trình quan tâm" : "Thêm vào lộ trình quan tâm"}
                         disabled={isEnrolled}
                       >
-                        <svg 
-                          className={`w-4.5 h-4.5 transition-colors ${
-                            isWishlisted ? 'fill-red-500 text-red-500' : isEnrolled ? 'fill-emerald-400 text-emerald-400 opacity-60' : 'text-white hover:text-red-300'
-                          }`}
-                          fill={isWishlisted || isEnrolled ? 'currentColor' : 'none'}
-                          stroke="currentColor" 
-                          viewBox="0 0 24 24"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                        </svg>
+                        <Heart
+                          className={`w-4.5 h-4.5 transition-colors ${isWishlisted ? 'fill-red-500 text-red-500' : isEnrolled ? 'fill-emerald-400 text-emerald-400 opacity-60' : 'text-white hover:text-red-300'
+                            }`}
+                        />
                       </button>
                     </div>
-                    
+
                     <div className="absolute right-6 bottom-4 opacity-15 transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
                       {c.category === 'web' && <Code className="w-24 h-24 text-white" />}
                       {c.category === 'mobile' && <Smartphone className="w-24 h-24 text-white" />}
@@ -713,13 +707,12 @@ export default function CoursesPage() {
                         </span>
                       </div>
 
-                      <button 
+                      <button
                         onClick={() => handleEnroll(c)}
-                        className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-xs transition-all active:scale-95 group-hover:shadow-lg ${
-                          isEnrolled 
-                            ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/15'
-                            : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/15'
-                        }`}
+                        className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-xs transition-all active:scale-95 group-hover:shadow-lg ${isEnrolled
+                          ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/15'
+                          : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/15'
+                          }`}
                       >
                         {isEnrolled ? (
                           <>
@@ -778,10 +771,9 @@ export default function CoursesPage() {
 
       {/* Custom Toast Alert */}
       {toast && (
-        <div className={`fixed bottom-8 right-8 text-white px-6 py-3.5 rounded-xl text-sm font-semibold shadow-2xl z-[9999] flex items-center gap-2 animate-bounce ${
-          toast.success ? 'bg-emerald-600' : 'bg-red-600'
-        }`}>
-          {toast.success ? '✅' : '⚠️'}
+        <div className={`fixed bottom-8 right-8 text-white px-6 py-3.5 rounded-xl text-sm font-semibold shadow-2xl z-[9999] flex items-center gap-2 animate-bounce ${toast.success ? 'bg-emerald-600' : 'bg-red-600'
+          }`}>
+          {toast.success ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
           <span>{toast.message}</span>
         </div>
       )}
@@ -789,13 +781,12 @@ export default function CoursesPage() {
       {/* CHECKOUT PAYMENT CONFIRMATION MODAL */}
       {selectedCourseForCheckout && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
-          <div className={`bg-white rounded-3xl overflow-hidden shadow-2xl border border-gray-100 flex flex-col relative transition-all duration-300 ${
-            paymentStep === 'checkout' ? 'max-w-4xl w-full' : 'max-w-md w-full'
-          }`}>
-            
+          <div className={`bg-white rounded-3xl overflow-hidden shadow-2xl border border-gray-100 flex flex-col relative transition-all duration-300 ${paymentStep === 'checkout' ? 'max-w-4xl w-full' : 'max-w-md w-full'
+            }`}>
+
             {/* Close button (only visible in checkout step) */}
             {paymentStep === 'checkout' && (
-              <button 
+              <button
                 onClick={() => setSelectedCourseForCheckout(null)}
                 className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-2 rounded-full z-10"
               >
@@ -815,16 +806,16 @@ export default function CoursesPage() {
             {/* STEP 1: QR & INFO CHECKOUT */}
             {paymentStep === 'checkout' && (
               <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-gray-100">
-                
+
                 {/* Left Column: Bank QR Code Sheet */}
                 <div className="flex-1 p-6 md:p-8 bg-slate-50/50 flex flex-col items-center justify-center space-y-6">
                   <div className="text-center">
                     <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2">Mã QR Thanh Toán (VietQR)</span>
-                    
+
                     {/* Simulated mobile card for QR */}
                     <div className="bg-white p-5 rounded-3xl shadow-md border border-gray-100 relative group max-w-[260px] mx-auto">
                       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-50/10 opacity-0 group-hover:opacity-100 rounded-3xl transition-opacity duration-300 pointer-events-none" />
-                      
+
                       {/* MB Bank Badge on QR */}
                       <div className="flex justify-between items-center mb-3">
                         <span className="text-[9px] font-black text-blue-800 tracking-wider">MB BANK</span>
@@ -832,21 +823,21 @@ export default function CoursesPage() {
                       </div>
 
                       {/* Generates high-fidelity QR image including Bank STK and transfer details */}
-                      <img 
+                      <img
                         src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
                           `Ngân hàng: MB Bank\nSTK: 0987654321\nTên: VIETJOB ACADEMY\nSố tiền: ${selectedCourseForCheckout.price}\nNội dung: USER_${user?.id}_TXN_${currentTxnId}`
                         )}`}
                         alt="Mã QR Chuyển Khoản"
                         className="w-48 h-48 mx-auto rounded-xl border border-gray-50 relative z-10"
                       />
-                      
+
                       <div className="text-[10px] text-slate-400 font-bold mt-3">Quét mã bằng App Ngân hàng bất kỳ</div>
                     </div>
                   </div>
 
                   {/* Bank info grid with Copy action buttons */}
                   <div className="w-full space-y-3 bg-white rounded-2xl p-4 border border-gray-100 text-sm">
-                    
+
                     <div className="flex justify-between items-center">
                       <span className="text-gray-400 font-semibold text-xs">Ngân hàng thụ hưởng:</span>
                       <span className="text-slate-800 font-extrabold text-xs">MB BANK (Quân Đội)</span>
@@ -895,7 +886,7 @@ export default function CoursesPage() {
 
                 {/* Right Column: Checkout Instruction & Summary */}
                 <div className="flex-1 p-6 md:p-8 flex flex-col justify-between space-y-6">
-                  
+
                   <div className="space-y-4">
                     {/* Course Summary Item */}
                     <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
@@ -913,12 +904,12 @@ export default function CoursesPage() {
                     {/* Step Guideline */}
                     <div className="space-y-3">
                       <h5 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Các bước thực hiện:</h5>
-                      
+
                       <div className="flex gap-2.5 items-start text-xs text-gray-600 leading-relaxed">
                         <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">1</span>
                         <p>Mở ứng dụng ngân hàng di động bất kỳ trên điện thoại của bạn.</p>
                       </div>
-                      
+
                       <div className="flex gap-2.5 items-start text-xs text-gray-600 leading-relaxed">
                         <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">2</span>
                         <p>Chọn chức năng <strong>Quét mã QR</strong> và quét ảnh QR ở cột bên trái.</p>
@@ -963,12 +954,12 @@ export default function CoursesPage() {
             {/* STEP 2: VERIFYING MOCK BANK WEBHOOK (5-SECOND COUNTDOWN) */}
             {paymentStep === 'verifying' && (
               <div className="p-8 text-center space-y-6 flex flex-col items-center justify-center">
-                
+
                 {/* Visual loading ring */}
                 <div className="relative w-28 h-28 flex items-center justify-center">
                   <div className="absolute inset-0 border-4 border-slate-100 rounded-full" />
                   <div className="absolute inset-0 border-4 border-blue-600 rounded-full border-t-transparent animate-spin" />
-                  
+
                   {/* Countdown number indicator */}
                   <div className="text-3xl font-black text-blue-600 animate-pulse">
                     {countdown}s
@@ -1007,7 +998,7 @@ export default function CoursesPage() {
             {/* STEP 3: TRANSACTION SUCCESS & CONFETTI TICKET */}
             {paymentStep === 'success' && (
               <div className="p-8 text-center space-y-6 flex flex-col items-center justify-center">
-                
+
                 {/* Success Animation Tick */}
                 <div className="w-20 h-20 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-500 shadow-xl shadow-emerald-500/10 animate-bounce">
                   <CheckCircle2 className="w-10 h-10" />

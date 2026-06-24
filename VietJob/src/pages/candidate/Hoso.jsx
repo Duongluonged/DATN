@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import Navbar from "../../components/common/Navbar";
 import Sidebar from "../../components/common/Candidate_c/Sidebar";
-import { Mail, Phone, MapPin, Pen, GraduationCap, Briefcase, Plus, Loader2, X, Save, Trash2 } from "lucide-react";
+import { Mail, Phone, MapPin, Pen, GraduationCap, Briefcase, Plus, Loader2, X, Save, Trash2, Camera, Lightbulb } from "lucide-react";
 
 const API = "http://localhost:5000/api";
 
@@ -148,6 +148,9 @@ export default function Hoso() {
   const [userId, setUserId] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [avatarUrl, setAvatarUrl] = useState(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const avatarInputRef = useRef(null);
 
   // Modal state
   const [modal, setModal] = useState(null); // 'bio' | 'edu' | 'exp' | 'skill'
@@ -194,6 +197,7 @@ export default function Hoso() {
         ]);
 
         setProfile(profileRes.data);
+        setAvatarUrl(profileRes.data?.AvatarUrl || null);
         const bioVal = cvRes.data?.bio || "";
         setBio(bioVal);
         setBioForm(bioVal);
@@ -214,6 +218,45 @@ export default function Hoso() {
   const avatarText = profile?.Username
     ? profile.Username.substring(0, 2).toUpperCase()
     : "??";
+
+  // ── Upload Avatar ──
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      alert("Vui lòng chọn file ảnh (jpg, png, webp...)");
+      return;
+    }
+    setAvatarUploading(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        try {
+          // 1. Upload file lên server
+          const uploadRes = await axios.post(`${API}/upload`, {
+            base64: ev.target.result,
+            fileName: file.name,
+          });
+          const newAvatarUrl = uploadRes.data.url;
+
+          // 2. Lưu URL vào profile
+          await axios.put(`${API}/auth/profile/${userId}`, { avatarUrl: newAvatarUrl });
+
+          setAvatarUrl(newAvatarUrl);
+          window.dispatchEvent(new CustomEvent('avatarUpdated', { detail: newAvatarUrl }));
+        } catch (err) {
+          console.error("Lỗi upload avatar:", err);
+          alert("Không thể tải ảnh lên. Vui lòng thử lại.");
+        } finally {
+          setAvatarUploading(false);
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      console.error(err);
+      setAvatarUploading(false);
+    }
+  };
 
   const contactItems = [
     { Icon: Mail, value: profile?.Email || "Chưa cập nhật" },
@@ -314,8 +357,50 @@ export default function Hoso() {
           {/* Profile header */}
           <div style={{ background: "#fff", borderBottom: "1px solid #e5e7eb", padding: "18px 24px 14px", display: "flex", alignItems: "flex-start", gap: 18 }}>
             <div style={{ position: "relative", flexShrink: 0 }}>
-              <div style={{ width: 72, height: 72, borderRadius: 14, background: "linear-gradient(135deg,#93c5fd,#6366f1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, fontWeight: 800, color: "#fff", border: "3px solid #fff", boxShadow: "0 2px 12px rgba(0,0,0,.12)" }}>
-                {loading ? <Loader2 size={24} style={{ animation: "spin 1s linear infinite" }} /> : avatarText}
+              {/* Hidden file input */}
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={handleAvatarUpload}
+              />
+              {/* Avatar clickable */}
+              <div
+                onClick={() => !avatarUploading && avatarInputRef.current?.click()}
+                style={{
+                  width: 72, height: 72, borderRadius: 14,
+                  background: avatarUrl ? "transparent" : "linear-gradient(135deg,#93c5fd,#6366f1)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 28, fontWeight: 800, color: "#fff",
+                  border: "3px solid #fff", boxShadow: "0 2px 12px rgba(0,0,0,.12)",
+                  cursor: "pointer", overflow: "hidden", position: "relative",
+                }}
+                title="Nhấn để thay đổi ảnh đại diện"
+              >
+                {loading ? (
+                  <Loader2 size={24} style={{ animation: "spin 1s linear infinite" }} />
+                ) : avatarUploading ? (
+                  <Loader2 size={24} style={{ animation: "spin 1s linear infinite" }} />
+                ) : avatarUrl ? (
+                  <img src={avatarUrl} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : (
+                  avatarText
+                )}
+                {/* Camera hover overlay */}
+                {!loading && !avatarUploading && (
+                  <div style={{
+                    position: "absolute", inset: 0, background: "rgba(0,0,0,0.45)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    opacity: 0, transition: "opacity .2s",
+                    borderRadius: 11,
+                  }}
+                    onMouseEnter={(e) => e.currentTarget.style.opacity = 1}
+                    onMouseLeave={(e) => e.currentTarget.style.opacity = 0}
+                  >
+                    <Camera size={20} color="#fff" />
+                  </div>
+                )}
               </div>
               <div style={{ width: 12, height: 12, background: "#10b981", border: "2px solid #fff", borderRadius: "50%", position: "absolute", bottom: 4, right: 4 }} />
             </div>
@@ -525,7 +610,7 @@ export default function Hoso() {
               style={inputStyle} />
           </Field>
           <p style={{ fontSize: 11, color: "#9ca3af", marginBottom: 14 }}>
-            💡 Nhập một kỹ năng mỗi lần, nhấn Enter hoặc Lưu để thêm.
+            <span className="flex items-center gap-1"><Lightbulb size={12}/> Nhập một kỹ năng mỗi lần, nhấn Enter hoặc Lưu để thêm.</span>
           </p>
           <SaveBtn onClick={saveSkill} />
         </Modal>

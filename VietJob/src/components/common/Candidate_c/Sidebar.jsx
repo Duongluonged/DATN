@@ -117,6 +117,19 @@ function Sidebar() {
 
   const username = profile?.Username || "Ứng viên";
   const email = profile?.Email || "";
+  
+  const [avatarUrl, setAvatarUrl] = useState(null);
+  
+  useEffect(() => {
+    if (profile?.AvatarUrl) setAvatarUrl(profile.AvatarUrl);
+  }, [profile]);
+
+  useEffect(() => {
+    const handler = (e) => setAvatarUrl(e.detail);
+    window.addEventListener('avatarUpdated', handler);
+    return () => window.removeEventListener('avatarUpdated', handler);
+  }, []);
+
   const avatarName = String(username).substring(0, 2).toUpperCase();
 
   return (
@@ -124,8 +137,13 @@ function Sidebar() {
 
       {/* Avatar Section */}
       <div className="flex items-center gap-3 mb-10 p-2 border border-dashed border-blue-300 rounded-lg">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shadow-sm flex-shrink-0">
-          {avatarName}
+        <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm flex-shrink-0 overflow-hidden"
+          style={{ background: avatarUrl ? 'transparent' : 'linear-gradient(135deg, #2563eb, #4f46e5)' }}
+        >
+          {avatarUrl
+            ? <img src={avatarUrl} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            : avatarName
+          }
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-bold text-gray-800 truncate" title={username}>

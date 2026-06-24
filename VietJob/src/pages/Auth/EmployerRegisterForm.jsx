@@ -15,68 +15,21 @@ const INDUSTRIES = [
 
 const COMPANY_SIZES = ["1–10 người", "11–50 người", "51–200 người", "200+ người"];
 
+import { User, Mail, Building, Lock, Phone, Globe, MapPin, Users, Tag, FileText, AlertTriangle } from "lucide-react";
+
 /* ─── icons (inline SVG) ─────────────────────────────────── */
-const UserIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
-  </svg>
-);
-const MailIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-  </svg>
-);
-const BuildingIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="2" y="3" width="20" height="18" rx="1" /><path d="M9 3v18M15 3v18M3 9h18M3 15h18" />
-  </svg>
-);
-const LockIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
-  </svg>
-);
-const PhoneIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.81a16 16 0 0 0 6 6l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16z" />
-  </svg>
-);
-const GlobeIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" />
-    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-  </svg>
-);
-const MapPinIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
-  </svg>
-);
-const UsersIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
-    <path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
-  </svg>
-);
-const TagIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" />
-  </svg>
-);
-const FileTextIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-    <polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" />
-  </svg>
-);
-const GoogleIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24">
-    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" />
-    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-  </svg>
-);
+const iconProps = { size: 16, color: "#94a3b8" };
+const UserIcon = () => <User {...iconProps} />;
+const MailIcon = () => <Mail {...iconProps} />;
+const BuildingIcon = () => <Building {...iconProps} />;
+const LockIcon = () => <Lock {...iconProps} />;
+const PhoneIcon = () => <Phone {...iconProps} />;
+const GlobeIcon = () => <Globe {...iconProps} />;
+const MapPinIcon = () => <MapPin {...iconProps} />;
+const UsersIcon = () => <Users {...iconProps} />;
+const TagIcon = () => <Tag {...iconProps} />;
+const FileTextIcon = () => <FileText {...iconProps} />;
+const GoogleIcon = () => <Globe size={18} color="#4285F4" />;
 
 export default function EmployerRegisterForm() {
   const [form, setForm] = useState({
@@ -204,9 +157,9 @@ export default function EmployerRegisterForm() {
 
                   {/* avatars row */}
                   <div style={styles.avatarRow}>
-                    {["👤", "👤", "👤"].map((_, i) => (
-                      <div key={i} style={{ ...styles.avatar, marginLeft: i === 0 ? 0 : -10 }}>
-                        <span style={{ fontSize: 18 }}>👤</span>
+                    {[1, 2, 3].map((_, i) => (
+                      <div key={i} style={{ width: 40, height: 40, borderRadius: "50%", background: c.border, border: `2px solid ${c.white}`, display: "flex", alignItems: "center", justifyContent: "center", marginLeft: i > 0 ? -12 : 0, zIndex: 3 - i }}>
+                        <UsersIcon size={18} color={c.blue} />
                       </div>
                     ))}
                     <span style={styles.avatarLabel}>500+ doanh nghiệp đã tham gia</span>
@@ -223,7 +176,7 @@ export default function EmployerRegisterForm() {
               </p>
 
               {serverError && (
-                <div style={styles.errorBanner}>⚠️ {serverError}</div>
+                <div style={styles.errorBanner}><span style={{display: 'flex', alignItems: 'center', gap: 4}}><AlertTriangle size={14}/> {serverError}</span></div>
               )}
 
               <form onSubmit={handleSubmit} noValidate style={{ marginTop: 20 }}>

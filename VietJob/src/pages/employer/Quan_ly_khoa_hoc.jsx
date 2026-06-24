@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { BookOpen, GraduationCap, Clock, Book, User, Banknote, Edit3, Trash2, CheckCircle2, AlertTriangle, Plus } from "lucide-react";
 import Topbar_empl from "../../components/common/Employer_c/Topbar_empl.jsx";
 import Sidebar_empl from "../../components/common/Employer_c/Sidebar_empl.jsx";
 
@@ -184,7 +185,7 @@ export default function Quan_Ly_Khoa_Hoc() {
                 throw new Error(errData.message || "Failed to save");
             }
 
-            showToast(modalMode === "create" ? "🎉 Đăng khóa học mới thành công!" : "✏️ Cập nhật khóa học thành công!");
+            showToast(modalMode === "create" ? "Đăng khóa học mới thành công!" : "Cập nhật khóa học thành công!");
             setShowModal(false);
             fetchCourses();
         } catch (error) {
@@ -209,7 +210,7 @@ export default function Quan_Ly_Khoa_Hoc() {
                 throw new Error(errData.message || "Failed to delete");
             }
 
-            showToast("🗑️ Đã xóa khóa học thành công!");
+            showToast("Đã xóa khóa học thành công!");
             fetchCourses();
         } catch (error) {
             console.error("Lỗi xóa khóa học:", error);
@@ -247,7 +248,7 @@ export default function Quan_Ly_Khoa_Hoc() {
                             fontSize: 13.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
                             boxShadow: "0 4px 12px rgba(37,99,235,0.2)"
                         }}>
-                            <span>+</span> Đăng khóa học mới
+                            <Plus size={16} /> Đăng khóa học mới
                         </button>
                     </div>
 
@@ -281,7 +282,7 @@ export default function Quan_Ly_Khoa_Hoc() {
                         </div>
                     ) : filteredCourses.length === 0 ? (
                         <div style={{ textAlign: "center", padding: "60px 24px", background: "#fff", borderRadius: 14, border: "1px solid #e8eaf0" }}>
-                            <div style={{ fontSize: 48, marginBottom: 12 }}>📚</div>
+                            <div style={{ fontSize: 48, marginBottom: 12, display: 'flex', justifyContent: 'center' }}><BookOpen size={48} className="text-gray-400" /></div>
                             <div style={{ fontSize: 16, fontWeight: 600, color: "#555" }}>Không có khóa học nào để hiển thị</div>
                             <p style={{ fontSize: 13, color: "#888", margin: "6px 0 16px" }}>Hãy bắt đầu bằng việc đăng khóa học đầu tiên của bạn để tiếp cận học viên!</p>
                             <button onClick={handleOpenCreate} style={{ padding: "8px 18px", borderRadius: 8, border: "none", background: "#2563eb", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
@@ -302,7 +303,7 @@ export default function Quan_Ly_Khoa_Hoc() {
                                         onMouseLeave={e => e.currentTarget.style.boxShadow = "none"}
                                     >
                                         <div style={{ width: 110, height: 72, borderRadius: 8, flexShrink: 0, background: "linear-gradient(135deg, #1e3a8a, #3b82f6)", position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                            <span style={{ fontSize: 28, opacity: 0.8 }}>🎓</span>
+                                            <span style={{ display: 'flex' }}><GraduationCap size={28} className="text-white opacity-80" /></span>
                                         </div>
                                         <div style={{ flex: 1, minWidth: 0 }}>
                                             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
@@ -315,13 +316,13 @@ export default function Quan_Ly_Khoa_Hoc() {
                                                 {c.MoTa || "Chưa có mô tả ngắn gọn cho khóa học này."}
                                             </p>
                                             <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", fontSize: 11, color: "#888" }}>
-                                                <span>⏱️ {c.Duration || "45 giờ"}</span>
+                                                <span style={{display: 'flex', alignItems: 'center', gap: 4}}><Clock size={12}/> {c.Duration || "45 giờ"}</span>
                                                 <span>•</span>
-                                                <span>📚 {c.LecturesCount || 50} bài học</span>
+                                                <span style={{display: 'flex', alignItems: 'center', gap: 4}}><Book size={12}/> {c.LecturesCount || 50} bài học</span>
                                                 <span>•</span>
-                                                <span>👤 GV: {c.InstructorName || "Đỗ Phương Thảo"}</span>
+                                                <span style={{display: 'flex', alignItems: 'center', gap: 4}}><User size={12}/> GV: {c.InstructorName || "Đỗ Phương Thảo"}</span>
                                                 <span>•</span>
-                                                <span style={{ color: "#2563eb", fontWeight: 700 }}>💵 {c.Price ? c.Price.toLocaleString() : "0"}đ</span>
+                                                <span style={{ color: "#2563eb", fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}><Banknote size={12}/> {c.Price ? c.Price.toLocaleString() : "0"}đ</span>
                                             </div>
                                         </div>
                                         <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
@@ -330,14 +331,14 @@ export default function Quan_Ly_Khoa_Hoc() {
                                                 background: "#fff", color: "#555", cursor: "pointer", fontSize: 12.5, fontWeight: 600,
                                                 display: "flex", alignItems: "center", gap: 4
                                             }}>
-                                                ✏️ Sửa
+                                                <Edit3 size={14}/> Sửa
                                             </button>
                                             <button onClick={() => handleDeleteCourse(c.Id)} style={{
                                                 height: 32, padding: "0 12px", borderRadius: 8, border: "1px solid #fee2e2",
                                                 background: "#fef2f2", color: "#dc2626", cursor: "pointer", fontSize: 12.5, fontWeight: 600,
                                                 display: "flex", alignItems: "center", gap: 4
                                             }}>
-                                                🗑️ Xóa
+                                                <Trash2 size={14}/> Xóa
                                             </button>
                                         </div>
                                     </div>
@@ -366,7 +367,7 @@ export default function Quan_Ly_Khoa_Hoc() {
                             justifyContent: "space-between", alignItems: "center"
                         }}>
                             <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>
-                                {modalMode === "create" ? "📚 Đăng khóa học mới" : "✏️ Chỉnh sửa khóa học"}
+                                <span style={{display: 'flex', alignItems: 'center', gap: 6}}>{modalMode === "create" ? <><BookOpen size={20}/> Đăng khóa học mới</> : <><Edit3 size={20}/> Chỉnh sửa khóa học</>}</span>
                             </h3>
                             <button onClick={() => setShowModal(false)} style={{
                                 background: "rgba(255,255,255,0.2)", border: "none",
@@ -391,7 +392,7 @@ export default function Quan_Ly_Khoa_Hoc() {
                                         borderRadius: 8, padding: "10px 12px", fontSize: 13.5, outline: "none"
                                     }}
                                 />
-                                {formErrors.tieuDe && <span style={{ fontSize: 12, color: "#ef4444" }}>⚠️ {formErrors.tieuDe}</span>}
+                                {formErrors.tieuDe && <span style={{ fontSize: 12, color: "#ef4444", display: 'flex', alignItems: 'center', gap: 4 }}><AlertTriangle size={12}/> {formErrors.tieuDe}</span>}
                             </div>
 
                             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -446,7 +447,7 @@ export default function Quan_Ly_Khoa_Hoc() {
                                             borderRadius: 8, padding: "10px 12px", fontSize: 13.5, outline: "none"
                                         }}
                                     />
-                                    {formErrors.duration && <span style={{ fontSize: 12, color: "#ef4444" }}>⚠️ {formErrors.duration}</span>}
+                                    {formErrors.duration && <span style={{ fontSize: 12, color: "#ef4444", display: 'flex', alignItems: 'center', gap: 4 }}><AlertTriangle size={12}/> {formErrors.duration}</span>}
                                 </div>
                                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                                     <label style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>Số bài học <span style={{ color: "#ef4444" }}>*</span></label>
@@ -460,7 +461,7 @@ export default function Quan_Ly_Khoa_Hoc() {
                                             borderRadius: 8, padding: "10px 12px", fontSize: 13.5, outline: "none"
                                         }}
                                     />
-                                    {formErrors.lecturesCount && <span style={{ fontSize: 12, color: "#ef4444" }}>⚠️ {formErrors.lecturesCount}</span>}
+                                    {formErrors.lecturesCount && <span style={{ fontSize: 12, color: "#ef4444", display: 'flex', alignItems: 'center', gap: 4 }}><AlertTriangle size={12}/> {formErrors.lecturesCount}</span>}
                                 </div>
                             </div>
 
@@ -478,7 +479,7 @@ export default function Quan_Ly_Khoa_Hoc() {
                                             borderRadius: 8, padding: "10px 12px", fontSize: 13.5, outline: "none"
                                         }}
                                     />
-                                    {formErrors.instructorName && <span style={{ fontSize: 12, color: "#ef4444" }}>⚠️ {formErrors.instructorName}</span>}
+                                    {formErrors.instructorName && <span style={{ fontSize: 12, color: "#ef4444", display: 'flex', alignItems: 'center', gap: 4 }}><AlertTriangle size={12}/> {formErrors.instructorName}</span>}
                                 </div>
                                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                                     <label style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>Đơn vị / Vai trò giảng viên</label>
@@ -506,7 +507,7 @@ export default function Quan_Ly_Khoa_Hoc() {
                                             borderRadius: 8, padding: "10px 12px", fontSize: 13.5, outline: "none"
                                         }}
                                     />
-                                    {formErrors.price && <span style={{ fontSize: 12, color: "#ef4444" }}>⚠️ {formErrors.price}</span>}
+                                    {formErrors.price && <span style={{ fontSize: 12, color: "#ef4444", display: 'flex', alignItems: 'center', gap: 4 }}><AlertTriangle size={12}/> {formErrors.price}</span>}
                                 </div>
                                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                                     <label style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>Học phí gốc chưa giảm (đ)</label>
@@ -571,7 +572,7 @@ export default function Quan_Ly_Khoa_Hoc() {
                     boxShadow: "0 8px 24px rgba(0,0,0,0.15)", zIndex: 9999,
                     animation: "fadeIn 0.2s ease"
                 }}>
-                    {toast.success ? "✅" : "⚠️"} {toast.message}
+                    {toast.success ? <CheckCircle2 size={16}/> : <AlertTriangle size={16}/>} {toast.message}
                 </div>
             )}
         </div>

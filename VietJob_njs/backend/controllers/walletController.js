@@ -9,10 +9,10 @@ const initializeWalletDB = async () => {
         await pool.request().query(`
             IF NOT EXISTS (
                 SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS 
-                WHERE TABLE_NAME = 'Users' AND COLUMN_NAME = 'Balance'
+                WHERE TABLE_NAME = 'NguoiDung' AND COLUMN_NAME = 'SoDu'
             )
             BEGIN
-                ALTER TABLE Users ADD Balance INT NOT NULL DEFAULT 5000000; -- Tặng sẵn 5M VND làm vốn trải nghiệm
+                ALTER TABLE NguoiDung ADD SoDu INT NOT NULL DEFAULT 5000000; -- Tặng sẵn 5M VND làm vốn trải nghiệm
             END
         `);
 
@@ -20,26 +20,26 @@ const initializeWalletDB = async () => {
         await pool.request().query(`
             IF NOT EXISTS (
                 SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS 
-                WHERE TABLE_NAME = 'Jobs' AND COLUMN_NAME = 'IsHighlighted'
+                WHERE TABLE_NAME = 'CongViec' AND COLUMN_NAME = 'NoiBat'
             )
             BEGIN
-                ALTER TABLE Jobs ADD IsHighlighted BIT NOT NULL DEFAULT 0;
+                ALTER TABLE CongViec ADD NoiBat BIT NOT NULL DEFAULT 0;
             END
         `);
 
         // 3. Tạo bảng Transactions lưu lịch sử giao dịch nếu chưa có
         await pool.request().query(`
-            IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Transactions')
+            IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'GiaoDich')
             BEGIN
-                CREATE TABLE Transactions (
+                CREATE TABLE GiaoDich (
                     Id INT IDENTITY(1,1) PRIMARY KEY,
-                    UserId INT NOT NULL,
-                    Title NVARCHAR(255) NOT NULL,
-                    Amount INT NOT NULL,
-                    Type NVARCHAR(50) NOT NULL, -- 'Nap', 'ThanhToan', 'BanKhoaHoc'
-                    Status NVARCHAR(50) NOT NULL, -- 'ThanhCong', 'ThatBai'
-                    CreatedAt DATETIME DEFAULT GETDATE(),
-                    RefCode NVARCHAR(100)
+                    MaNguoiDung INT NOT NULL,
+                    TieuDe NVARCHAR(255) NOT NULL,
+                    SoTien INT NOT NULL,
+                    LoaiGiaoDich NVARCHAR(50) NOT NULL, -- 'Nap', 'ThanhToan', 'BanKhoaHoc'
+                    TrangThai NVARCHAR(50) NOT NULL, -- 'ThanhCong', 'ThatBai'
+                    NgayTao DATETIME DEFAULT GETDATE(),
+                    MaThamChieu NVARCHAR(100)
                 );
             END
         `);
@@ -48,14 +48,14 @@ const initializeWalletDB = async () => {
         await pool.request().query(`
             IF NOT EXISTS (
                 SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS 
-                WHERE TABLE_NAME = 'Companies' AND COLUMN_NAME = 'IsHot'
+                WHERE TABLE_NAME = 'CongTy' AND COLUMN_NAME = 'NoiBat'
             )
             BEGIN
-                ALTER TABLE Companies ADD IsHot INT NOT NULL DEFAULT 0;
+                ALTER TABLE CongTy ADD NoiBat INT NOT NULL DEFAULT 0;
             END
             ELSE
             BEGIN
-                EXEC('UPDATE Companies SET IsHot = 0 WHERE IsHot IS NULL');
+                EXEC('UPDATE CongTy SET NoiBat = 0 WHERE NoiBat IS NULL');
             END
         `);
 
@@ -77,7 +77,7 @@ const getWalletInfo = async (req, res) => {
         // Lấy số dư tài khoản
         const userRes = await pool.request()
             .input('userId', sql.Int, userId)
-            .query(`SELECT Balance FROM Users WHERE Id = @userId`);
+            .query(`SELECT SoDu AS Balance FROM NguoiDung WHERE Id = @userId`);
         
         if (userRes.recordset.length === 0) {
             return res.status(404).json({ message: "Không tìm thấy người dùng" });
@@ -89,19 +89,19 @@ const getWalletInfo = async (req, res) => {
         const transactionsRes = await pool.request()
             .input('userId', sql.Int, userId)
             .query(`
-                SELECT TOP 20 * FROM Transactions 
-                WHERE UserId = @userId 
-                ORDER BY CreatedAt DESC
+                SELECT TOP 20 * FROM GiaoDich 
+                WHERE MaNguoiDung = @userId 
+                ORDER BY NgayTao DESC
             `);
 
         // Lấy danh sách tin tuyển dụng của nhà tuyển dụng này (để làm nổi bật)
         const jobsRes = await pool.request()
             .input('userId', sql.Int, userId)
             .query(`
-                SELECT J.JobID, J.JobTitle, J.IsHighlighted, J.IsActive
-                FROM Jobs J
-                JOIN Users U ON J.CompanyID = U.CompanyID
-                WHERE U.Id = @userId AND J.IsActive = 1
+                SELECT J.MaCongViec AS JobID, J.TieuDeCongViec AS JobTitle, J.NoiBat AS IsHighlighted, J.TrangThaiHoatDong AS IsActive
+                FROM CongViec J
+                JOIN NguoiDung U ON J.MaCongTy = U.MaCongTy
+                WHERE U.Id = @userId AND J.TrangThaiHoatDong = 1
             `);
 
         res.status(200).json({
@@ -131,7 +131,7 @@ const depositMoney = async (req, res) => {
         await pool.request()
             .input('userId', sql.Int, userId)
             .input('amount', sql.Int, amount)
-            .query(`UPDATE Users SET Balance = Balance + @amount WHERE Id = @userId`);
+            .query(`UPDATE NguoiDung SET SoDu = SoDu + @amount WHERE Id = @userId`);
 
         // Ghi nhận lịch sử giao dịch
         await pool.request()
@@ -142,7 +142,7 @@ const depositMoney = async (req, res) => {
             .input('status', sql.NVarChar, 'ThanhCong')
             .input('refCode', sql.NVarChar, refCode)
             .query(`
-                INSERT INTO Transactions (UserId, Title, Amount, Type, Status, RefCode)
+                INSERT INTO GiaoDich (MaNguoiDung, TieuDe, SoTien, LoaiGiaoDich, TrangThai, MaThamChieu)
                 VALUES (@userId, @title, @amount, @type, @status, @refCode)
             `);
 
@@ -163,7 +163,7 @@ const highlightJob = async (req, res) => {
         // 1. Kiểm tra số dư & CompanyID của người dùng
         const userRes = await pool.request()
             .input('userId', sql.Int, userId)
-            .query(`SELECT Balance, CompanyID FROM Users WHERE Id = @userId`);
+            .query(`SELECT SoDu AS Balance, MaCongTy AS CompanyID FROM NguoiDung WHERE Id = @userId`);
 
         if (userRes.recordset.length === 0) {
             return res.status(404).json({ message: "Không tìm thấy người dùng" });
@@ -182,19 +182,19 @@ const highlightJob = async (req, res) => {
         await pool.request()
             .input('userId', sql.Int, userId)
             .input('fee', sql.Int, fee)
-            .query(`UPDATE Users SET Balance = Balance - @fee WHERE Id = @userId`);
+            .query(`UPDATE NguoiDung SET SoDu = SoDu - @fee WHERE Id = @userId`);
 
         // 3. Đánh dấu CÔNG TY (IsHot = 1) & Tất cả tin tuyển dụng của công ty (IsHighlighted = 1) là nổi bật VIP
         await pool.request()
             .input('companyId', sql.Int, CompanyID)
             .query(`
-                UPDATE Companies 
-                SET IsHot = 1 
-                WHERE CompanyID = @companyId;
+                UPDATE CongTy 
+                SET NoiBat = 1 
+                WHERE MaCongTy = @companyId;
 
-                UPDATE Jobs 
-                SET IsHighlighted = 1 
-                WHERE CompanyID = @companyId;
+                UPDATE CongViec 
+                SET NoiBat = 1 
+                WHERE MaCongTy = @companyId;
             `);
 
         // 4. Ghi nhận giao dịch
@@ -207,7 +207,7 @@ const highlightJob = async (req, res) => {
             .input('status', sql.NVarChar, 'ThanhCong')
             .input('refCode', sql.NVarChar, refCode)
             .query(`
-                INSERT INTO Transactions (UserId, Title, Amount, Type, Status, RefCode)
+                INSERT INTO GiaoDich (MaNguoiDung, TieuDe, SoTien, LoaiGiaoDich, TrangThai, MaThamChieu)
                 VALUES (@userId, @title, @amount, @type, @status, @refCode)
             `);
 
@@ -236,7 +236,7 @@ const sellCourse = async (req, res) => {
         await pool.request()
             .input('userId', sql.Int, userId)
             .input('revenue', sql.Int, recruiterRevenue)
-            .query(`UPDATE Users SET Balance = Balance + @revenue WHERE Id = @userId`);
+            .query(`UPDATE NguoiDung SET SoDu = SoDu + @revenue WHERE Id = @userId`);
 
         // Ghi nhận giao dịch của nhà tuyển dụng
         const refCode = "CRS" + Math.floor(1000000 + Math.random() * 9000000);
@@ -248,7 +248,7 @@ const sellCourse = async (req, res) => {
             .input('status', sql.NVarChar, 'ThanhCong')
             .input('refCode', sql.NVarChar, refCode)
             .query(`
-                INSERT INTO Transactions (UserId, Title, Amount, Type, Status, RefCode)
+                INSERT INTO GiaoDich (MaNguoiDung, TieuDe, SoTien, LoaiGiaoDich, TrangThai, MaThamChieu)
                 VALUES (@userId, @title, @amount, @type, @status, @refCode)
             `);
 

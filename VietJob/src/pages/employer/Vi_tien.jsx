@@ -4,16 +4,15 @@ import Topbar_empl from "../../components/common/Employer_c/Topbar_empl";
 import axios from "axios";
 import { 
   Wallet as WalletIcon, ArrowUpRight, ArrowDownLeft, 
-  Sparkles, CheckCircle, RefreshCw, Loader2, AlertCircle, 
-  HelpCircle, ShieldCheck, QrCode, BookOpen
+  HelpCircle, ShieldCheck, QrCode, BookOpen, Landmark, Building, Lock, Loader2, AlertTriangle, RefreshCw, Sparkles, CheckCircle, AlertCircle
 } from "lucide-react";
 
 const suggestedAmounts = [2000000, 5000000, 10000000];
 
 // ⚠️ Thay account bằng số tài khoản thật của hệ thống
 const banks = [
-    { id: "vcb", name: "Vietcombank", bin: "970436", account: "1014597123", accountName: "VIETJOB SYSTEM", icon: "🏦", color: "#16a34a" },
-    { id: "tpb", name: "TPBank",      bin: "970423", account: "0987654321", accountName: "VIETJOB SYSTEM", icon: "🏛️", color: "#7c3aed" },
+    { id: "vcb", name: "Vietcombank", bin: "970436", account: "1014597123", accountName: "VIETJOB SYSTEM", icon: <Landmark size={15}/>, color: "#16a34a" },
+    { id: "tpb", name: "TPBank",      bin: "970423", account: "0987654321", accountName: "VIETJOB SYSTEM", icon: <Building size={15}/>, color: "#7c3aed" },
 ];
 
 export default function CareerCuratorWallet() {
@@ -166,7 +165,7 @@ export default function CareerCuratorWallet() {
                                     <ShieldCheck size={14} /> Tài khoản ví liên kết SQL
                                 </span>
                                 <span>•</span>
-                                <span>🔒 Bảo mật SSL</span>
+                                <span style={{display: "flex", alignItems: "center", gap: 4}}><Lock size={14}/> Bảo mật SSL</span>
                             </div>
 
                             <div style={{ display: "flex", gap: 12 }}>
@@ -474,7 +473,7 @@ export default function CareerCuratorWallet() {
                                     : <><CheckCircle size={15} /> Tôi đã chuyển khoản xong</>}
                             </button>
                             <p style={{ margin:"8px 0 0", fontSize:11, color:"#94a3b8" }}>
-                                ⚠️ Chỉ bấm sau khi đã chuyển khoản thành công
+                                <span style={{display: "flex", alignItems: "center", gap: 4, justifyContent: "center"}}><AlertCircle size={14}/> Chỉ bấm sau khi đã chuyển khoản thành công</span>
                             </p>
                         </div>
                     </div>

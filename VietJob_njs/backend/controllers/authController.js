@@ -27,7 +27,7 @@ exports.registerEmployer = async (req, res) => {
         const check = await new sql.Request(transaction)
             .input('email', sql.NVarChar, email)
             .input('username', sql.NVarChar, username)
-            .query(`SELECT Id FROM Users WHERE Email = @email OR Username = @username`);
+            .query(`SELECT Id FROM NguoiDung WHERE Email = @email OR TenDangNhap = @username`);
 
         if (check.recordset.length > 0) {
             await transaction.rollback();
@@ -41,8 +41,8 @@ exports.registerEmployer = async (req, res) => {
             .input('location', sql.NVarChar, address || null)
             .input('description', sql.NVarChar, description || null)
             .query(`
-                INSERT INTO Companies (CompanyName, WebsiteURL, Location, Description, CreatedAt, IsHot)
-                OUTPUT INSERTED.CompanyID
+                INSERT INTO CongTy (TenCongTy, DuongDanWebsite, DiaDiem, MoTa, NgayTao, NoiBat)
+                OUTPUT INSERTED.MaCongTy AS CompanyID
                 VALUES (@companyName, @websiteURL, @location, @description, GETDATE(), 0)
             `);
 
@@ -57,7 +57,7 @@ exports.registerEmployer = async (req, res) => {
             .input('status', sql.NVarChar, 'pending')
             .input('companyId', sql.Int, companyId)
             .query(`
-                INSERT INTO Users (Username, Password, Email, Status, CompanyID, CreatedAt)
+                INSERT INTO NguoiDung (TenDangNhap, MatKhau, Email, TrangThai, MaCongTy, NgayTao)
                 OUTPUT INSERTED.Id
                 VALUES (@username, @password, @email, @status, @companyId, GETDATE())
             `);
@@ -67,7 +67,7 @@ exports.registerEmployer = async (req, res) => {
         // 4. Gán Role 'Employer'
         const roleResult = await new sql.Request(transaction)
             .input('roleName', sql.NVarChar, 'Employer')
-            .query(`SELECT RoleId FROM Roles WHERE RoleName = @roleName`);
+            .query(`SELECT MaVaiTro AS RoleId FROM VaiTro WHERE TenVaiTro = @roleName`);
 
         if (roleResult.recordset.length === 0) {
             await transaction.rollback();
@@ -78,7 +78,7 @@ exports.registerEmployer = async (req, res) => {
         await new sql.Request(transaction)
             .input('userId', sql.Int, userId)
             .input('roleId', sql.Int, roleId)
-            .query(`INSERT INTO UserRoles (UserId, RoleId) VALUES (@userId, @roleId)`);
+            .query(`INSERT INTO VaiTroNguoiDung (MaNguoiDung, MaVaiTro) VALUES (@userId, @roleId)`);
 
         await transaction.commit();
 
@@ -106,7 +106,7 @@ exports.register = async (req, res) => {
         const check = await pool.request()
             .input("email", sql.NVarChar, email)
             .input("username", sql.NVarChar, username)
-            .query(`SELECT Id FROM Users WHERE Email = @email OR Username = @username`);
+            .query(`SELECT Id FROM NguoiDung WHERE Email = @email OR TenDangNhap = @username`);
 
         if (check.recordset.length > 0) {
             return res.status(400).json({ error: "Email hoặc tên đăng nhập đã tồn tại." });
@@ -115,14 +115,14 @@ exports.register = async (req, res) => {
         // 2. Hash mật khẩu và tạo tài khoản, lấy lại Id vừa tạo
         const hashedPassword = await bcrypt.hash(password, 10);
         const userResult = await pool.request()
-            .input("Username", sql.NVarChar, username)
-            .input("Password", sql.NVarChar, hashedPassword)
+            .input("TenDangNhap", sql.NVarChar, username)
+            .input("MatKhau", sql.NVarChar, hashedPassword)
             .input("Email", sql.NVarChar, email)
-            .input("Phone", sql.NVarChar, phone)
+            .input("SoDienThoai", sql.NVarChar, phone)
             .query(`
-                INSERT INTO Users (Username, Password, Email, Phone)
+                INSERT INTO NguoiDung (TenDangNhap, MatKhau, Email, SoDienThoai)
                 OUTPUT INSERTED.Id
-                VALUES (@Username, @Password, @Email, @Phone)
+                VALUES (@TenDangNhap, @MatKhau, @Email, @SoDienThoai)
             `);
 
         const newUserId = userResult.recordset[0].Id;
@@ -130,7 +130,7 @@ exports.register = async (req, res) => {
         // 3. Tìm RoleId của role "Candidate"
         const roleResult = await pool.request()
             .input("roleName", sql.NVarChar, "Candidate")
-            .query(`SELECT RoleId FROM Roles WHERE RoleName = @roleName`);
+            .query(`SELECT MaVaiTro AS RoleId FROM VaiTro WHERE TenVaiTro = @roleName`);
 
         if (roleResult.recordset.length > 0) {
             const roleId = roleResult.recordset[0].RoleId;
@@ -139,7 +139,7 @@ exports.register = async (req, res) => {
             await pool.request()
                 .input("userId", sql.Int, newUserId)
                 .input("roleId", sql.Int, roleId)
-                .query(`INSERT INTO UserRoles (UserId, RoleId) VALUES (@userId, @roleId)`);
+                .query(`INSERT INTO VaiTroNguoiDung (MaNguoiDung, MaVaiTro) VALUES (@userId, @roleId)`);
         }
 
         res.json({ message: "Đăng ký thành công" });
@@ -165,10 +165,10 @@ exports.login = async (req, res) => {
         const result = await request
             .input("Email", sql.NVarChar, email)
             .query(`
-                SELECT u.Id, u.Username, u.Password, u.Status, r.RoleName
-                FROM Users u
-                LEFT JOIN UserRoles ur ON u.Id = ur.UserId
-                LEFT JOIN Roles r ON ur.RoleId = r.RoleId
+                SELECT u.Id, u.TenDangNhap AS Username, u.MatKhau AS Password, u.TrangThai AS Status, r.TenVaiTro AS RoleName
+                FROM NguoiDung u
+                LEFT JOIN VaiTroNguoiDung ur ON u.Id = ur.MaNguoiDung
+                LEFT JOIN VaiTro r ON ur.MaVaiTro = r.MaVaiTro
                 WHERE u.Email = @Email
             `);
 
@@ -241,10 +241,10 @@ exports.approveRecruiter = async (req, res) => {
         // 1. Cập nhật Status sang Approved (Không đổi mật khẩu)
         await request
             .input("Id", sql.Int, userId)
-            .input("Status", sql.NVarChar, 'Approved')
+            .input("TrangThai", sql.NVarChar, 'Approved')
             .query(`
-                UPDATE Users 
-                SET Status = @Status
+                UPDATE NguoiDung 
+                SET TrangThai = @TrangThai
                 WHERE Id = @Id
             `);
 
@@ -286,10 +286,10 @@ exports.rejectRecruiter = async (req, res) => {
         const request = new sql.Request(pool);
         await request
             .input("Id", sql.Int, userId)
-            .input("Status", sql.NVarChar, 'rejected')
+            .input("TrangThai", sql.NVarChar, 'rejected')
             .query(`
-                UPDATE Users 
-                SET Status = @Status, UpdatedAt = GETDATE() 
+                UPDATE NguoiDung 
+                SET TrangThai = @TrangThai
                 WHERE Id = @Id
             `);
         res.json({ message: "Đã từ chối nhà tuyển dụng." });
@@ -304,10 +304,10 @@ exports.getAllUsers = async (req, res) => {
         await poolConnect;
         const request = new sql.Request(pool);
         const result = await request.query(`
-            SELECT u.Id, u.Username, u.Email, u.Status, u.CreatedAt, r.RoleName
-            FROM Users u
-            LEFT JOIN UserRoles ur ON u.Id = ur.UserId
-            LEFT JOIN Roles r ON ur.RoleId = r.RoleId
+            SELECT u.Id, u.TenDangNhap AS Username, u.Email, u.TrangThai AS Status, u.NgayTao AS CreatedAt, r.TenVaiTro AS RoleName
+            FROM NguoiDung u
+            LEFT JOIN VaiTroNguoiDung ur ON u.Id = ur.MaNguoiDung
+            LEFT JOIN VaiTro r ON ur.MaVaiTro = r.MaVaiTro
         `);
         res.json(result.recordset);
     } catch (err) {
@@ -324,8 +324,8 @@ exports.getProfile = async (req, res) => {
         const result = await pool.request()
             .input('Id', sql.Int, Number(userId))
             .query(`
-                SELECT Id, Username, Email, Phone, Address
-                FROM Users WHERE Id = @Id
+                SELECT Id, TenDangNhap AS Username, Email, SoDienThoai AS Phone, DiaChi AS Address, AnhDaiDien AS AvatarUrl
+                FROM NguoiDung WHERE Id = @Id
             `);
         if (result.recordset.length === 0)
             return res.status(404).json({ error: 'Không tìm thấy người dùng' });
@@ -336,18 +336,24 @@ exports.getProfile = async (req, res) => {
     }
 };
 
-// Cập nhật phone, address
+// Cập nhật phone, address, avatar
 exports.updateProfile = async (req, res) => {
     const { userId } = req.params;
-    const { phone, address, username } = req.body;
+    const { phone, address, username, avatarUrl } = req.body;
     try {
         await poolConnect;
         await pool.request()
-            .input('Id',       sql.Int,      Number(userId))
-            .input('Phone',    sql.NVarChar,  phone    || null)
-            .input('Address',  sql.NVarChar,  address  || null)
-            .input('Username', sql.NVarChar,  username || null)
-            .query(`UPDATE Users SET Phone = @Phone, Address = @Address, Username = COALESCE(@Username, Username) WHERE Id = @Id`);
+            .input('Id',          sql.Int,      Number(userId))
+            .input('SoDienThoai', sql.NVarChar,  phone      || null)
+            .input('DiaChi',      sql.NVarChar,  address    || null)
+            .input('TenDangNhap', sql.NVarChar,  username   || null)
+            .input('AnhDaiDien',  sql.NVarChar,  avatarUrl  !== undefined ? avatarUrl : null)
+            .query(`UPDATE NguoiDung SET 
+                SoDienThoai = @SoDienThoai, 
+                DiaChi = @DiaChi, 
+                TenDangNhap = COALESCE(@TenDangNhap, TenDangNhap),
+                AnhDaiDien = CASE WHEN @AnhDaiDien IS NOT NULL THEN @AnhDaiDien ELSE AnhDaiDien END
+            WHERE Id = @Id`);
         res.json({ message: 'Cập nhật thành công' });
     } catch (err) {
         console.error('Lỗi updateProfile:', err);
@@ -367,7 +373,7 @@ exports.changePassword = async (req, res) => {
         await poolConnect;
         const result = await pool.request()
             .input('Id', sql.Int, Number(userId))
-            .query(`SELECT Password FROM Users WHERE Id = @Id`);
+            .query(`SELECT MatKhau AS Password FROM NguoiDung WHERE Id = @Id`);
         if (result.recordset.length === 0)
             return res.status(404).json({ error: 'Không tìm thấy người dùng.' });
         const isMatch = await bcrypt.compare(currentPassword, result.recordset[0].Password);
@@ -375,9 +381,9 @@ exports.changePassword = async (req, res) => {
             return res.status(400).json({ error: 'Mật khẩu hiện tại không đúng.' });
         const hashed = await bcrypt.hash(newPassword, 10);
         await pool.request()
-            .input('Id',       sql.Int,     Number(userId))
-            .input('Password', sql.NVarChar, hashed)
-            .query(`UPDATE Users SET Password = @Password WHERE Id = @Id`);
+            .input('Id',      sql.Int,     Number(userId))
+            .input('MatKhau', sql.NVarChar, hashed)
+            .query(`UPDATE NguoiDung SET MatKhau = @MatKhau WHERE Id = @Id`);
         res.json({ message: 'Đổi mật khẩu thành công!' });
     } catch (err) {
         console.error('Lỗi changePassword:', err);
@@ -392,7 +398,7 @@ exports.deleteUser = async (req, res) => {
         await poolConnect;
         await pool.request()
             .input('Id', sql.Int, Number(userId))
-            .query(`UPDATE Users SET Status = 'locked' WHERE Id = @Id`);
+            .query(`UPDATE NguoiDung SET TrangThai = 'locked' WHERE Id = @Id`);
         res.json({ message: 'Đã khóa tài khoản người dùng thành công!' });
     } catch (err) {
         console.error('Lỗi deleteUser:', err);
@@ -456,10 +462,10 @@ exports.socialLogin = async (req, res) => {
         const existResult = await pool.request()
             .input('Email', sql.NVarChar, socialEmail)
             .query(`
-                SELECT u.Id, u.Username, u.Status, r.RoleName
-                FROM Users u
-                LEFT JOIN UserRoles ur ON u.Id = ur.UserId
-                LEFT JOIN Roles r ON ur.RoleId = r.RoleId
+                SELECT u.Id, u.TenDangNhap AS Username, u.TrangThai AS Status, r.TenVaiTro AS RoleName
+                FROM NguoiDung u
+                LEFT JOIN VaiTroNguoiDung ur ON u.Id = ur.MaNguoiDung
+                LEFT JOIN VaiTro r ON ur.MaVaiTro = r.MaVaiTro
                 WHERE u.Email = @Email
             `);
 
@@ -484,13 +490,13 @@ exports.socialLogin = async (req, res) => {
             const randomPass   = await bcrypt.hash(crypto.randomBytes(20).toString('hex'), 10);
 
             const insertResult = await pool.request()
-                .input('Username', sql.NVarChar, safeUsername)
-                .input('Password', sql.NVarChar, randomPass)
+                .input('TenDangNhap', sql.NVarChar, safeUsername)
+                .input('MatKhau', sql.NVarChar, randomPass)
                 .input('Email',    sql.NVarChar, socialEmail)
                 .query(`
-                    INSERT INTO Users (Username, Password, Email, Status, CreatedAt)
+                    INSERT INTO NguoiDung (TenDangNhap, MatKhau, Email, TrangThai, NgayTao)
                     OUTPUT INSERTED.Id
-                    VALUES (@Username, @Password, @Email, 'active', GETDATE())
+                    VALUES (@TenDangNhap, @MatKhau, @Email, 'active', GETDATE())
                 `);
 
             userId   = insertResult.recordset[0].Id;
@@ -498,15 +504,15 @@ exports.socialLogin = async (req, res) => {
 
             // Gán role Candidate
             const roleResult = await pool.request()
-                .input('RoleName', sql.NVarChar, 'Candidate')
-                .query(`SELECT RoleId FROM Roles WHERE RoleName = @RoleName`);
+                .input('TenVaiTro', sql.NVarChar, 'Candidate')
+                .query(`SELECT MaVaiTro AS RoleId FROM VaiTro WHERE TenVaiTro = @TenVaiTro`);
 
             if (roleResult.recordset.length > 0) {
                 const roleId = roleResult.recordset[0].RoleId;
                 await pool.request()
-                    .input('UserId', sql.Int, userId)
-                    .input('RoleId', sql.Int, roleId)
-                    .query(`INSERT INTO UserRoles (UserId, RoleId) VALUES (@UserId, @RoleId)`);
+                    .input('MaNguoiDung', sql.Int, userId)
+                    .input('MaVaiTro', sql.Int, roleId)
+                    .query(`INSERT INTO VaiTroNguoiDung (MaNguoiDung, MaVaiTro) VALUES (@MaNguoiDung, @MaVaiTro)`);
             }
             roles = ['Candidate'];
         }
@@ -610,7 +616,7 @@ exports.googleCallback = async (req, res) => {
             { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
         );
 
-        const { access_token, id_token } = tokenRes.data;
+        const { access_token } = tokenRes.data;
 
         // 2. Lấy thông tin user từ Google userinfo endpoint
         const userInfoRes = await axios.get(
@@ -618,7 +624,7 @@ exports.googleCallback = async (req, res) => {
             { headers: { Authorization: `Bearer ${access_token}` } }
         );
 
-        const { email, name, sub: googleId } = userInfoRes.data;
+        const { email, name } = userInfoRes.data;
 
         if (!email) {
             return res.status(400).json({ error: 'Không lấy được email từ Google.' });
@@ -630,10 +636,10 @@ exports.googleCallback = async (req, res) => {
         const existResult = await pool.request()
             .input('Email', sql.NVarChar, email)
             .query(`
-                SELECT u.Id, u.Username, u.Status, r.RoleName
-                FROM Users u
-                LEFT JOIN UserRoles ur ON u.Id = ur.UserId
-                LEFT JOIN Roles r ON ur.RoleId = r.RoleId
+                SELECT u.Id, u.TenDangNhap AS Username, u.TrangThai AS Status, r.TenVaiTro AS RoleName
+                FROM NguoiDung u
+                LEFT JOIN VaiTroNguoiDung ur ON u.Id = ur.MaNguoiDung
+                LEFT JOIN VaiTro r ON ur.MaVaiTro = r.MaVaiTro
                 WHERE u.Email = @Email
             `);
 
@@ -657,13 +663,13 @@ exports.googleCallback = async (req, res) => {
             const randomPass   = await bcrypt.hash(crypto.randomBytes(20).toString('hex'), 10);
 
             const insertResult = await pool.request()
-                .input('Username', sql.NVarChar, safeUsername)
-                .input('Password', sql.NVarChar, randomPass)
+                .input('TenDangNhap', sql.NVarChar, safeUsername)
+                .input('MatKhau', sql.NVarChar, randomPass)
                 .input('Email',    sql.NVarChar, email)
                 .query(`
-                    INSERT INTO Users (Username, Password, Email, Status, CreatedAt)
+                    INSERT INTO NguoiDung (TenDangNhap, MatKhau, Email, TrangThai, NgayTao)
                     OUTPUT INSERTED.Id
-                    VALUES (@Username, @Password, @Email, 'active', GETDATE())
+                    VALUES (@TenDangNhap, @MatKhau, @Email, 'active', GETDATE())
                 `);
 
             userId   = insertResult.recordset[0].Id;
@@ -671,15 +677,15 @@ exports.googleCallback = async (req, res) => {
 
             // Gán role Candidate
             const roleResult = await pool.request()
-                .input('RoleName', sql.NVarChar, 'Candidate')
-                .query(`SELECT RoleId FROM Roles WHERE RoleName = @RoleName`);
+                .input('TenVaiTro', sql.NVarChar, 'Candidate')
+                .query(`SELECT MaVaiTro AS RoleId FROM VaiTro WHERE TenVaiTro = @TenVaiTro`);
 
             if (roleResult.recordset.length > 0) {
                 const roleId = roleResult.recordset[0].RoleId;
                 await pool.request()
-                    .input('UserId', sql.Int, userId)
-                    .input('RoleId', sql.Int, roleId)
-                    .query(`INSERT INTO UserRoles (UserId, RoleId) VALUES (@UserId, @RoleId)`);
+                    .input('MaNguoiDung', sql.Int, userId)
+                    .input('MaVaiTro', sql.Int, roleId)
+                    .query(`INSERT INTO VaiTroNguoiDung (MaNguoiDung, MaVaiTro) VALUES (@MaNguoiDung, @MaVaiTro)`);
             }
             roles = ['Candidate'];
         }

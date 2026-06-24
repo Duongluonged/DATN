@@ -17,40 +17,47 @@ const getConversations = async (req, res) => {
             .query(`
                 WITH LastMessages AS (
                     SELECT 
-                        M.*,
+                        M.MaTinNhan,
+                        M.MaNguoiGui,
+                        M.MaNguoiNhan,
+                        M.NoiDungTinNhan,
+                        M.NgayTao,
+                        M.DaDoc,
+                        M.DuongDanDinhKem,
+                        M.TenFileDinhKem,
                         ROW_NUMBER() OVER (PARTITION BY 
-                            CASE WHEN SenderID = @userId THEN ReceiverID ELSE SenderID END 
-                            ORDER BY CreatedAt DESC) as rn
-                    FROM Messages M
-                    WHERE SenderID = @userId OR ReceiverID = @userId
+                            CASE WHEN MaNguoiGui = @userId THEN MaNguoiNhan ELSE MaNguoiGui END 
+                            ORDER BY NgayTao DESC) as rn
+                    FROM TinNhan M
+                    WHERE MaNguoiGui = @userId OR MaNguoiNhan = @userId
                 ),
                 UnreadCounts AS (
-                    SELECT SenderID, COUNT(*) AS UnreadCount
-                    FROM Messages
-                    WHERE ReceiverID = @userId AND IsRead = 0
-                    GROUP BY SenderID
+                    SELECT MaNguoiGui AS SenderID, COUNT(*) AS UnreadCount
+                    FROM TinNhan
+                    WHERE MaNguoiNhan = @userId AND DaDoc = 0
+                    GROUP BY MaNguoiGui
                 )
                 SELECT 
-                    LM.MessageID,
-                    LM.MessageContent,
-                    LM.CreatedAt,
-                    LM.IsRead,
-                    LM.SenderID,
-                    LM.ReceiverID,
-                    CASE WHEN LM.SenderID = @userId THEN LM.ReceiverID ELSE LM.SenderID END AS PartnerID,
-                    U.Username AS PartnerName,
+                    LM.MaTinNhan AS MessageID,
+                    LM.NoiDungTinNhan AS MessageContent,
+                    LM.NgayTao AS CreatedAt,
+                    LM.DaDoc AS IsRead,
+                    LM.MaNguoiGui AS SenderID,
+                    LM.MaNguoiNhan AS ReceiverID,
+                    CASE WHEN LM.MaNguoiGui = @userId THEN LM.MaNguoiNhan ELSE LM.MaNguoiGui END AS PartnerID,
+                    U.TenDangNhap AS PartnerName,
                     U.Email AS PartnerEmail,
-                    U.Phone AS PartnerPhone,
-                    U.Address AS PartnerAddress,
-                    C.CompanyName,
-                    C.LogoURL,
+                    U.SoDienThoai AS PartnerPhone,
+                    U.DiaChi AS PartnerAddress,
+                    C.TenCongTy AS CompanyName,
+                    C.DuongDanLogo AS LogoURL,
                     COALESCE(UC.UnreadCount, 0) AS UnreadCount
                 FROM LastMessages LM
-                JOIN Users U ON U.Id = CASE WHEN LM.SenderID = @userId THEN LM.ReceiverID ELSE LM.SenderID END
-                LEFT JOIN Companies C ON U.CompanyID = C.CompanyID
+                JOIN NguoiDung U ON U.Id = CASE WHEN LM.MaNguoiGui = @userId THEN LM.MaNguoiNhan ELSE LM.MaNguoiGui END
+                LEFT JOIN CongTy C ON U.MaCongTy = C.MaCongTy
                 LEFT JOIN UnreadCounts UC ON UC.SenderID = U.Id
                 WHERE LM.rn = 1
-                ORDER BY LM.CreatedAt DESC
+                ORDER BY LM.NgayTao DESC
             `);
 
         res.status(200).json(result.recordset);
@@ -77,18 +84,18 @@ const getChatHistory = async (req, res) => {
             .input('partnerId', sql.Int, pid)
             .query(`
                 SELECT 
-                    MessageID,
-                    SenderID,
-                    ReceiverID,
-                    MessageContent,
-                    CreatedAt,
-                    IsRead,
-                    AttachmentURL,
-                    AttachmentName
-                FROM Messages
-                WHERE (SenderID = @userId AND ReceiverID = @partnerId)
-                   OR (SenderID = @partnerId AND ReceiverID = @userId)
-                ORDER BY CreatedAt ASC
+                    MaTinNhan AS MessageID,
+                    MaNguoiGui AS SenderID,
+                    MaNguoiNhan AS ReceiverID,
+                    NoiDungTinNhan AS MessageContent,
+                    NgayTao AS CreatedAt,
+                    DaDoc AS IsRead,
+                    DuongDanDinhKem AS AttachmentURL,
+                    TenFileDinhKem AS AttachmentName
+                FROM TinNhan
+                WHERE (MaNguoiGui = @userId AND MaNguoiNhan = @partnerId)
+                   OR (MaNguoiGui = @partnerId AND MaNguoiNhan = @userId)
+                ORDER BY NgayTao ASC
             `);
 
         res.status(200).json(result.recordset);
@@ -114,9 +121,9 @@ const markAsRead = async (req, res) => {
             .input('userId', sql.Int, uid)
             .input('partnerId', sql.Int, pid)
             .query(`
-                UPDATE Messages
-                SET IsRead = 1
-                WHERE SenderID = @partnerId AND ReceiverID = @userId AND IsRead = 0
+                UPDATE TinNhan
+                SET DaDoc = 1
+                WHERE MaNguoiGui = @partnerId AND MaNguoiNhan = @userId AND DaDoc = 0
             `);
 
         res.status(200).json({ message: "Đã đánh dấu các tin nhắn là đã đọc." });
@@ -146,8 +153,8 @@ const sendMessage = async (req, res) => {
             .input('attachmentUrl', sql.NVarChar, attachmentUrl || null)
             .input('attachmentName', sql.NVarChar, attachmentName || null)
             .query(`
-                INSERT INTO Messages (SenderID, ReceiverID, MessageContent, CreatedAt, IsRead, AttachmentURL, AttachmentName)
-                OUTPUT INSERTED.MessageID, INSERTED.CreatedAt, INSERTED.IsRead
+                INSERT INTO TinNhan (MaNguoiGui, MaNguoiNhan, NoiDungTinNhan, NgayTao, DaDoc, DuongDanDinhKem, TenFileDinhKem)
+                OUTPUT INSERTED.MaTinNhan AS MessageID, INSERTED.NgayTao AS CreatedAt, INSERTED.DaDoc AS IsRead
                 VALUES (@senderId, @receiverId, @messageContent, GETDATE(), 0, @attachmentUrl, @attachmentName)
             `);
 
@@ -186,11 +193,11 @@ const getEmployerOfCompany = async (req, res) => {
         const result = await pool.request()
             .input('companyId', sql.Int, cid)
             .query(`
-                SELECT TOP 1 U.Id, U.Username, U.Email, U.Phone
-                FROM Users U
-                JOIN UserRoles UR ON U.Id = UR.UserId
-                JOIN Roles R ON UR.RoleId = R.RoleId
-                WHERE U.CompanyID = @companyId AND R.RoleName = 'Employer'
+                SELECT TOP 1 U.Id, U.TenDangNhap AS Username, U.Email, U.SoDienThoai AS Phone
+                FROM NguoiDung U
+                JOIN VaiTroNguoiDung UR ON U.Id = UR.MaNguoiDung
+                JOIN VaiTro R ON UR.MaVaiTro = R.MaVaiTro
+                WHERE U.MaCongTy = @companyId AND R.TenVaiTro = 'Employer'
             `);
 
         if (result.recordset.length === 0) {

@@ -9,10 +9,10 @@ const getUserCourses = async (req, res) => {
         const result = await pool.request()
             .input('userId', sql.Int, userId)
             .query(`
-                SELECT UserCourseID, CourseId, Status, CreatedAt, LastModifiedAt
-                FROM User_Courses
-                WHERE UserId = @userId
-                ORDER BY LastModifiedAt DESC
+                SELECT MaKhoaHocNguoiDung AS UserCourseID, MaKhoaHoc AS CourseId, TrangThai AS Status, NgayTao AS CreatedAt, CapNhatLanCuoi AS LastModifiedAt
+                FROM DangKiKhoahoc
+                WHERE MaNguoiDung = @userId
+                ORDER BY CapNhatLanCuoi DESC
             `);
 
         res.status(200).json(result.recordset);
@@ -37,9 +37,9 @@ const addUserCourse = async (req, res) => {
             .input('userId', sql.Int, userId)
             .input('courseId', sql.NVarChar, courseId)
             .query(`
-                SELECT UserCourseID, Status 
-                FROM User_Courses 
-                WHERE UserId = @userId AND CourseId = @courseId
+                SELECT MaKhoaHocNguoiDung AS UserCourseID, TrangThai AS Status 
+                FROM DangKiKhoahoc 
+                WHERE MaNguoiDung = @userId AND MaKhoaHoc = @courseId
             `);
 
         if (checkExist.recordset.length > 0) {
@@ -54,7 +54,7 @@ const addUserCourse = async (req, res) => {
             .input('userId', sql.Int, userId)
             .input('courseId', sql.NVarChar, courseId)
             .query(`
-                INSERT INTO User_Courses (UserId, CourseId, Status, CreatedAt, LastModifiedAt)
+                INSERT INTO DangKiKhoahoc (MaNguoiDung, MaKhoaHoc, TrangThai, NgayTao, CapNhatLanCuoi)
                 VALUES (@userId, @courseId, N'Đang quan tâm', GETDATE(), GETDATE())
             `);
 
@@ -79,8 +79,8 @@ const removeUserCourse = async (req, res) => {
             .input('userId', sql.Int, userId)
             .input('courseId', sql.NVarChar, courseId)
             .query(`
-                DELETE FROM User_Courses 
-                WHERE UserId = @userId AND CourseId = @courseId
+                DELETE FROM DangKiKhoahoc 
+                WHERE MaNguoiDung = @userId AND MaKhoaHoc = @courseId
             `);
 
         res.status(200).json({ message: 'Đã gỡ khóa học khỏi lộ trình của bạn.' });
@@ -115,9 +115,9 @@ const enrollUserCourse = async (req, res) => {
             const courseRes = await pool.request()
                 .input('courseId', sql.Int, parseInt(courseId))
                 .query(`
-                    SELECT TieuDe, Price, NhaTuyenDungId, DriveLink 
-                    FROM khoa_hoc 
-                    WHERE Id = @courseId AND (IsDeleted = 0 OR IsDeleted IS NULL)
+                    SELECT TieuDe, Gia AS Price, MaNhaTuyenDung AS NhaTuyenDungId, DuongDanDrive AS DriveLink 
+                    FROM KhoaHoc 
+                    WHERE Id = @courseId AND (DaXoa = 0 OR DaXoa IS NULL)
                 `);
             
             if (courseRes.recordset.length > 0) {
@@ -159,7 +159,7 @@ const enrollUserCourse = async (req, res) => {
         // 2. Kiểm tra thông tin & số dư của Học viên
         const studentRes = await pool.request()
             .input('userId', sql.Int, userId)
-            .query(`SELECT Balance, Email, Username FROM Users WHERE Id = @userId`);
+            .query(`SELECT SoDu AS Balance, Email, TenDangNhap AS Username FROM NguoiDung WHERE Id = @userId`);
         
         if (studentRes.recordset.length === 0) {
             return res.status(404).json({ message: "Không tìm thấy tài khoản người dùng." });
@@ -175,7 +175,7 @@ const enrollUserCourse = async (req, res) => {
                 await pool.request()
                     .input('userId', sql.Int, userId)
                     .input('amount', sql.Int, depositAmount)
-                    .query(`UPDATE Users SET Balance = Balance + @amount WHERE Id = @userId`);
+                    .query(`UPDATE NguoiDung SET SoDu = SoDu + @amount WHERE Id = @userId`);
                 
                 // Ghi log giao dịch nạp tiền qua VietQR Webhook
                 await pool.request()
@@ -186,7 +186,7 @@ const enrollUserCourse = async (req, res) => {
                     .input('status', sql.NVarChar, 'ThanhCong')
                     .input('refCode', sql.NVarChar, "QR" + Math.floor(1000000 + Math.random() * 9000000))
                     .query(`
-                        INSERT INTO Transactions (UserId, Title, Amount, Type, Status, RefCode)
+                        INSERT INTO GiaoDich (MaNguoiDung, TieuDe, SoTien, LoaiGiaoDich, TrangThai, MaThamChieu)
                         VALUES (@userId, @title, @amount, @type, @status, @refCode)
                     `);
                 
@@ -207,7 +207,7 @@ const enrollUserCourse = async (req, res) => {
         await pool.request()
             .input('userId', sql.Int, userId)
             .input('price', sql.Int, coursePrice)
-            .query(`UPDATE Users SET Balance = Balance - @price WHERE Id = @userId`);
+            .query(`UPDATE NguoiDung SET SoDu = SoDu - @price WHERE Id = @userId`);
 
         // Ghi log giao dịch trừ tiền học viên
         await pool.request()
@@ -218,7 +218,7 @@ const enrollUserCourse = async (req, res) => {
             .input('status', sql.NVarChar, 'ThanhCong')
             .input('refCode', sql.NVarChar, studentRefCode)
             .query(`
-                INSERT INTO Transactions (UserId, Title, Amount, Type, Status, RefCode)
+                INSERT INTO GiaoDich (MaNguoiDung, TieuDe, SoTien, LoaiGiaoDich, TrangThai, MaThamChieu)
                 VALUES (@userId, @title, @amount, @type, @status, @refCode)
             `);
 
@@ -231,7 +231,7 @@ const enrollUserCourse = async (req, res) => {
             await pool.request()
                 .input('recruiterId', sql.Int, nhaTuyenDungId)
                 .input('amount', sql.Int, recruiterAmount)
-                .query(`UPDATE Users SET Balance = Balance + @amount WHERE Id = @recruiterId`);
+                .query(`UPDATE NguoiDung SET SoDu = SoDu + @amount WHERE Id = @recruiterId`);
 
             // Ghi log giao dịch nhận hoa hồng của NTD
             await pool.request()
@@ -242,7 +242,7 @@ const enrollUserCourse = async (req, res) => {
                 .input('status', sql.NVarChar, 'ThanhCong')
                 .input('refCode', sql.NVarChar, recruiterRefCode)
                 .query(`
-                    INSERT INTO Transactions (UserId, Title, Amount, Type, Status, RefCode)
+                    INSERT INTO GiaoDich (MaNguoiDung, TieuDe, SoTien, LoaiGiaoDich, TrangThai, MaThamChieu)
                     VALUES (@recruiterId, @title, @amount, @type, @status, @refCode)
                 `);
         }
@@ -251,23 +251,23 @@ const enrollUserCourse = async (req, res) => {
         const checkExist = await pool.request()
             .input('userId', sql.Int, userId)
             .input('courseId', sql.NVarChar, String(courseId))
-            .query(`SELECT UserCourseID FROM User_Courses WHERE UserId = @userId AND CourseId = @courseId`);
+            .query(`SELECT MaKhoaHocNguoiDung AS UserCourseID FROM DangKiKhoahoc WHERE MaNguoiDung = @userId AND MaKhoaHoc = @courseId`);
 
         if (checkExist.recordset.length > 0) {
             await pool.request()
                 .input('userId', sql.Int, userId)
                 .input('courseId', sql.NVarChar, String(courseId))
                 .query(`
-                    UPDATE User_Courses 
-                    SET Status = N'Đang theo học', LastModifiedAt = GETDATE()
-                    WHERE UserId = @userId AND CourseId = @courseId
+                    UPDATE DangKiKhoahoc 
+                    SET TrangThai = N'Đang theo học', CapNhatLanCuoi = GETDATE()
+                    WHERE MaNguoiDung = @userId AND MaKhoaHoc = @courseId
                 `);
         } else {
             await pool.request()
                 .input('userId', sql.Int, userId)
                 .input('courseId', sql.NVarChar, String(courseId))
                 .query(`
-                    INSERT INTO User_Courses (UserId, CourseId, Status, CreatedAt, LastModifiedAt)
+                    INSERT INTO DangKiKhoahoc (MaNguoiDung, MaKhoaHoc, TrangThai, NgayTao, CapNhatLanCuoi)
                     VALUES (@userId, @courseId, N'Đang theo học', GETDATE(), GETDATE())
                 `);
         }

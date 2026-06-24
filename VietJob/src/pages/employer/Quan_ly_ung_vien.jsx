@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Phone, MapPin, Calendar, Building2, FileText, Inbox, AlertTriangle, RefreshCw, CheckCircle2, XCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Sidebar_Empl from "../../components/common/Employer_c/Sidebar_empl";
 import Topbar_empl from "../../components/common/Employer_c/Topbar_empl";
@@ -112,7 +113,7 @@ function InterviewScheduleModal({ app, onClose, onSubmit }) {
                     padding: "20px 24px", color: "#fff", display: "flex", justifyContent: "space-between", alignItems: "center"
                 }}>
                     <div>
-                        <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>📅 Lên lịch phỏng vấn</h3>
+                        <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}><Calendar size={20} /> Lên lịch phỏng vấn</h3>
                         <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.9 }}>Ứng viên: <strong>{app.CandidateName}</strong></p>
                     </div>
                     <button onClick={onClose} style={{
@@ -265,11 +266,11 @@ function CandidateDetailModal({ app, onClose, onStatusChange }) {
                         <div style={{ fontSize: 11, fontWeight: 700, color: "#aaa", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 }}>Thông tin liên hệ</div>
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                             {[[
-                                { icon: "📞", label: "Số điện thoại", value: app.Phone || "Chưa cung cấp" },
-                                { icon: "📍", label: "Địa điểm", value: app.City || "Chưa cung cấp" },
+                                { icon: <Phone size={12}/>, label: "Số điện thoại", value: app.Phone || "Chưa cung cấp" },
+                                { icon: <MapPin size={12}/>, label: "Địa điểm", value: app.City || "Chưa cung cấp" },
                             ], [
-                                { icon: "📅", label: "Ngày ứng tuyển", value: app.AppliedAt ? new Date(app.AppliedAt).toLocaleDateString("vi-VN") : "—" },
-                                { icon: "🏢", label: "Vị trí", value: app.JobTitle },
+                                { icon: <Calendar size={12}/>, label: "Ngày ứng tuyển", value: app.AppliedAt ? new Date(app.AppliedAt).toLocaleDateString("vi-VN") : "—" },
+                                { icon: <Building2 size={12}/>, label: "Vị trí", value: app.JobTitle },
                             ]].flat().map(({ icon, label, value }) => (
                                 <div key={label} style={{ background: "#f8f9fc", borderRadius: 10, padding: "10px 12px" }}>
                                     <div style={{ fontSize: 10, color: "#aaa", fontWeight: 600, marginBottom: 3 }}>{icon} {label}</div>
@@ -292,7 +293,7 @@ function CandidateDetailModal({ app, onClose, onStatusChange }) {
                                 background: "#2563eb", color: "#fff",
                                 display: "flex", alignItems: "center", justifyContent: "center",
                                 fontSize: 18, flexShrink: 0,
-                            }}>📄</div>
+                            }}><FileText size={20}/></div>
                             <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ fontSize: 13, fontWeight: 600, color: "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                     {app.CV_Path || "Chưa có file CV"}
@@ -370,22 +371,22 @@ function CandidateCard({ app, onStatusChange, onViewDetail, onChat }) {
                         <StatusBadge status={app.Status} />
                     </div>
                     <div style={{ fontSize: 12, color: "#2563eb", fontWeight: 500, marginTop: 2 }}>{app.JobTitle}</div>
-                    {app.City && <div style={{ fontSize: 11, color: "#aaa", marginTop: 1 }}>📍 {app.City}</div>}
-                    {app.Phone && <div style={{ fontSize: 11, color: "#888", marginTop: 1 }}>📞 {app.Phone}</div>}
+                    {app.City && <div style={{ fontSize: 11, color: "#aaa", marginTop: 1, display: 'flex', alignItems: 'center', gap: 4 }}><MapPin size={10}/> {app.City}</div>}
+                    {app.Phone && <div style={{ fontSize: 11, color: "#888", marginTop: 1, display: 'flex', alignItems: 'center', gap: 4 }}><Phone size={10}/> {app.Phone}</div>}
                 </div>
             </div>
 
             {/* Footer */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div style={{ fontSize: 11.5, color: "#aaa" }}>
-                    📅 {app.AppliedAt ? new Date(app.AppliedAt).toLocaleDateString("vi-VN") : "—"}
+                    <span style={{display: 'flex', alignItems: 'center', gap: 4}}><Calendar size={12}/> {app.AppliedAt ? new Date(app.AppliedAt).toLocaleDateString("vi-VN") : "—"}</span>
                 </div>
                 <div style={{ display: "flex", gap: 6, position: "relative" }}>
                     {/* Nút nhắn tin */}
                     {app.CandidateUserId && (
                         <button
                             onClick={e => { e.stopPropagation(); onChat(app.CandidateUserId); }}
-                            style={{ fontSize: 11.5, color: "#16a34a", background: "#dcfce7", border: "1px solid #bbf7d0", borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontWeight: 600 }}>
+                            style={{ fontSize: 11.5, color: "#0284c7", background: "#e0f2fe", border: "1px solid #bae6fd", borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontWeight: 600 }}>
                             Nhắn tin
                         </button>
                     )}
@@ -560,8 +561,8 @@ export default function Quan_ly_ung_vien() {
                                 Tổng cộng <strong>{applications.length}</strong> hồ sơ ứng tuyển từ các tin đăng của bạn.
                             </p>
                         </div>
-                        <button onClick={fetchApplications} style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid #e0e0e0", background: "#fff", fontSize: 13, color: "#555", cursor: "pointer", fontWeight: 500 }}>
-                            🔄 Làm mới
+                        <button onClick={fetchApplications} style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid #e0e0e0", background: "#fff", fontSize: 13, color: "#555", cursor: "pointer", fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <RefreshCw size={14}/> Làm mới
                         </button>
                     </div>
 
@@ -599,7 +600,7 @@ export default function Quan_ly_ung_vien() {
                         <div style={{ textAlign: "center", padding: 60, color: "#aaa", fontSize: 14 }}>Đang tải dữ liệu...</div>
                     ) : applications.length === 0 ? (
                         <div style={{ textAlign: "center", padding: 60, color: "#aaa" }}>
-                            <div style={{ fontSize: 40, marginBottom: 12 }}>📭</div>
+                            <div style={{ fontSize: 40, marginBottom: 12, display: 'flex', justifyContent: 'center' }}><Inbox size={48} className="text-gray-300"/></div>
                             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 6 }}>Chưa có hồ sơ ứng tuyển nào</div>
                             <div style={{ fontSize: 13 }}>Ứng viên ứng tuyển sẽ xuất hiện tại đây.</div>
                         </div>
@@ -655,7 +656,7 @@ export default function Quan_ly_ung_vien() {
                         fontFamily: "'Be Vietnam Pro', sans-serif"
                     }}>
                         <div style={{ padding: "24px 24px 20px", textAlign: "center" }}>
-                            <span style={{ fontSize: 44 }}>⚠️</span>
+                            <span style={{ fontSize: 44, display: 'flex', justifyContent: 'center' }}><AlertTriangle size={48} className="text-yellow-500"/></span>
                             <h3 style={{ margin: "14px 0 8px", fontSize: 17, fontWeight: 700, color: "#1e293b" }}>Xác nhận từ chối</h3>
                             <p style={{ margin: 0, fontSize: 13, color: "#64748b", lineHeight: 1.5 }}>
                                 Bạn có chắc chắn muốn từ chối ứng viên <strong>{rejectingApp.CandidateName}</strong> cho vị trí <strong>{rejectingApp.JobTitle}</strong>?<br/>
@@ -688,7 +689,7 @@ export default function Quan_ly_ung_vien() {
                     padding: "12px 20px", borderRadius: 10, fontSize: 13, fontWeight: 600,
                     boxShadow: "0 4px 20px rgba(0,0,0,0.2)", zIndex: 9999,
                 }}>
-                    {toast.ok ? "✅" : "❌"} {toast.msg}
+                    {toast.ok ? <CheckCircle2 size={16}/> : <XCircle size={16}/>} {toast.msg}
                 </div>
             )}
         </div>

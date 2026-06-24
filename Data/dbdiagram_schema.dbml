@@ -1,0 +1,347 @@
+// =====================================================
+// VietJob_DATN - Database Schema for dbdiagram.io
+// Converted from SQLQuery1.sql
+// =====================================================
+
+Table NguoiDungBoilerplate {
+  Id bigint [pk, increment]
+  SoLanDangNhapSai int [not null]
+  NguonXacThuc nvarchar(64)
+  NhanDongThoi nvarchar(128)
+  ThoiGianTao datetime2 [not null]
+  MaNguoiTao bigint
+  MaNguoiXoa bigint
+  ThoiGianXoa datetime2
+  DiaChiEmail nvarchar(256) [not null]
+  MaXacNhanEmail nvarchar(328)
+  TrangThaiHoatDong bit [not null]
+  DaXoa bit [not null]
+  DaXacNhanEmail bit [not null]
+  KichHoatKhoaKhoa bit [not null]
+  DaXacNhanSoDienThoai bit [not null]
+  XacThucHaiLop bit [not null]
+  ThoiGianCapNhatCuoi datetime2
+  MaNguoiCapNhatCuoi bigint
+  NgayKetThucKhoaUtc datetime2
+  Ten nvarchar(64) [not null]
+  EmailChuanHoa nvarchar(256) [not null]
+  TenDangNhapChuanHoa nvarchar(256) [not null]
+  MatKhau nvarchar(128) [not null]
+  MaResetMatKhau nvarchar(328)
+  SoDienThoai nvarchar(32)
+  NhanBaoMat nvarchar(128)
+  Ho nvarchar(64) [not null]
+  MaChiNhanh int
+  TenDangNhap nvarchar(256) [not null]
+}
+
+Table NguoiDung {
+  Id int [pk, increment]
+  TenDangNhap nvarchar(100) [not null]
+  MatKhau nvarchar(max) [not null]
+  Email nvarchar(255) [not null]
+  NgayTao datetime
+  TrangThai nvarchar(20)
+  SoDienThoai varchar(20)
+  DiaChi nvarchar(250)
+  MaCongTy int
+  SoDu int [not null]
+}
+
+Table CongTy {
+  MaCongTy int [pk, increment]
+  TenCongTy nvarchar(255) [not null]
+  DuongDanLogo nvarchar(500)
+  MoTa nvarchar(max)
+  DuongDanWebsite nvarchar(255)
+  DiaDiem nvarchar(100)
+  NoiBat bit
+  NgayTao datetime
+  NganhNghe nvarchar(255)
+  QuyMo nvarchar(100)
+  QuocGia nvarchar(100)
+  ThoiGianLamViec nvarchar(255)
+  LuongTrungBinh nvarchar(100)
+  DanhGia decimal(2,1)
+  SoLuongDanhGia int
+  MoTaChiTiet nvarchar(max)
+  DuongDayNong varchar(20)
+  AnhVanPhong nvarchar(max)
+}
+
+Table CongViec {
+  MaCongViec int [pk, increment]
+  MaCongTy int
+  TieuDeCongViec nvarchar(255) [not null]
+  MucLuong nvarchar(100)
+  LoaiCongViec nvarchar(50)
+  KinhNghiem nvarchar(100)
+  DiaDiem nvarchar(255)
+  MoTa nvarchar(max)
+  TrangThaiHoatDong bit
+  NgayTao datetime
+  KyNang nvarchar(max)
+  CapBac nvarchar(100)
+  GioiTinh nvarchar(50)
+  HanNopHoSo datetime
+  YeuCau nvarchar(max)
+  QuyenLoi nvarchar(max)
+  NoiBat bit [not null]
+}
+
+Table HoSoUngVien {
+  Id bigint [pk, increment]
+  MaNguoiDung bigint [not null]
+  HoTen nvarchar(256) [not null]
+  TieuDe nvarchar(max)
+  KyNang nvarchar(max)
+  HocVan nvarchar(max)
+  KinhNghiem nvarchar(max)
+  DuongDanCv nvarchar(max)
+  SoDienThoai nvarchar(max)
+  ThoiGianTao datetime2 [not null]
+  MaNguoiTao bigint
+  ThoiGianCapNhatCuoi datetime2
+  MaNguoiCapNhatCuoi bigint
+  DaXoa bit [not null]
+  MaNguoiXoa bigint
+  ThoiGianXoa datetime2
+}
+
+Table DonUngTuyen {
+  MaDonUngTuyen int [pk, increment]
+  MaCongViec int [not null]
+  TenUngVien nvarchar(255) [not null]
+  SoDienThoai nvarchar(20)
+  ThanhPho nvarchar(100)
+  ThuGioiThieu nvarchar(max)
+  DuongDanCv nvarchar(max)
+  NgayNop datetime
+  TrangThai nvarchar(50)
+  MaNguoiDung int
+  NgayPhongVan nvarchar(100)
+  HinhThucPhongVan nvarchar(100)
+  DiaDiemPhongVan nvarchar(500)
+  GhiChuPhongVan nvarchar(max)
+}
+
+Table CvUngVien {
+  Id int [pk, increment]
+  MaNguoiDung int [not null]
+  GioiThieu nvarchar(max)
+  KyNang nvarchar(max)
+  NgayTao datetime
+  DuongDanFileCv nvarchar(2000)
+  TenFileCv nvarchar(500)
+}
+
+Table FileUngVien {
+  Id int [pk, increment]
+  MaNguoiDung int [not null]
+  TenFile nvarchar(500) [not null]
+  DuongDanFile nvarchar(2000) [not null]
+  KichThuocFile int
+  NgayTaiLen datetime
+}
+
+Table HocVanCv {
+  Id int [pk, increment]
+  MaCv int [not null]
+  TenTruong nvarchar(255) [not null]
+  ChuyenNganh nvarchar(255) [not null]
+  NgayBatDau date
+  NgayKetThuc date
+}
+
+Table KinhNghiemCv {
+  Id int [pk, increment]
+  MaCv int [not null]
+  TenCongTy nvarchar(255) [not null]
+  ViTri nvarchar(100) [not null]
+  NgayBatDau date
+  NgayKetThuc date
+  MoTa nvarchar(max)
+}
+
+Table DanhGiaCongTy {
+  Id int [pk, increment]
+  MaCongTy int [not null]
+  MaNguoiDung int
+  DanhGia int [not null]
+  TomTat nvarchar(500) [not null]
+  ChinhSachTangCa nvarchar(50)
+  LyDoTangCa nvarchar(1000)
+  DiemYeuThich nvarchar(max)
+  GopY nvarchar(max)
+  NgayTao datetime
+}
+
+Table BaoCaoCongViec {
+  MaBaoCao int [pk, increment]
+  MaCongViec int [not null]
+  MaNguoiDung int
+  LyDo nvarchar(255) [not null]
+  MoTa nvarchar(max)
+  TrangThai nvarchar(50)
+  NgayTao datetime
+}
+
+Table KyNang {
+  MaKyNang int [pk, increment]
+  TenKyNang nvarchar(50) [not null]
+}
+
+Table KyNangCongViec {
+  MaCongViec int [not null]
+  MaKyNang int [not null]
+
+  indexes {
+    (MaCongViec, MaKyNang) [pk]
+  }
+}
+
+Table VaiTro {
+  MaVaiTro int [pk, increment]
+  TenVaiTro nvarchar(50) [not null]
+}
+
+Table VaiTroNguoiDung {
+  MaNguoiDung int [not null]
+  MaVaiTro int [not null]
+
+  indexes {
+    (MaNguoiDung, MaVaiTro) [pk]
+  }
+}
+
+Table TinNhan {
+  MaTinNhan int [pk, increment]
+  MaNguoiGui int [not null]
+  MaNguoiNhan int [not null]
+  NoiDungTinNhan nvarchar(max) [not null]
+  NgayTao datetime
+  DaDoc bit
+  DuongDanDinhKem nvarchar(max)
+  TenFileDinhKem nvarchar(255)
+}
+
+Table ThongBao {
+  MaThongBao int [pk, increment]
+  MaNguoiDung int [not null]
+  LoaiThongBao nvarchar(50) [not null]
+  TieuDe nvarchar(255) [not null]
+  NoiDung nvarchar(max) [not null]
+  DaDoc bit [not null]
+  NgayTao datetime
+  MaLienQuan int
+}
+
+Table TuKhoaPhoBien {
+  MaTuKhoa int [pk, increment]
+  TenTuKhoa nvarchar(100) [not null]
+  SoLuotTimKiem int
+}
+
+Table GiaoDich {
+  Id int [pk, increment]
+  MaNguoiDung int [not null]
+  TieuDe nvarchar(255) [not null]
+  SoTien int [not null]
+  LoaiGiaoDich nvarchar(50) [not null]
+  TrangThai nvarchar(50) [not null]
+  NgayTao datetime
+  MaThamChieu nvarchar(100)
+}
+
+Table KhoaHoc {
+  Id int [pk, increment]
+  MaNhaTuyenDung int [not null]
+  TieuDe nvarchar(max)
+  MoTa nvarchar(max)
+  TrangThai nvarchar(max)
+  ThoiGianTao datetime2 [not null]
+  MaNguoiTao bigint
+  ThoiGianCapNhat datetime2
+  MaNguoiCapNhat bigint
+  DaXoa bit [not null]
+  MaNguoiXoa bigint
+  ThoiGianXoa datetime2
+  DanhMuc nvarchar(50)
+  DanhGia decimal(2,1)
+  SoLuongDanhGia int
+  ThoiLuong nvarchar(50)
+  SoBaiHoc int
+  TrinhDo nvarchar(50)
+  TenGiangVien nvarchar(100)
+  VaiTroGiangVien nvarchar(150)
+  Gia int
+  GiaCu int
+  DuongDanDrive nvarchar(500)
+}
+
+Table DangKiKhoahoc {
+  MaKhoaHocNguoiDung int [pk, increment]
+  MaNguoiDung int [not null]
+  MaKhoaHoc nvarchar(100) [not null]
+  TrangThai nvarchar(50) [not null]
+  NgayTao datetime
+  CapNhatLanCuoi datetime
+}
+
+// =====================================================
+// RELATIONSHIPS / FOREIGN KEYS
+// =====================================================
+
+// NguoiDung -> CongTy
+Ref: NguoiDung.MaCongTy > CongTy.MaCongTy
+
+// HoSoUngVien -> NguoiDungBoilerplate
+Ref: HoSoUngVien.MaNguoiDung > NguoiDungBoilerplate.Id [delete: cascade]
+
+// DonUngTuyen -> CongViec
+Ref: DonUngTuyen.MaCongViec > CongViec.MaCongViec
+
+// CvUngVien -> NguoiDung
+Ref: CvUngVien.MaNguoiDung > NguoiDung.Id [delete: cascade]
+
+// HocVanCv -> CvUngVien
+Ref: HocVanCv.MaCv > CvUngVien.Id [delete: cascade]
+
+// KinhNghiemCv -> CvUngVien
+Ref: KinhNghiemCv.MaCv > CvUngVien.Id [delete: cascade]
+
+// DanhGiaCongTy -> CongTy
+Ref: DanhGiaCongTy.MaCongTy > CongTy.MaCongTy
+
+// BaoCaoCongViec -> CongViec
+Ref: BaoCaoCongViec.MaCongViec > CongViec.MaCongViec
+
+// BaoCaoCongViec -> NguoiDung
+Ref: BaoCaoCongViec.MaNguoiDung > NguoiDung.Id
+
+// CongViec -> CongTy
+Ref: CongViec.MaCongTy > CongTy.MaCongTy
+
+// KyNangCongViec -> CongViec
+Ref: KyNangCongViec.MaCongViec > CongViec.MaCongViec
+
+// KyNangCongViec -> KyNang
+Ref: KyNangCongViec.MaKyNang > KyNang.MaKyNang
+
+// TinNhan -> NguoiDung (nguoi nhan)
+Ref: TinNhan.MaNguoiNhan > NguoiDung.Id
+
+// TinNhan -> NguoiDung (nguoi gui)
+Ref: TinNhan.MaNguoiGui > NguoiDung.Id
+
+// ThongBao -> NguoiDung
+Ref: ThongBao.MaNguoiDung > NguoiDung.Id
+
+// DangKiKhoahoc -> NguoiDung
+Ref: DangKiKhoahoc.MaNguoiDung > NguoiDung.Id
+
+// VaiTroNguoiDung -> VaiTro
+Ref: VaiTroNguoiDung.MaVaiTro > VaiTro.MaVaiTro
+
+// VaiTroNguoiDung -> NguoiDung
+Ref: VaiTroNguoiDung.MaNguoiDung > NguoiDung.Id

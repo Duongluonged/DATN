@@ -6,20 +6,20 @@ async function ensureTable() {
     await pool.request().query(`
         IF NOT EXISTS (
             SELECT 1 FROM INFORMATION_SCHEMA.TABLES
-            WHERE TABLE_NAME = 'CompanyReviews'
+            WHERE TABLE_NAME = 'DanhGiaCongTy'
         )
         BEGIN
-            CREATE TABLE CompanyReviews (
+            CREATE TABLE DanhGiaCongTy (
                 Id              INT PRIMARY KEY IDENTITY(1,1),
-                CompanyId       INT NOT NULL,
-                UserId          INT NULL,
-                Rating          INT NOT NULL CHECK (Rating BETWEEN 1 AND 5),
-                Summary         NVARCHAR(500) NOT NULL,
-                OvertimePolicy  NVARCHAR(50)  NULL,
-                OvertimeReason  NVARCHAR(1000) NULL,
-                LoveWorking     NVARCHAR(MAX)  NULL,
-                Suggestion      NVARCHAR(MAX)  NULL,
-                CreatedAt       DATETIME DEFAULT GETDATE()
+                MaCongTy       INT NOT NULL,
+                MaNguoiDung          INT NULL,
+                DanhGia          INT NOT NULL CHECK (DanhGia BETWEEN 1 AND 5),
+                TomTat         NVARCHAR(500) NOT NULL,
+                ChinhSachTangCa  NVARCHAR(50)  NULL,
+                LyDoTangCa  NVARCHAR(1000) NULL,
+                DiemYeuThich     NVARCHAR(MAX)  NULL,
+                GopY      NVARCHAR(MAX)  NULL,
+                NgayTao       DATETIME DEFAULT GETDATE()
             )
         END
     `);
@@ -42,20 +42,20 @@ exports.createReview = async (req, res) => {
     try {
         await ensureTable();
         const result = await pool.request()
-            .input("CompanyId",      sql.Int,      Number(companyId))
-            .input("UserId",         sql.Int,      userId ? Number(userId) : null)
-            .input("Rating",         sql.Int,      Number(rating))
-            .input("Summary",        sql.NVarChar,  summary)
-            .input("OvertimePolicy", sql.NVarChar,  overtimePolicy  || null)
-            .input("OvertimeReason", sql.NVarChar,  overtimeReason  || null)
-            .input("LoveWorking",    sql.NVarChar,  loveWorking     || null)
-            .input("Suggestion",     sql.NVarChar,  suggestion      || null)
+            .input("MaCongTy",       sql.Int,      Number(companyId))
+            .input("MaNguoiDung",    sql.Int,      userId ? Number(userId) : null)
+            .input("DanhGia",        sql.Int,      Number(rating))
+            .input("TomTat",         sql.NVarChar,  summary)
+            .input("ChinhSachTangCa", sql.NVarChar,  overtimePolicy  || null)
+            .input("LyDoTangCa",     sql.NVarChar,  overtimeReason  || null)
+            .input("DiemYeuThich",   sql.NVarChar,  loveWorking     || null)
+            .input("GopY",           sql.NVarChar,  suggestion      || null)
             .query(`
-                INSERT INTO CompanyReviews
-                    (CompanyId, UserId, Rating, Summary, OvertimePolicy, OvertimeReason, LoveWorking, Suggestion)
+                INSERT INTO DanhGiaCongTy
+                    (MaCongTy, MaNguoiDung, DanhGia, TomTat, ChinhSachTangCa, LyDoTangCa, DiemYeuThich, GopY)
                 OUTPUT INSERTED.Id
                 VALUES
-                    (@CompanyId, @UserId, @Rating, @Summary, @OvertimePolicy, @OvertimeReason, @LoveWorking, @Suggestion)
+                    (@MaCongTy, @MaNguoiDung, @DanhGia, @TomTat, @ChinhSachTangCa, @LyDoTangCa, @DiemYeuThich, @GopY)
             `);
 
         res.status(201).json({
@@ -74,15 +74,15 @@ exports.getReviews = async (req, res) => {
     try {
         await ensureTable();
         const result = await pool.request()
-            .input("CompanyId", sql.Int, Number(companyId))
+            .input("MaCongTy", sql.Int, Number(companyId))
             .query(`
-                SELECT r.Id, r.Rating, r.Summary, r.OvertimePolicy,
-                       r.OvertimeReason, r.LoveWorking, r.Suggestion, r.CreatedAt,
-                       u.Username
-                FROM CompanyReviews r
-                LEFT JOIN Users u ON r.UserId = u.Id
-                WHERE r.CompanyId = @CompanyId
-                ORDER BY r.CreatedAt DESC
+                SELECT r.Id, r.DanhGia AS Rating, r.TomTat AS Summary, r.ChinhSachTangCa AS OvertimePolicy,
+                       r.LyDoTangCa AS OvertimeReason, r.DiemYeuThich AS LoveWorking, r.GopY AS Suggestion, r.NgayTao AS CreatedAt,
+                       u.TenDangNhap AS Username
+                FROM DanhGiaCongTy r
+                LEFT JOIN NguoiDung u ON r.MaNguoiDung = u.Id
+                WHERE r.MaCongTy = @MaCongTy
+                ORDER BY r.NgayTao DESC
             `);
         res.json(result.recordset);
     } catch (err) {
@@ -97,13 +97,13 @@ exports.getReviewStats = async (req, res) => {
     try {
         await ensureTable();
         const result = await pool.request()
-            .input("CompanyId", sql.Int, Number(companyId))
+            .input("MaCongTy", sql.Int, Number(companyId))
             .query(`
                 SELECT
                     COUNT(*)        AS TotalReviews,
-                    AVG(CAST(Rating AS FLOAT)) AS AvgRating
-                FROM CompanyReviews
-                WHERE CompanyId = @CompanyId
+                    AVG(CAST(DanhGia AS FLOAT)) AS AvgRating
+                FROM DanhGiaCongTy
+                WHERE MaCongTy = @MaCongTy
             `);
         const row = result.recordset[0];
         res.json({

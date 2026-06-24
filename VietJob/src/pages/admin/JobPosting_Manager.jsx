@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Sidebar from '../../components/common/admin_c/sidebar.jsx';
 import Topbar from '../../components/common/admin_c/topbar.jsx';
-import { Search, CheckCircle, XCircle, Hourglass, Eye, Briefcase } from "lucide-react";
+import { Search, CheckCircle, XCircle, Hourglass, Eye, Briefcase, PenTool, MapPin, Banknote, Clock } from "lucide-react";
 
 export default function JobListings() {
   const [activeNav, setActiveNav] = useState("Job Listings");
@@ -165,9 +165,9 @@ export default function JobListings() {
                               <div>
                                 <div style={{ fontSize: 12.5, fontWeight: 600, marginBottom: 3, color: "#1a1d27" }}>{job.JobTitle}</div>
                                 <div style={{ fontSize: 11, color: "#8b93a7", display: "flex", gap: 8, flexWrap: "wrap" }}>
-                                  <span>📍 {job.Location}</span>
-                                  <span>💰 {job.SalaryRange || "Thỏa thuận"}</span>
-                                  {job.JobType && <span>🕐 {job.JobType}</span>}
+                                  <span style={{display: 'flex', alignItems: 'center', gap: 4}}><MapPin size={12}/> {job.Location}</span>
+                                  <span style={{display: 'flex', alignItems: 'center', gap: 4}}><Banknote size={12}/> {job.SalaryRange || "Thỏa thuận"}</span>
+                                  {job.JobType && <span style={{display: 'flex', alignItems: 'center', gap: 4}}><Clock size={12}/> {job.JobType}</span>}
                                 </div>
                               </div>
                             </div>
@@ -175,7 +175,7 @@ export default function JobListings() {
                           {/* Employer */}
                           <td style={{ padding: "12px 14px", verticalAlign: "middle" }}>
                             <div style={{ fontSize: 12.5, fontWeight: 600, color: "#1a1d27" }}>{job.CompanyName}</div>
-                            {job.Skills && <div style={{ fontSize: 11, color: "#8b93a7", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 180 }} title={job.Skills}>🛠️ {job.Skills}</div>}
+                            {job.Skills && <div style={{ fontSize: 11, color: "#8b93a7", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 180 }} title={job.Skills}><span style={{display: 'flex', alignItems: 'center', gap: 4}}><PenTool size={12}/> {job.Skills}</span></div>}
                           </td>
                           {/* Status */}
                           <td style={{ padding: "12px 14px", verticalAlign: "middle" }}>

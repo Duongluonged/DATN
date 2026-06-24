@@ -17,7 +17,7 @@ const createReport = async (req, res) => {
             .input('reason',      sql.NVarChar,  reason)
             .input('description', sql.NVarChar,  description || null)
             .query(`
-                INSERT INTO JobReports (JobID, UserId, Reason, Description, Status, CreatedAt)
+                INSERT INTO BaoCaoCongViec (MaCongViec, MaNguoiDung, LyDo, MoTa, TrangThai, NgayTao)
                 VALUES (@jobId, @userId, @reason, @description, 'Pending', GETDATE())
             `);
 
@@ -34,15 +34,15 @@ const getAllReports = async (req, res) => {
         await poolConnect;
         const result = await pool.request().query(`
             SELECT 
-                R.ReportID, R.Reason, R.Description, R.Status, R.CreatedAt,
-                J.JobID, J.JobTitle, J.Location,
-                C.CompanyName,
-                U.Username AS ReporterName, U.Email AS ReporterEmail
-            FROM JobReports R
-            JOIN Jobs J ON R.JobID = J.JobID
-            JOIN Companies C ON J.CompanyID = C.CompanyID
-            LEFT JOIN Users U ON R.UserId = U.Id
-            ORDER BY R.CreatedAt DESC
+                R.MaBaoCao AS ReportID, R.LyDo AS Reason, R.MoTa AS Description, R.TrangThai AS Status, R.NgayTao AS CreatedAt,
+                J.MaCongViec AS JobID, J.TieuDeCongViec AS JobTitle, J.DiaDiem AS Location,
+                C.TenCongTy AS CompanyName,
+                U.TenDangNhap AS ReporterName, U.Email AS ReporterEmail
+            FROM BaoCaoCongViec R
+            JOIN CongViec J ON R.MaCongViec = J.MaCongViec
+            JOIN CongTy C ON J.MaCongTy = C.MaCongTy
+            LEFT JOIN NguoiDung U ON R.MaNguoiDung = U.Id
+            ORDER BY R.NgayTao DESC
         `);
 
         res.status(200).json(result.recordset);
@@ -67,9 +67,9 @@ const updateReportStatus = async (req, res) => {
             .input('reportId', sql.Int, reportId)
             .input('status',   sql.NVarChar, status)
             .query(`
-                UPDATE JobReports 
-                SET Status = @status
-                WHERE ReportID = @reportId
+                UPDATE BaoCaoCongViec 
+                SET TrangThai = @status
+                WHERE MaBaoCao = @reportId
             `);
 
         res.status(200).json({ message: 'Cập nhật trạng thái báo cáo thành công!' });

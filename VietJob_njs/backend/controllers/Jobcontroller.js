@@ -11,29 +11,29 @@ const searchJobs = async (req, res) => {
         const request = pool.request();
         let query = `
             SELECT 
-                J.JobID, J.JobTitle, J.Description, J.Skills,
-                J.Location, J.SalaryRange, J.JobType, J.JobLevel,
-                J.Experience, J.IsActive, J.CreatedAt, J.Benefits,
-                J.Requirements, J.ApplicationDeadline AS Deadline,
-                C.CompanyName, C.LogoURL, C.CompanyID
-            FROM Jobs J
-            JOIN Companies C ON J.CompanyID = C.CompanyID
-            WHERE J.IsActive = 1
+                J.MaCongViec AS JobID, J.TieuDeCongViec AS JobTitle, J.MoTa AS Description, J.KyNang,
+                J.DiaDiem AS Location, J.MucLuong AS SalaryRange, J.LoaiCongViec AS JobType, J.CapBac AS JobLevel,
+                J.KinhNghiem AS Experience, J.TrangThaiHoatDong AS IsActive, J.NgayTao AS CreatedAt, J.QuyenLoi AS Benefits,
+                J.YeuCau AS Requirements, J.HanNopHoSo AS Deadline,
+                C.TenCongTy AS CompanyName, C.DuongDanLogo AS LogoURL, C.MaCongTy AS CompanyID
+            FROM CongViec J
+            JOIN CongTy C ON J.MaCongTy = C.MaCongTy
+            WHERE J.TrangThaiHoatDong = 1
         `;
 
         if (keyword && keyword.trim() !== '') {
-            query += ` AND (J.JobTitle LIKE @key OR J.Skills LIKE @key OR J.Description LIKE @key)`;
+            query += ` AND (J.TieuDeCongViec LIKE @key OR J.KyNang LIKE @key OR J.MoTa LIKE @key)`;
             request.input('key', sql.NVarChar, `%${keyword.trim()}%`);
         }
         if (location && location !== 'Tất cả các địa điểm') {
             // Chuẩn hóa tìm kiếm Hồ Chí Minh / TP.HCM
             if (location.includes("Hồ Chí Minh") || location.includes("TP.HCM") || location.includes("TP. Hồ Chí Minh")) {
-                query += ` AND (J.Location LIKE @loc1 OR J.Location LIKE @loc2 OR J.Location LIKE @loc3)`;
+                query += ` AND (J.DiaDiem LIKE @loc1 OR J.DiaDiem LIKE @loc2 OR J.DiaDiem LIKE @loc3)`;
                 request.input('loc1', sql.NVarChar, '%Hồ Chí Minh%');
                 request.input('loc2', sql.NVarChar, '%TP.HCM%');
                 request.input('loc3', sql.NVarChar, '%TP. Hồ Chí Minh%');
             } else {
-                query += ` AND J.Location LIKE @loc`;
+                query += ` AND J.DiaDiem LIKE @loc`;
                 request.input('loc', sql.NVarChar, `%${location}%`);
             }
         }
@@ -46,7 +46,7 @@ const searchJobs = async (req, res) => {
                 'contract': 'Hợp đồng'
             };
             const mappedType = typeMap[jobType] || jobType;
-            query += ` AND J.JobType = @type`;
+            query += ` AND J.LoaiCongViec = @type`;
             request.input('type', sql.NVarChar, mappedType);
         }
         if (salary && salary !== 'all') {
@@ -57,12 +57,12 @@ const searchJobs = async (req, res) => {
                 '50+': '50'
             };
             if (salaryMap[salary]) {
-                query += ` AND J.SalaryRange LIKE @salary`;
+                query += ` AND J.MucLuong LIKE @salary`;
                 request.input('salary', sql.NVarChar, `%${salaryMap[salary]}%`);
             }
         }
 
-        query += ` ORDER BY J.CreatedAt DESC`;
+        query += ` ORDER BY J.NgayTao DESC`;
         const result = await request.query(query);
         res.status(200).json(result.recordset);
     } catch (err) {
@@ -82,11 +82,27 @@ const getJobDetail = async (req, res) => {
             .input('id', sql.Int, id)
             .query(`
                 SELECT 
-                    J.*,
-                    C.CompanyName, C.LogoURL, C.WebsiteURL, C.Size, C.Industry
-                FROM Jobs J
-                JOIN Companies C ON J.CompanyID = C.CompanyID
-                WHERE J.JobID = @id AND J.IsActive = 1
+                    J.MaCongViec AS JobID, 
+                    J.MaCongTy AS CompanyID, 
+                    J.TieuDeCongViec AS JobTitle, 
+                    J.MucLuong AS SalaryRange, 
+                    J.LoaiCongViec AS JobType, 
+                    J.KinhNghiem AS Experience, 
+                    J.DiaDiem AS Location, 
+                    J.MoTa AS Description, 
+                    J.TrangThaiHoatDong AS IsActive, 
+                    J.NgayTao AS CreatedAt, 
+                    J.KyNang AS Skills, 
+                    J.CapBac AS JobLevel, 
+                    J.GioiTinh AS Gender, 
+                    J.HanNopHoSo AS ApplicationDeadline, 
+                    J.YeuCau AS Requirements, 
+                    J.QuyenLoi AS Benefits, 
+                    J.NoiBat AS IsHighlighted,
+                    C.TenCongTy AS CompanyName, C.DuongDanLogo AS LogoURL, C.DuongDanWebsite AS WebsiteURL, C.QuyMo AS Size, C.NganhNghe AS Industry
+                FROM CongViec J
+                JOIN CongTy C ON J.MaCongTy = C.MaCongTy
+                WHERE J.MaCongViec = @id AND J.TrangThaiHoatDong = 1
             `);
 
         if (result.recordset.length === 0) {
@@ -115,16 +131,16 @@ const getJobsByEmployer = async (req, res) => {
             .input('userId', sql.Int, parsedUserId)
             .query(`
                 SELECT 
-                    J.JobID, J.JobTitle, J.Location, J.SalaryRange,
-                    J.JobType, J.JobLevel, J.Experience, J.Skills,
-                    J.Description, J.Requirements, J.Gender, J.IsActive, J.CreatedAt,
-                    C.CompanyName,
-                    (SELECT COUNT(*) FROM Applications A WHERE A.JobID = J.JobID) AS ApplicantCount
-                FROM Jobs J
-                JOIN Companies C ON J.CompanyID = C.CompanyID
-                JOIN Users U ON U.CompanyID = C.CompanyID
+                    J.MaCongViec AS JobID, J.TieuDeCongViec AS JobTitle, J.DiaDiem AS Location, J.MucLuong AS SalaryRange,
+                    J.LoaiCongViec AS JobType, J.CapBac AS JobLevel, J.KinhNghiem AS Experience, J.KyNang,
+                    J.MoTa AS Description, J.YeuCau AS Requirements, J.GioiTinh AS Gender, J.TrangThaiHoatDong AS IsActive, J.NgayTao AS CreatedAt,
+                    C.TenCongTy AS CompanyName,
+                    (SELECT COUNT(*) FROM DonUngTuyen A WHERE A.MaCongViec = J.MaCongViec) AS ApplicantCount
+                FROM CongViec J
+                JOIN CongTy C ON J.MaCongTy = C.MaCongTy
+                JOIN NguoiDung U ON U.MaCongTy = C.MaCongTy
                 WHERE U.Id = @userId
-                ORDER BY J.CreatedAt DESC
+                ORDER BY J.NgayTao DESC
             `);
 
         res.status(200).json(result.recordset);
@@ -157,7 +173,7 @@ const createJob = async (req, res) => {
         // Lấy CompanyID từ userId
         const compResult = await pool.request()
             .input('userId', sql.Int, parsedUserId)
-            .query(`SELECT CompanyID FROM Users WHERE Id = @userId`);
+            .query(`SELECT MaCongTy AS CompanyID FROM NguoiDung WHERE Id = @userId`);
 
         if (compResult.recordset.length === 0 || !compResult.recordset[0].CompanyID) {
             return res.status(404).json({ message: 'Không tìm thấy công ty liên kết với tài khoản này.' });
@@ -178,12 +194,12 @@ const createJob = async (req, res) => {
             .input('requirements', sql.NVarChar, requirements || null)
             .input('gender',      sql.NVarChar,  gender      || 'Không yêu cầu')
             .query(`
-                INSERT INTO Jobs (
-                    CompanyID, JobTitle, Location, SalaryRange,
-                    JobType, JobLevel, Experience, Skills,
-                    Description, Requirements, Gender, IsActive, CreatedAt
+                INSERT INTO CongViec (
+                    MaCongTy, TieuDeCongViec, DiaDiem, MucLuong,
+                    LoaiCongViec, CapBac, KinhNghiem, KyNang,
+                    MoTa, YeuCau, GioiTinh, TrangThaiHoatDong, NgayTao
                 )
-                OUTPUT INSERTED.JobID
+                OUTPUT INSERTED.MaCongViec AS JobID
                 VALUES (
                     @companyId, @jobTitle, @location, @salaryRange,
                     @jobType, @jobLevel, @experience, @skills,
@@ -225,19 +241,19 @@ const updateJob = async (req, res) => {
             .input('gender',      sql.NVarChar,  gender      || 'Không yêu cầu')
             .input('isActive',    sql.Bit,       isActive !== undefined ? isActive : 1)
             .query(`
-                UPDATE Jobs SET
-                    JobTitle     = @jobTitle,
-                    Location     = @location,
-                    SalaryRange  = @salaryRange,
-                    JobType      = @jobType,
-                    JobLevel     = @jobLevel,
-                    Experience   = @experience,
-                    Skills       = @skills,
-                    Description  = @description,
-                    Requirements = @requirements,
-                    Gender       = @gender,
-                    IsActive     = @isActive
-                WHERE JobID = @jobId
+                UPDATE CongViec SET
+                    TieuDeCongViec     = @jobTitle,
+                    DiaDiem     = @location,
+                    MucLuong  = @salaryRange,
+                    LoaiCongViec      = @jobType,
+                    CapBac     = @jobLevel,
+                    KinhNghiem   = @experience,
+                    KyNang       = @skills,
+                    MoTa  = @description,
+                    YeuCau = @requirements,
+                    GioiTinh       = @gender,
+                    TrangThaiHoatDong     = @isActive
+                WHERE MaCongViec = @jobId
             `);
 
         res.status(200).json({ message: 'Cập nhật tin tuyển dụng thành công!' });
@@ -257,7 +273,7 @@ const deleteJob = async (req, res) => {
 
         await pool.request()
             .input('jobId', sql.Int, jobId)
-            .query(`UPDATE Jobs SET IsActive = 0 WHERE JobID = @jobId`);
+            .query(`UPDATE CongViec SET TrangThaiHoatDong = 0 WHERE MaCongViec = @jobId`);
 
         res.status(200).json({ message: 'Đã ẩn tin tuyển dụng.' });
     } catch (err) {
@@ -274,14 +290,14 @@ const getAllJobsAdmin = async (req, res) => {
         await poolConnect;
         const result = await pool.request().query(`
             SELECT 
-                J.JobID, J.JobTitle, J.Description, J.Skills,
-                J.Location, J.SalaryRange, J.JobType, J.JobLevel,
-                J.Experience, J.IsActive, J.CreatedAt, J.Benefits,
-                J.Requirements, J.ApplicationDeadline AS Deadline,
-                C.CompanyName, C.LogoURL
-            FROM Jobs J
-            JOIN Companies C ON J.CompanyID = C.CompanyID
-            ORDER BY J.CreatedAt DESC
+                J.MaCongViec AS JobID, J.TieuDeCongViec AS JobTitle, J.MoTa AS Description, J.KyNang,
+                J.DiaDiem AS Location, J.MucLuong AS SalaryRange, J.LoaiCongViec AS JobType, J.CapBac AS JobLevel,
+                J.KinhNghiem AS Experience, J.TrangThaiHoatDong AS IsActive, J.NgayTao AS CreatedAt, J.QuyenLoi AS Benefits,
+                J.YeuCau AS Requirements, J.HanNopHoSo AS Deadline,
+                C.TenCongTy AS CompanyName, C.DuongDanLogo AS LogoURL
+            FROM CongViec J
+            JOIN CongTy C ON J.MaCongTy = C.MaCongTy
+            ORDER BY J.NgayTao DESC
         `);
         res.status(200).json(result.recordset);
     } catch (err) {
@@ -302,7 +318,7 @@ const toggleJobStatus = async (req, res) => {
         await pool.request()
             .input('jobId', sql.Int, jobId)
             .input('isActive', sql.Bit, isActive)
-            .query(`UPDATE Jobs SET IsActive = @isActive WHERE JobID = @jobId`);
+            .query(`UPDATE CongViec SET TrangThaiHoatDong = @isActive WHERE MaCongViec = @jobId`);
 
         res.status(200).json({ message: 'Cập nhật trạng thái tin tuyển dụng thành công!' });
     } catch (err) {
@@ -325,8 +341,8 @@ const getEmployerStats = async (req, res) => {
             .input('userId', sql.Int, parsedUserId)
             .query(`
                 SELECT COUNT(*) AS total 
-                FROM Jobs J 
-                JOIN Users U ON J.CompanyID = U.CompanyID 
+                FROM CongViec J 
+                JOIN NguoiDung U ON J.MaCongTy = U.MaCongTy 
                 WHERE U.Id = @userId
             `);
         const totalJobs = jobsCountRes.recordset[0]?.total ?? 0;
@@ -336,9 +352,9 @@ const getEmployerStats = async (req, res) => {
             .input('userId', sql.Int, parsedUserId)
             .query(`
                 SELECT COUNT(*) AS total 
-                FROM Applications A 
-                JOIN Jobs J ON A.JobID = J.JobID 
-                JOIN Users U ON J.CompanyID = U.CompanyID 
+                FROM DonUngTuyen A 
+                JOIN CongViec J ON A.MaCongViec = J.MaCongViec 
+                JOIN NguoiDung U ON J.MaCongTy = U.MaCongTy 
                 WHERE U.Id = @userId
             `);
         const totalApplicants = appCountRes.recordset[0]?.total ?? 0;
@@ -348,10 +364,10 @@ const getEmployerStats = async (req, res) => {
             .input('userId', sql.Int, parsedUserId)
             .query(`
                 SELECT COUNT(*) AS total 
-                FROM Applications A 
-                JOIN Jobs J ON A.JobID = J.JobID 
-                JOIN Users U ON J.CompanyID = U.CompanyID 
-                WHERE U.Id = @userId AND A.Status = 'Pending'
+                FROM DonUngTuyen A 
+                JOIN CongViec J ON A.MaCongViec = J.MaCongViec 
+                JOIN NguoiDung U ON J.MaCongTy = U.MaCongTy 
+                WHERE U.Id = @userId AND A.TrangThai = 'Pending'
             `);
         const pendingApplications = pendingCountRes.recordset[0]?.total ?? 0;
 
@@ -360,12 +376,12 @@ const getEmployerStats = async (req, res) => {
             .input('userId', sql.Int, parsedUserId)
             .query(`
                 SELECT TOP 5 
-                    J.JobID, J.JobTitle, J.IsActive, J.CreatedAt, J.IsHighlighted,
-                    (SELECT COUNT(*) FROM Applications A WHERE A.JobID = J.JobID) AS ApplicantCount
-                FROM Jobs J
-                JOIN Users U ON J.CompanyID = U.CompanyID
+                    J.MaCongViec AS JobID, J.TieuDeCongViec AS JobTitle, J.TrangThaiHoatDong AS IsActive, J.NgayTao AS CreatedAt, J.NoiBat AS IsHighlighted,
+                    (SELECT COUNT(*) FROM DonUngTuyen A WHERE A.MaCongViec = J.MaCongViec) AS ApplicantCount
+                FROM CongViec J
+                JOIN NguoiDung U ON J.MaCongTy = U.MaCongTy
                 WHERE U.Id = @userId
-                ORDER BY ApplicantCount DESC, J.CreatedAt DESC
+                ORDER BY ApplicantCount DESC, J.NgayTao DESC
             `);
 
         // 5. Xu hướng ứng tuyển theo thời gian (giả lập biểu đồ dựa trên số liệu thực tế)
@@ -380,11 +396,11 @@ const getEmployerStats = async (req, res) => {
         const industryRes = await pool.request()
             .input('userId', sql.Int, parsedUserId)
             .query(`
-                SELECT J.JobType, COUNT(*) AS count
-                FROM Jobs J
-                JOIN Users U ON J.CompanyID = U.CompanyID
+                SELECT J.LoaiCongViec AS JobType, COUNT(*) AS count
+                FROM CongViec J
+                JOIN NguoiDung U ON J.MaCongTy = U.MaCongTy
                 WHERE U.Id = @userId
-                GROUP BY J.JobType
+                GROUP BY J.LoaiCongViec
             `);
         
         let industries = industryRes.recordset.map(item => ({

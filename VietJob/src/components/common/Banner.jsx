@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Search, ChevronDown } from 'lucide-react';
 
 const provinces = [
   "Tất cả các địa điểm", "Hà Nội", "TP. Hồ Chí Minh", "Đà Nẵng",
@@ -70,9 +71,7 @@ function Banner() {
         {/* Thanh tìm kiếm */}
         <div className="flex items-center bg-white rounded-full shadow-2xl focus-within:ring-4 focus-within:ring-sky-500/30 transition-all overflow-hidden">
           <div className="flex-1 flex items-center px-5">
-            <svg className="w-5 h-5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+            <Search className="w-5 h-5 text-gray-400 shrink-0" />
             <input
               type="text"
               value={keyword}
@@ -102,9 +101,7 @@ function Banner() {
               {provinces.map((p, i) => <option key={i} value={p} className="text-gray-900">{p}</option>)}
             </select>
             <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/70">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-              </svg>
+              <ChevronDown className="w-4 h-4" />
             </div>
           </div>
 
@@ -118,9 +115,7 @@ function Banner() {
               {salaryRanges.map((r, i) => <option key={i} value={r.value} className="text-gray-900">{r.label}</option>)}
             </select>
             <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/70">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-              </svg>
+              <ChevronDown className="w-4 h-4" />
             </div>
           </div>
 
@@ -134,9 +129,7 @@ function Banner() {
               {jobTypes.map((t, i) => <option key={i} value={t.value} className="text-gray-900">{t.label}</option>)}
             </select>
             <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/70">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-              </svg>
+              <ChevronDown className="w-4 h-4" />
             </div>
           </div>
         </div>

@@ -15,7 +15,7 @@ const postApplyJob = async (req, res) => {
             const existed = await pool.request()
                 .input('jobId',  sql.Int, jobId)
                 .input('userId', sql.Int, userId)
-                .query(`SELECT ApplicationID FROM Applications WHERE JobID = @jobId AND UserId = @userId`);
+                .query(`SELECT MaDonUngTuyen AS ApplicationID FROM DonUngTuyen WHERE MaCongViec = @jobId AND MaNguoiDung = @userId`);
             if (existed.recordset.length > 0) {
                 return res.status(409).json({ message: 'Bạn đã ứng tuyển vị trí này rồi!' });
             }
@@ -30,8 +30,8 @@ const postApplyJob = async (req, res) => {
             .input('coverLetter', sql.NVarChar,  coverLetter || null)
             .input('cvPath',      sql.NVarChar,  cvPath      || null)
             .query(`
-                INSERT INTO Applications
-                    (JobID, UserId, CandidateName, Phone, City, CoverLetter, CV_Path, Status, AppliedAt)
+                INSERT INTO DonUngTuyen
+                    (MaCongViec, MaNguoiDung, TenUngVien, SoDienThoai, ThanhPho, ThuGioiThieu, DuongDanCv, TrangThai, NgayNop)
                 VALUES
                     (@jobId, @userId, @name, @phone, @city, @coverLetter, @cvPath, N'Mới', GETDATE())
             `);
@@ -53,28 +53,28 @@ const getApplicationsByEmployer = async (req, res) => {
         const request = pool.request().input('userId', sql.Int, userId);
         let query = `
             SELECT 
-                A.ApplicationID, A.CandidateName, A.Phone, A.City,
-                A.CoverLetter, A.CV_Path, A.Status, A.AppliedAt,
-                A.UserId AS CandidateUserId,
-                J.JobID, J.JobTitle,
-                C.CompanyName
-            FROM Applications A
-            JOIN Jobs J ON A.JobID = J.JobID
-            JOIN Companies C ON J.CompanyID = C.CompanyID
-            JOIN Users U ON U.CompanyID = C.CompanyID
+                A.MaDonUngTuyen AS ApplicationID, A.TenUngVien AS CandidateName, A.SoDienThoai AS Phone, A.ThanhPho AS City,
+                A.ThuGioiThieu AS CoverLetter, A.DuongDanCv AS CV_Path, A.TrangThai AS Status, A.NgayNop AS AppliedAt,
+                A.MaNguoiDung AS CandidateUserId,
+                J.MaCongViec AS JobID, J.TieuDeCongViec AS JobTitle,
+                C.TenCongTy AS CompanyName
+            FROM DonUngTuyen A
+            JOIN CongViec J ON A.MaCongViec = J.MaCongViec
+            JOIN CongTy C ON J.MaCongTy = C.MaCongTy
+            JOIN NguoiDung U ON U.MaCongTy = C.MaCongTy
             WHERE U.Id = @userId
         `;
 
         if (jobId && jobId !== 'all') {
-            query += ` AND J.JobID = @jobId`;
+            query += ` AND J.MaCongViec = @jobId`;
             request.input('jobId', sql.Int, jobId);
         }
         if (status && status !== 'all') {
-            query += ` AND A.Status = @status`;
+            query += ` AND A.TrangThai = @status`;
             request.input('status', sql.NVarChar, status);
         }
 
-        query += ` ORDER BY A.AppliedAt DESC`;
+        query += ` ORDER BY A.NgayNop DESC`;
 
         const result = await request.query(query);
         res.status(200).json(result.recordset);
@@ -105,13 +105,13 @@ const updateApplicationStatus = async (req, res) => {
             .input('location', sql.NVarChar, interviewLocation || null)
             .input('note', sql.NVarChar, interviewNote || null)
             .query(`
-                UPDATE Applications 
-                SET Status = @status,
-                    InterviewDate = @date,
-                    InterviewFormat = @format,
-                    InterviewLocation = @location,
-                    InterviewNote = @note
-                WHERE ApplicationID = @appId
+                UPDATE DonUngTuyen 
+                SET TrangThai = @status,
+                    NgayPhongVan = @date,
+                    HinhThucPhongVan = @format,
+                    DiaDiemPhongVan = @location,
+                    GhiChuPhongVan = @note
+                WHERE MaDonUngTuyen = @appId
             `);
 
         // 2. Lấy thông tin ứng viên để gửi email
@@ -119,15 +119,15 @@ const updateApplicationStatus = async (req, res) => {
             .input('appId', sql.Int, applicationId)
             .query(`
                 SELECT
-                    A.CandidateName, A.UserId,
-                    J.JobTitle,
-                    C.CompanyName,
+                    A.TenUngVien AS CandidateName, A.MaNguoiDung AS UserId,
+                    J.TieuDeCongViec AS JobTitle,
+                    C.TenCongTy AS CompanyName,
                     U.Email
-                FROM Applications A
-                JOIN Jobs J ON A.JobID = J.JobID
-                JOIN Companies C ON J.CompanyID = C.CompanyID
-                LEFT JOIN Users U ON A.UserId = U.Id
-                WHERE A.ApplicationID = @appId
+                FROM DonUngTuyen A
+                JOIN CongViec J ON A.MaCongViec = J.MaCongViec
+                JOIN CongTy C ON J.MaCongTy = C.MaCongTy
+                LEFT JOIN NguoiDung U ON A.MaNguoiDung = U.Id
+                WHERE A.MaDonUngTuyen = @appId
             `);
 
         // 3. Gửi email nếu có địa chỉ email và status cần thông báo
@@ -167,7 +167,7 @@ const updateApplicationStatus = async (req, res) => {
                         .input('content', sql.NVarChar,  notif.content)
                         .input('relatedId', sql.Int,    parseInt(applicationId))
                         .query(`
-                            INSERT INTO Notifications (UserId, Type, Title, Content, RelatedID)
+                            INSERT INTO ThongBao (MaNguoiDung, LoaiThongBao, TieuDe, NoiDung, MaLienQuan)
                             VALUES (@userId, @type, @title, @content, @relatedId)
                         `);
                 } catch (notifErr) {
@@ -297,14 +297,14 @@ const getApplicationsByCandidate = async (req, res) => {
             .input('userId', sql.Int, parsedUserId)
             .query(`
                 SELECT 
-                    A.ApplicationID, A.Status, A.AppliedAt,
-                    J.JobID, J.JobTitle, J.Location, J.JobType, J.SalaryRange,
-                    C.CompanyName, C.LogoURL, C.CompanyID
-                FROM Applications A
-                JOIN Jobs J ON A.JobID = J.JobID
-                JOIN Companies C ON J.CompanyID = C.CompanyID
-                WHERE A.UserId = @userId
-                ORDER BY A.AppliedAt DESC
+                    A.MaDonUngTuyen AS ApplicationID, A.TrangThai AS Status, A.NgayNop AS AppliedAt,
+                    J.MaCongViec AS JobID, J.TieuDeCongViec AS JobTitle, J.DiaDiem AS Location, J.LoaiCongViec AS JobType, J.MucLuong AS SalaryRange,
+                    C.TenCongTy AS CompanyName, C.DuongDanLogo AS LogoURL, C.MaCongTy AS CompanyID
+                FROM DonUngTuyen A
+                JOIN CongViec J ON A.MaCongViec = J.MaCongViec
+                JOIN CongTy C ON J.MaCongTy = C.MaCongTy
+                WHERE A.MaNguoiDung = @userId
+                ORDER BY A.NgayNop DESC
             `);
 
         res.status(200).json(result.recordset);

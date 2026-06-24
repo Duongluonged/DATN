@@ -5,7 +5,7 @@ import axios from "axios";
 import { 
   BarChart3, Users, Briefcase, FileText, 
   TrendingUp, PieChart, Calendar, RefreshCw, 
-  Loader2, ArrowUpRight, ArrowDownLeft, Shield 
+  Loader2, ArrowUpRight, ArrowDownLeft, Shield, Star
 } from "lucide-react";
 
 export default function Thongke_ntd() {
@@ -225,7 +225,7 @@ export default function Thongke_ntd() {
                                 >
                                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                                         <div style={{ width: 34, height: 34, borderRadius: 8, background: job.IsHighlighted ? "rgba(234, 179, 8, 0.1)" : "rgba(37, 99, 235, 0.1)", color: job.IsHighlighted ? "#eab308" : "#2563eb", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 12 }}>
-                                            {job.IsHighlighted ? "★" : "💼"}
+                                            {job.IsHighlighted ? <Star size={12}/> : <Briefcase size={12}/>}
                                         </div>
                                         <div>
                                             <div style={{ fontWeight: 700, fontSize: 13, color: "#1e293b" }}>{job.JobTitle}</div>

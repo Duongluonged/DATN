@@ -9,7 +9,7 @@ const getCoursesByEmployer = async (req, res) => {
 
         const request = pool.request().input('userId', sql.Int, userId);
 
-        let where = `WHERE k.NhaTuyenDungId = @userId AND (k.IsDeleted = 0 OR k.IsDeleted IS NULL)`;
+        let where = `WHERE k.MaNhaTuyenDung = @userId AND (k.DaXoa = 0 OR k.DaXoa IS NULL)`;
         if (trangThai && trangThai !== 'all') {
             where += ` AND k.TrangThai = @trangThai`;
             request.input('trangThai', sql.NVarChar, trangThai);
@@ -17,13 +17,13 @@ const getCoursesByEmployer = async (req, res) => {
 
         const result = await request.query(`
             SELECT k.Id, k.TieuDe, k.MoTa, k.TrangThai,
-                   k.CreationTime, k.LastModificationTime,
-                   k.Category, k.Rating, k.ReviewsCount, k.Duration,
-                   k.LecturesCount, k.Level, k.InstructorName, k.InstructorRole,
-                   k.Price, k.OldPrice
-            FROM khoa_hoc k
+                   k.ThoiGianTao AS CreationTime, k.ThoiGianCapNhat AS LastModificationTime,
+                   k.DanhMuc AS Category, k.DanhGia AS Rating, k.SoLuongDanhGia AS ReviewsCount, k.ThoiLuong AS Duration,
+                   k.SoBaiHoc AS LecturesCount, k.TrinhDo AS Level, k.TenGiangVien AS InstructorName, k.VaiTroGiangVien AS InstructorRole,
+                   k.Gia AS Price, k.GiaCu AS OldPrice
+            FROM KhoaHoc k
             ${where}
-            ORDER BY k.CreationTime DESC
+            ORDER BY k.ThoiGianTao DESC
         `);
 
         res.status(200).json(result.recordset);
@@ -64,10 +64,10 @@ const createCourse = async (req, res) => {
             .input('oldPrice',        sql.Int,       oldPrice ? parseInt(oldPrice) : 3000000)
             .input('driveLink',       sql.NVarChar,  driveLink || 'https://drive.google.com/drive/folders/1abc-vietjob-dummy-link-course')
             .query(`
-                INSERT INTO khoa_hoc (
-                    NhaTuyenDungId, TieuDe, MoTa, TrangThai, CreationTime, CreatorUserId, IsDeleted,
-                    Category, Rating, ReviewsCount, Duration, LecturesCount, Level, 
-                    InstructorName, InstructorRole, Price, OldPrice, DriveLink
+                INSERT INTO KhoaHoc (
+                    MaNhaTuyenDung, TieuDe, MoTa, TrangThai, ThoiGianTao, MaNguoiTao, DaXoa,
+                    DanhMuc, DanhGia, SoLuongDanhGia, ThoiLuong, SoBaiHoc, TrinhDo, 
+                    TenGiangVien, VaiTroGiangVien, Gia, GiaCu, DuongDanDrive
                 )
                 OUTPUT INSERTED.Id
                 VALUES (
@@ -115,13 +115,13 @@ const updateCourse = async (req, res) => {
             .input('oldPrice',        sql.Int,       oldPrice ? parseInt(oldPrice) : 3000000)
             .input('driveLink',       sql.NVarChar,  driveLink || 'https://drive.google.com/drive/folders/1abc-vietjob-dummy-link-course')
             .query(`
-                UPDATE khoa_hoc
+                UPDATE KhoaHoc
                 SET TieuDe = @tieuDe, MoTa = @moTa, TrangThai = @trangThai,
-                    Category = @category, Duration = @duration, LecturesCount = @lecturesCount,
-                    Level = @level, InstructorName = @instructorName, InstructorRole = @instructorRole,
-                    Price = @price, OldPrice = @oldPrice, DriveLink = @driveLink,
-                    LastModificationTime = GETDATE(), LastModifierUserId = @userId
-                WHERE Id = @id AND NhaTuyenDungId = @userId
+                    DanhMuc = @category, ThoiLuong = @duration, SoBaiHoc = @lecturesCount,
+                    TrinhDo = @level, TenGiangVien = @instructorName, VaiTroGiangVien = @instructorRole,
+                    Gia = @price, GiaCu = @oldPrice, DuongDanDrive = @driveLink,
+                    ThoiGianCapNhat = GETDATE(), MaNguoiCapNhat = @userId
+                WHERE Id = @id AND MaNhaTuyenDung = @userId
             `);
 
         res.status(200).json({ message: 'Cập nhật khóa học thành công!' });
@@ -142,9 +142,9 @@ const deleteCourse = async (req, res) => {
             .input('id',     sql.Int, courseId)
             .input('userId', sql.Int, userId)
             .query(`
-                UPDATE khoa_hoc
-                SET IsDeleted = 1, DeleterUserId = @userId, DeletionTime = GETDATE()
-                WHERE Id = @id AND NhaTuyenDungId = @userId
+                UPDATE KhoaHoc
+                SET DaXoa = 1, MaNguoiXoa = @userId, ThoiGianXoa = GETDATE()
+                WHERE Id = @id AND MaNhaTuyenDung = @userId
             `);
 
         res.status(200).json({ message: 'Xóa khóa học thành công!' });
@@ -162,17 +162,17 @@ const getAllCourses = async (req, res) => {
             SELECT 
                 k.Id, 
                 k.TieuDe AS name, 
-                u.Username AS provider, 
+                u.TenDangNhap AS provider, 
                 k.TrangThai AS status, 
-                k.CreationTime,
+                k.ThoiGianTao AS CreationTime,
                 k.MoTa,
-                k.Category, k.Rating, k.ReviewsCount, k.Duration,
-                k.LecturesCount, k.Level, k.InstructorName, k.InstructorRole,
-                k.Price, k.OldPrice, k.DriveLink
-            FROM khoa_hoc k
-            LEFT JOIN Users u ON k.NhaTuyenDungId = u.Id
-            WHERE k.IsDeleted = 0 OR k.IsDeleted IS NULL
-            ORDER BY k.CreationTime DESC
+                k.DanhMuc AS Category, k.DanhGia AS Rating, k.SoLuongDanhGia AS ReviewsCount, k.ThoiLuong AS Duration,
+                k.SoBaiHoc AS LecturesCount, k.TrinhDo AS Level, k.TenGiangVien AS InstructorName, k.VaiTroGiangVien AS InstructorRole,
+                k.Gia AS Price, k.GiaCu AS OldPrice, k.DuongDanDrive AS DriveLink
+            FROM KhoaHoc k
+            LEFT JOIN NguoiDung u ON k.MaNhaTuyenDung = u.Id
+            WHERE k.DaXoa = 0 OR k.DaXoa IS NULL
+            ORDER BY k.ThoiGianTao DESC
         `);
         res.status(200).json(result.recordset);
     } catch (err) {
@@ -192,8 +192,8 @@ const updateCourseStatus = async (req, res) => {
             .input('id', sql.Int, courseId)
             .input('status', sql.NVarChar, status)
             .query(`
-                UPDATE khoa_hoc
-                SET TrangThai = @status, LastModificationTime = GETDATE()
+                UPDATE KhoaHoc
+                SET TrangThai = @status, ThoiGianCapNhat = GETDATE()
                 WHERE Id = @id
             `);
 

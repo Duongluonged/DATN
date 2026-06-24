@@ -1,23 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, FileText, User, Briefcase, Mail, Bell, Settings, BookOpen } from "lucide-react";
+import { LayoutDashboard, FileText, User, Briefcase, Mail, Bell, Settings, BookOpen, ChevronDown } from "lucide-react";
 
 const Navbar = () => {
   const [user, setUser] = useState(null);
+  const [avatarUrl, setAvatarUrl] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation(); // Dùng để theo dõi sự thay đổi đường dẫn
+  const location = useLocation();
 
   // Hàm kiểm tra trạng thái đăng nhập
   const checkAuth = () => {
-    const storedUser = localStorage.getItem("user"); // Lấy object 'user'
-
+    const storedUser = localStorage.getItem("user");
     if (storedUser) {
       const userData = JSON.parse(storedUser);
-      // Đảm bảo userData có trường username (hoặc name tùy backend trả về)
       setUser(userData);
+      // Fetch avatar từ API
+      const userId = userData?.id;
+      if (userId) {
+        fetch(`http://localhost:5000/api/auth/profile/${userId}`)
+          .then(r => r.json())
+          .then(data => { if (data?.AvatarUrl) setAvatarUrl(data.AvatarUrl); })
+          .catch(() => {});
+      }
     } else {
       setUser(null);
+      setAvatarUrl(null);
     }
   };
 
@@ -36,6 +44,12 @@ const Navbar = () => {
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
   }, [showDropdown]);
+
+  useEffect(() => {
+    const handler = (e) => setAvatarUrl(e.detail);
+    window.addEventListener('avatarUpdated', handler);
+    return () => window.removeEventListener('avatarUpdated', handler);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -59,9 +73,7 @@ const Navbar = () => {
             <div className="group relative cursor-pointer py-2">
               <div className="flex items-center gap-1 hover:text-blue-600 transition-colors">
                 <span>Top Công Ty IT</span>
-                <svg className="w-2.5 h-2.5 transition-transform duration-200 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 9l-7 7-7-7" />
-                </svg>
+                <ChevronDown className="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" />
               </div>
               <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 flex flex-col py-2 z-50">
                 <Link to="/companies/product" className="px-4 py-2 hover:bg-blue-50 hover:text-blue-600 transition-colors">Công ty Product</Link>
@@ -73,9 +85,7 @@ const Navbar = () => {
             <div className="group relative cursor-pointer py-2">
               <div className="flex items-center gap-1 hover:text-blue-600 transition-colors">
                 <span>Khoá học</span>
-                <svg className="w-2.5 h-2.5 transition-transform duration-200 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 9l-7 7-7-7" />
-                </svg>
+                <ChevronDown className="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" />
               </div>
               <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 flex flex-col py-2 z-50">
                 <Link to="/courses/web" className="px-4 py-2 hover:bg-blue-50 hover:text-blue-600 transition-colors">Lập trình Web</Link>
@@ -96,10 +106,14 @@ const Navbar = () => {
                 {user.username}
               </span>
               <div
-                className="w-9 h-9 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold shadow-sm border-2 border-blue-100 transition-transform hover:scale-105"
+                className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold shadow-sm border-2 border-blue-100 transition-transform hover:scale-105 overflow-hidden"
+                style={{ background: avatarUrl ? 'transparent' : '#2563eb' }}
                 onClick={() => setShowDropdown(!showDropdown)}
               >
-                {user.username.charAt(0).toUpperCase()}
+                {avatarUrl
+                  ? <img src={avatarUrl} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : user.username.charAt(0).toUpperCase()
+                }
               </div>
 
               {/* Dropdown Menu */}

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/common/Navbar';
 import {
   BookOpen, Trash2, GraduationCap, ChevronRight, PlayCircle,
-  Clock, BookOpenCheck, ArrowRight, Star, Heart, Sparkles
+  Clock, BookOpenCheck, ArrowRight, Star, Heart, Sparkles, CheckCircle2, AlertTriangle
 } from 'lucide-react';
 
 const mockCourses = [
@@ -249,7 +249,7 @@ export default function MyLearningPath() {
             <GraduationCap className="w-3.5 h-3.5" />
             Lộ trình học tập của {user?.username || 'tôi'}
           </span>
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white">
             Lộ Trình Học Tập Phát Triển Sự Nghiệp
           </h1>
           <p className="text-gray-300 max-w-2xl text-sm md:text-base leading-relaxed">
@@ -301,7 +301,7 @@ export default function MyLearningPath() {
           /* ================== TAB: ENROLLED COURSES ================== */
           enrolledCourses.length === 0 ? (
             <div className="bg-white rounded-3xl p-16 text-center shadow-sm border border-gray-100 max-w-md mx-auto mt-8 space-y-4">
-              <div className="text-5xl text-blue-500">🎓</div>
+              <div className="flex justify-center mb-2"><GraduationCap size={48} className="text-blue-500" /></div>
               <h3 className="text-lg font-bold text-gray-700">Chưa đăng ký khóa học nào</h3>
               <p className="text-gray-500 text-sm">
                 Bạn chưa kích hoạt khóa học nào trong lộ trình của mình. Hãy duyệt qua danh mục khoá học để chọn bài học phù hợp nhất!
@@ -377,7 +377,7 @@ export default function MyLearningPath() {
           /* ================== TAB: WISHLIST (DANH SÁCH QUAN TÂM) ================== */
           wishlistCourses.length === 0 ? (
             <div className="bg-white rounded-3xl p-16 text-center shadow-sm border border-gray-100 max-w-md mx-auto mt-8 space-y-4">
-              <div className="text-5xl text-rose-500">❤️</div>
+              <div className="flex justify-center mb-2"><Heart size={48} className="text-rose-500" /></div>
               <h3 className="text-lg font-bold text-gray-700">Chưa có khóa học quan tâm</h3>
               <p className="text-gray-500 text-sm">
                 Không tìm thấy khóa học quan tâm nào trong lộ trình của bạn. Thêm các khóa học ưa thích để theo dõi lộ trình phát triển.
@@ -447,7 +447,7 @@ export default function MyLearningPath() {
       {toast && (
         <div className={`fixed bottom-8 right-8 text-white px-6 py-3.5 rounded-xl text-sm font-semibold shadow-2xl z-[9999] flex items-center gap-2 animate-bounce ${toast.success ? 'bg-emerald-600' : 'bg-red-600'
           }`}>
-          {toast.success ? '✅' : '⚠️'}
+          {toast.success ? <CheckCircle2 className="w-5 h-5" /> : <AlertTriangle className="w-5 h-5" />}
           <span>{toast.message}</span>
         </div>
       )}

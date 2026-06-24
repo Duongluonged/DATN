@@ -122,7 +122,7 @@ function JobCard({ app, navigate, onChat }) {
           {app.CompanyID && (
             <span
               onClick={() => onChat(app.CompanyID, app.CompanyName)}
-              style={{ fontSize: 12, fontWeight: 700, color: "#16a34a", cursor: "pointer", display: "flex", alignItems: "center", gap: 3 }}
+              style={{ fontSize: 12, fontWeight: 700, color: "#0284c7", cursor: "pointer", display: "flex", alignItems: "center", gap: 3 }}
             >
               <MessageCircle size={13} /> Nhắn tin
             </span>
@@ -402,7 +402,7 @@ export default function ViecLamCuaToi() {
                     disabled={sendingChat || !chatMessage.trim()}
                     style={{
                       padding: "8px 20px", borderRadius: 10, border: "none",
-                      background: "linear-gradient(135deg,#16a34a,#10b981)", color: "#fff",
+                      background: "linear-gradient(135deg,#2563eb,#3b82f6)", color: "#fff",
                       fontSize: 12.5, fontWeight: 700, cursor: "pointer",
                       display: "flex", alignItems: "center", gap: 6, opacity: (sendingChat || !chatMessage.trim()) ? 0.6 : 1
                     }}

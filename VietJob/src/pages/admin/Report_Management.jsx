@@ -176,7 +176,7 @@ const Report_Management = () => {
                         </td>
                         <td className="px-6 py-5 max-w-xs">
                           <p className="font-bold text-red-600">
-                            ⚠️ {r.Reason}
+                            <span style={{display: 'flex', alignItems: 'center', gap: 4}}><AlertTriangle size={14}/> {r.Reason}</span>
                           </p>
                           {r.Description && (
                             <p className="text-gray-500 text-[11px] mt-1 font-medium leading-relaxed">{r.Description}</p>

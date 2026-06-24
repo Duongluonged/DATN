@@ -1,19 +1,5 @@
 const sql = require("mssql");
 
-const config = {
-    server: "localhost",
-    database: "VietJob_DATN",
-    options: {
-        encrypt: false,
-        trustServerCertificate: true,
-        enableArithAbort: true
-    },
-
-    driver: "msnodesqlv8",
-    connectionString: "Driver={SQL Server Native Client 11.0};Server=localhost;Database=VietJob_DATN;Trusted_Connection=yes;"
-};
-
-
 const configWithAuth = {
     user: "sa",
     password: "123",
@@ -31,90 +17,103 @@ const poolConnect = pool.connect()
         console.log("Kết nối SQL Server thành công!");
 
         p.request().query(`
-            IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='JobReports' AND xtype='U')
+            IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='BaoCaoCongViec' AND xtype='U')
             BEGIN
-                CREATE TABLE JobReports (
-                    ReportID INT IDENTITY(1,1) PRIMARY KEY,
-                    JobID INT NOT NULL FOREIGN KEY REFERENCES Jobs(JobID),
-                    UserId INT NULL FOREIGN KEY REFERENCES Users(Id),
-                    Reason NVARCHAR(255) NOT NULL,
-                    Description NVARCHAR(MAX) NULL,
-                    Status NVARCHAR(50) DEFAULT 'Pending',
-                    CreatedAt DATETIME DEFAULT GETDATE()
+                CREATE TABLE BaoCaoCongViec (
+                    MaBaoCao INT IDENTITY(1,1) PRIMARY KEY,
+                    MaCongViec INT NOT NULL FOREIGN KEY REFERENCES CongViec(MaCongViec),
+                    MaNguoiDung INT NULL FOREIGN KEY REFERENCES NguoiDung(Id),
+                    LyDo NVARCHAR(255) NOT NULL,
+                    MoTa NVARCHAR(MAX) NULL,
+                    TrangThai NVARCHAR(50) DEFAULT 'Pending',
+                    NgayTao DATETIME DEFAULT GETDATE()
                 );
-                PRINT 'Created table JobReports successfully!';
+                PRINT 'Created table BaoCaoCongViec successfully!';
             END
-        `).catch(err => console.error("❌ Lỗi khởi tạo bảng JobReports:", err));
+        `).catch(err => console.error("❌ Lỗi khởi tạo bảng BaoCaoCongViec:", err));
 
         p.request().query(`
-            IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Notifications' AND xtype='U')
+            IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='ThongBao' AND xtype='U')
             BEGIN
-                CREATE TABLE Notifications (
-                    NotificationID INT IDENTITY(1,1) PRIMARY KEY,
-                    UserId INT NOT NULL FOREIGN KEY REFERENCES Users(Id),
-                    Type NVARCHAR(50) NOT NULL DEFAULT 'system',
-                    Title NVARCHAR(255) NOT NULL,
-                    Content NVARCHAR(MAX) NOT NULL,
-                    IsRead BIT NOT NULL DEFAULT 0,
-                    CreatedAt DATETIME DEFAULT GETDATE(),
-                    RelatedID INT NULL
+                CREATE TABLE ThongBao (
+                    MaThongBao INT IDENTITY(1,1) PRIMARY KEY,
+                    MaNguoiDung INT NOT NULL FOREIGN KEY REFERENCES NguoiDung(Id),
+                    LoaiThongBao NVARCHAR(50) NOT NULL DEFAULT 'system',
+                    TieuDe NVARCHAR(255) NOT NULL,
+                    NoiDung NVARCHAR(MAX) NOT NULL,
+                    DaDoc BIT NOT NULL DEFAULT 0,
+                    NgayTao DATETIME DEFAULT GETDATE(),
+                    MaLienQuan INT NULL
                 );
-                PRINT 'Created table Notifications successfully!';
+                PRINT 'Created table ThongBao successfully!';
             END
-        `).catch(err => console.error('❌ Lỗi khởi tạo bảng Notifications:', err));
+        `).catch(err => console.error('❌ Lỗi khởi tạo bảng ThongBao:', err));
 
         p.request().query(`
-            IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='User_Courses' AND xtype='U')
+            IF EXISTS (SELECT * FROM sysobjects WHERE name='KhoaHocNguoiDung' AND xtype='U')
             BEGIN
-                CREATE TABLE User_Courses (
-                    UserCourseID INT IDENTITY(1,1) PRIMARY KEY,
-                    UserId INT NOT NULL FOREIGN KEY REFERENCES Users(Id),
-                    CourseId NVARCHAR(100) NOT NULL,
-                    Status NVARCHAR(50) NOT NULL DEFAULT N'Đang quan tâm',
-                    CreatedAt DATETIME DEFAULT GETDATE(),
-                    LastModifiedAt DATETIME DEFAULT GETDATE()
-                );
-                PRINT 'Created table User_Courses successfully!';
+                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='DangKiKhoahoc' AND xtype='U')
+                BEGIN
+                    EXEC sp_rename 'KhoaHocNguoiDung', 'DangKiKhoahoc';
+                    PRINT 'Renamed table KhoaHocNguoiDung to DangKiKhoahoc successfully!';
+                END
+                ELSE
+                BEGIN
+                    DROP TABLE KhoaHocNguoiDung;
+                    PRINT 'Dropped duplicate table KhoaHocNguoiDung successfully!';
+                END
             END
-        `).catch(err => console.error('❌ Lỗi khởi tạo bảng User_Courses:', err));
+            ELSE IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='DangKiKhoahoc' AND xtype='U')
+            BEGIN
+                CREATE TABLE DangKiKhoahoc (
+                    MaKhoaHocNguoiDung INT IDENTITY(1,1) PRIMARY KEY,
+                    MaNguoiDung INT NOT NULL FOREIGN KEY REFERENCES NguoiDung(Id),
+                    MaKhoaHoc NVARCHAR(100) NOT NULL,
+                    TrangThai NVARCHAR(50) NOT NULL DEFAULT N'Đang quan tâm',
+                    NgayTao DATETIME DEFAULT GETDATE(),
+                    CapNhatLanCuoi DATETIME DEFAULT GETDATE()
+                );
+                PRINT 'Created table DangKiKhoahoc successfully!';
+            END
+        `).catch(err => console.error('❌ Lỗi khởi tạo bảng DangKiKhoahoc:', err));
 
         p.request().query(`
-            IF EXISTS (SELECT * FROM sysobjects WHERE name='khoa_hoc' AND xtype='U')
+            IF EXISTS (SELECT * FROM sysobjects WHERE name='KhoaHoc' AND xtype='U')
             BEGIN
-                IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('khoa_hoc') AND name = 'Category')
-                    ALTER TABLE khoa_hoc ADD Category NVARCHAR(50) DEFAULT 'web';
+                IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('KhoaHoc') AND name = 'DanhMuc')
+                    ALTER TABLE KhoaHoc ADD DanhMuc NVARCHAR(50) DEFAULT 'web';
                     
-                IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('khoa_hoc') AND name = 'Rating')
-                    ALTER TABLE khoa_hoc ADD Rating DECIMAL(2,1) DEFAULT 4.8;
+                IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('KhoaHoc') AND name = 'DanhGia')
+                    ALTER TABLE KhoaHoc ADD DanhGia DECIMAL(2,1) DEFAULT 4.8;
                     
-                IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('khoa_hoc') AND name = 'ReviewsCount')
-                    ALTER TABLE khoa_hoc ADD ReviewsCount INT DEFAULT 24;
+                IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('KhoaHoc') AND name = 'SoLuongDanhGia')
+                    ALTER TABLE KhoaHoc ADD SoLuongDanhGia INT DEFAULT 24;
                     
-                IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('khoa_hoc') AND name = 'Duration')
-                    ALTER TABLE khoa_hoc ADD Duration NVARCHAR(50) DEFAULT N'45 giờ';
+                IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('KhoaHoc') AND name = 'ThoiLuong')
+                    ALTER TABLE KhoaHoc ADD ThoiLuong NVARCHAR(50) DEFAULT N'45 giờ';
                     
-                IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('khoa_hoc') AND name = 'LecturesCount')
-                    ALTER TABLE khoa_hoc ADD LecturesCount INT DEFAULT 50;
+                IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('KhoaHoc') AND name = 'SoBaiHoc')
+                    ALTER TABLE KhoaHoc ADD SoBaiHoc INT DEFAULT 50;
                     
-                IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('khoa_hoc') AND name = 'Level')
-                    ALTER TABLE khoa_hoc ADD Level NVARCHAR(50) DEFAULT N'Mọi trình độ';
+                IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('KhoaHoc') AND name = 'TrinhDo')
+                    ALTER TABLE KhoaHoc ADD TrinhDo NVARCHAR(50) DEFAULT N'Mọi trình độ';
                     
-                IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('khoa_hoc') AND name = 'InstructorName')
-                    ALTER TABLE khoa_hoc ADD InstructorName NVARCHAR(100) DEFAULT N'Đỗ Phương Thảo';
+                IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('KhoaHoc') AND name = 'TenGiangVien')
+                    ALTER TABLE KhoaHoc ADD TenGiangVien NVARCHAR(100) DEFAULT N'Đỗ Phương Thảo';
                     
-                IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('khoa_hoc') AND name = 'InstructorRole')
-                    ALTER TABLE khoa_hoc ADD InstructorRole NVARCHAR(150) DEFAULT N'Đối tác Đào tạo VietJob';
+                IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('KhoaHoc') AND name = 'VaiTroGiangVien')
+                    ALTER TABLE KhoaHoc ADD VaiTroGiangVien NVARCHAR(150) DEFAULT N'Đối tác Đào tạo VietJob';
                     
-                IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('khoa_hoc') AND name = 'Price')
-                    ALTER TABLE khoa_hoc ADD Price INT DEFAULT 1500000;
+                IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('KhoaHoc') AND name = 'Gia')
+                    ALTER TABLE KhoaHoc ADD Gia INT DEFAULT 1500000;
                     
-                IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('khoa_hoc') AND name = 'OldPrice')
-                    ALTER TABLE khoa_hoc ADD OldPrice INT DEFAULT 3000000;
-
-                IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('khoa_hoc') AND name = 'DriveLink')
-                    ALTER TABLE khoa_hoc ADD DriveLink NVARCHAR(500) DEFAULT 'https://drive.google.com/drive/folders/1abc-vietjob-dummy-link-course';
+                IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('KhoaHoc') AND name = 'GiaCu')
+                    ALTER TABLE KhoaHoc ADD GiaCu INT DEFAULT 3000000;
+ 
+                IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('KhoaHoc') AND name = 'DuongDanDrive')
+                    ALTER TABLE KhoaHoc ADD DuongDanDrive NVARCHAR(500) DEFAULT 'https://drive.google.com/drive/folders/1abc-vietjob-dummy-link-course';
             END
-        `).catch(err => console.error('❌ Lỗi bổ sung cột bảng khoa_hoc:', err));
+        `).catch(err => console.error('❌ Lỗi bổ sung cột bảng KhoaHoc:', err));
 
         return p;
     })

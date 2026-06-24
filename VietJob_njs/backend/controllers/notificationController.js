@@ -10,16 +10,16 @@ const getNotifications = async (req, res) => {
         const request = pool.request().input('userId', sql.Int, parseInt(userId));
         let query = `
             SELECT 
-                NotificationID, UserId, Type, Title, Content,
-                IsRead, CreatedAt, RelatedID
-            FROM Notifications
-            WHERE UserId = @userId
+                MaThongBao AS NotificationID, MaNguoiDung AS UserId, LoaiThongBao AS Type, TieuDe AS Title, NoiDung AS Content,
+                DaDoc AS IsRead, NgayTao AS CreatedAt, MaLienQuan AS RelatedID
+            FROM ThongBao
+            WHERE MaNguoiDung = @userId
         `;
         if (type && type !== 'all') {
-            query += ` AND Type = @type`;
+            query += ` AND LoaiThongBao = @type`;
             request.input('type', sql.NVarChar, type);
         }
-        query += ` ORDER BY CreatedAt DESC`;
+        query += ` ORDER BY NgayTao DESC`;
 
         const result = await request.query(query);
         res.status(200).json(result.recordset);
@@ -36,7 +36,7 @@ const getUnreadCount = async (req, res) => {
         const { userId } = req.params;
         const result = await pool.request()
             .input('userId', sql.Int, parseInt(userId))
-            .query(`SELECT COUNT(*) AS unread FROM Notifications WHERE UserId = @userId AND IsRead = 0`);
+            .query(`SELECT COUNT(*) AS unread FROM ThongBao WHERE MaNguoiDung = @userId AND DaDoc = 0`);
         res.status(200).json({ unread: result.recordset[0].unread });
     } catch (err) {
         console.error('❌ Lỗi getUnreadCount:', err);
@@ -51,7 +51,7 @@ const markAsRead = async (req, res) => {
         const { notificationId } = req.params;
         await pool.request()
             .input('id', sql.Int, parseInt(notificationId))
-            .query(`UPDATE Notifications SET IsRead = 1 WHERE NotificationID = @id`);
+            .query(`UPDATE ThongBao SET DaDoc = 1 WHERE MaThongBao = @id`);
         res.status(200).json({ message: 'Đã đánh dấu đã đọc' });
     } catch (err) {
         console.error('❌ Lỗi markAsRead:', err);
@@ -66,7 +66,7 @@ const markAllAsRead = async (req, res) => {
         const { userId } = req.params;
         await pool.request()
             .input('userId', sql.Int, parseInt(userId))
-            .query(`UPDATE Notifications SET IsRead = 1 WHERE UserId = @userId`);
+            .query(`UPDATE ThongBao SET DaDoc = 1 WHERE MaNguoiDung = @userId`);
         res.status(200).json({ message: 'Đã đánh dấu tất cả đã đọc' });
     } catch (err) {
         console.error('❌ Lỗi markAllAsRead:', err);

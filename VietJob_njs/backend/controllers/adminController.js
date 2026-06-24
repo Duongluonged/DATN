@@ -15,25 +15,24 @@ exports.getEmployers = async (req, res) => {
       .query(`
         SELECT 
           u.Id        AS userId,
-          u.Username,
+          u.TenDangNhap AS Username,
           u.Email,
-          u.Status,
-          u.CreatedAt,
-          e.Id        AS employerId,
-          e.Name      AS CompanyName,
-          e.Website,
-          e.Address,
-          e.ContactEmail,
-          e.Description,
-          e.Logo
-        FROM Users u
-        INNER JOIN UserRoles ur ON u.Id = ur.UserId
-        INNER JOIN Roles r      ON ur.RoleId = r.RoleId
-        INNER JOIN Employers e  ON u.Id = e.UserId
-        WHERE r.RoleName = 'Employer'
-          AND u.Status = @status
-          AND e.IsDeleted = 0
-        ORDER BY u.CreatedAt DESC
+          u.TrangThai AS Status,
+          u.NgayTao AS CreatedAt,
+          c.MaCongTy  AS employerId,
+          c.TenCongTy AS CompanyName,
+          c.DuongDanWebsite AS Website,
+          c.DiaDiem   AS Address,
+          u.Email     AS ContactEmail,
+          c.MoTa      AS Description,
+          c.DuongDanLogo AS Logo
+        FROM NguoiDung u
+        INNER JOIN VaiTroNguoiDung ur ON u.Id = ur.MaNguoiDung
+        INNER JOIN VaiTro r      ON ur.MaVaiTro = r.MaVaiTro
+        INNER JOIN CongTy c      ON u.MaCongTy = c.MaCongTy
+        WHERE r.TenVaiTro = 'Employer'
+          AND u.TrangThai = @status
+        ORDER BY u.NgayTao DESC
         OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY
       `);
 
@@ -42,10 +41,10 @@ exports.getEmployers = async (req, res) => {
       .input('status', sql.NVarChar, status)
       .query(`
         SELECT COUNT(*) AS total
-        FROM Users u
-        INNER JOIN UserRoles ur ON u.Id = ur.UserId
-        INNER JOIN Roles r      ON ur.RoleId = r.RoleId
-        WHERE r.RoleName = 'Employer' AND u.Status = @status
+        FROM NguoiDung u
+        INNER JOIN VaiTroNguoiDung ur ON u.Id = ur.MaNguoiDung
+        INNER JOIN VaiTro r      ON ur.MaVaiTro = r.MaVaiTro
+        WHERE r.TenVaiTro = 'Employer' AND u.TrangThai = @status
       `);
 
     res.json({
@@ -73,12 +72,12 @@ exports.updateStatus = async (req, res) => {
     await pool.request()
       .input('id', sql.Int, Number(id))
       .input('status', sql.NVarChar, status)
-      .query(`UPDATE Users SET Status = @status WHERE Id = @id`);
+      .query(`UPDATE NguoiDung SET TrangThai = @status WHERE Id = @id`);
 
     // Lấy email để gửi thông báo
     const userResult = await pool.request()
       .input('id', sql.Int, Number(id))
-      .query(`SELECT Email, Username FROM Users WHERE Id = @id`);
+      .query(`SELECT Email, TenDangNhap AS Username FROM NguoiDung WHERE Id = @id`);
 
     const user = userResult.recordset[0];
     if (user) {
@@ -123,51 +122,52 @@ exports.getDashboardStats = async (req, res) => {
   await poolConnect;
   try {
     // 1. Tổng người dùng
-    const usersRes = await pool.request().query(`SELECT COUNT(*) AS total FROM Users`);
+    const usersRes = await pool.request().query(`SELECT COUNT(*) AS total FROM NguoiDung`);
     const totalUsers = usersRes.recordset[0]?.total ?? 0;
 
     // 2. Tổng tin tuyển dụng đang hoạt động
-    const jobsRes = await pool.request().query(`SELECT COUNT(*) AS total FROM Jobs WHERE IsActive = 1`);
+    const jobsRes = await pool.request().query(`SELECT COUNT(*) AS total FROM CongViec WHERE TrangThaiHoatDong = 1`);
     const totalJobs = jobsRes.recordset[0]?.total ?? 0;
 
     // 3. Tổng khóa học hoạt động
     const coursesRes = await pool.request().query(
-      `SELECT COUNT(*) AS total FROM khoa_hoc WHERE (IsDeleted = 0 OR IsDeleted IS NULL)`
+      `SELECT COUNT(*) AS total FROM KhoaHoc WHERE (DaXoa = 0 OR DaXoa IS NULL)`
     );
     const totalCourses = coursesRes.recordset[0]?.total ?? 0;
 
     // 4. Báo cáo chờ xử lý
     const reportsRes = await pool.request().query(
-      `SELECT COUNT(*) AS total FROM JobReports WHERE Status = 'Pending'`
+      `SELECT COUNT(*) AS total FROM BaoCaoCongViec WHERE TrangThai = 'Pending'`
     );
     const pendingReports = reportsRes.recordset[0]?.total ?? 0;
 
     // 5. User mới tháng này
     const newUsersRes = await pool.request().query(`
-      SELECT COUNT(*) AS total FROM Users
-      WHERE MONTH(ISNULL(CreatedAt, GETDATE())) = MONTH(GETDATE()) 
-        AND YEAR(ISNULL(CreatedAt, GETDATE())) = YEAR(GETDATE())
+      SELECT COUNT(*) AS total FROM NguoiDung
+      WHERE MONTH(ISNULL(NgayTao, GETDATE())) = MONTH(GETDATE()) 
+        AND YEAR(ISNULL(NgayTao, GETDATE())) = YEAR(GETDATE())
     `);
     const newUsersThisMonth = newUsersRes.recordset[0]?.total ?? 0;
 
     // 6. Tổng số doanh nghiệp
     let totalCompanies = 0;
     try {
-      // Thử đếm Employers đã duyệt
+      // Đếm các công ty có liên kết với tài khoản nhà tuyển dụng đã được duyệt
       const r = await pool.request().query(`
-        SELECT COUNT(DISTINCT e.Id) AS total FROM Employers e
-        INNER JOIN Users u ON e.UserId = u.Id
-        WHERE u.Status = 'approved'
+        SELECT COUNT(DISTINCT u.MaCongTy) AS total 
+        FROM NguoiDung u
+        INNER JOIN VaiTroNguoiDung ur ON u.Id = ur.MaNguoiDung
+        INNER JOIN VaiTro r ON ur.MaVaiTro = r.MaVaiTro
+        WHERE r.TenVaiTro = 'Employer' AND u.TrangThai = 'Approved'
       `);
       totalCompanies = r.recordset[0]?.total ?? 0;
-      // Nếu 0, thử đếm tất cả Employers
       if (totalCompanies === 0) {
-        const r2 = await pool.request().query(`SELECT COUNT(*) AS total FROM Employers`);
+        const r2 = await pool.request().query(`SELECT COUNT(*) AS total FROM CongTy`);
         totalCompanies = r2.recordset[0]?.total ?? 0;
       }
     } catch (e) {
       try {
-        const r3 = await pool.request().query(`SELECT COUNT(*) AS total FROM Companies`);
+        const r3 = await pool.request().query(`SELECT COUNT(*) AS total FROM CongTy`);
         totalCompanies = r3.recordset[0]?.total ?? 0;
       } catch (e2) { totalCompanies = 0; }
     }
@@ -176,9 +176,9 @@ exports.getDashboardStats = async (req, res) => {
     let avgSalary = 0;
     try {
       const salaryRes = await pool.request().query(`
-        SELECT AVG(CAST(REPLACE(REPLACE(REPLACE(AverageSalary, ' triệu', ''), ' - ', '.'), ',', '.') AS FLOAT)) AS avg
-        FROM Companies
-        WHERE AverageSalary IS NOT NULL AND AverageSalary != ''
+        SELECT AVG(CAST(REPLACE(REPLACE(REPLACE(LuongTrungBinh AS AverageSalary, ' triệu', ''), ' - ', '.'), ',', '.') AS FLOAT)) AS avg
+        FROM CongTy
+        WHERE LuongTrungBinh IS NOT NULL AND LuongTrungBinh != ''
       `);
       avgSalary = Math.round(salaryRes.recordset[0]?.avg ?? 0);
     } catch (e) {
@@ -191,12 +191,12 @@ exports.getDashboardStats = async (req, res) => {
     try {
       const hotJobsRes = await pool.request().query(`
         SELECT TOP 5
-          j.JobTitle AS title,
-          c.CompanyName AS company,
-          j.JobID AS views
-        FROM Jobs j
-        LEFT JOIN Companies c ON j.CompanyID = c.CompanyID
-        ORDER BY j.JobID DESC
+          j.TieuDeCongViec AS title,
+          c.TenCongTy AS company,
+          j.MaCongViec AS views
+        FROM CongViec j
+        LEFT JOIN CongTy c ON j.MaCongTy = c.MaCongTy
+        ORDER BY j.MaCongViec DESC
       `);
       hotJobs = hotJobsRes.recordset;
     } catch (e) {
@@ -208,12 +208,12 @@ exports.getDashboardStats = async (req, res) => {
     try {
       const trendRes = await pool.request().query(`
         SELECT
-          FORMAT(CreatedAt, 'MM/yyyy') AS month,
+          FORMAT(NgayTao, 'MM/yyyy') AS month,
           COUNT(*) AS value
-        FROM Jobs
-        WHERE CreatedAt >= DATEADD(MONTH, -5, DATEFROMPARTS(YEAR(GETDATE()), MONTH(GETDATE()), 1))
-        GROUP BY FORMAT(CreatedAt, 'MM/yyyy'), YEAR(CreatedAt), MONTH(CreatedAt)
-        ORDER BY YEAR(CreatedAt), MONTH(CreatedAt)
+        FROM CongViec
+        WHERE NgayTao >= DATEADD(MONTH, -5, DATEFROMPARTS(YEAR(GETDATE()), MONTH(GETDATE()), 1))
+        GROUP BY FORMAT(NgayTao, 'MM/yyyy'), YEAR(NgayTao), MONTH(NgayTao)
+        ORDER BY YEAR(NgayTao), MONTH(NgayTao)
       `);
       trend = trendRes.recordset;
     } catch (e) {
@@ -242,10 +242,10 @@ exports.getSystemTransactions = async (req, res) => {
   await poolConnect;
   try {
     const result = await pool.request().query(`
-      SELECT T.Id, T.Title, T.Amount, T.Type, T.Status, T.CreatedAt, T.RefCode, U.Username AS RecruiterName
-      FROM Transactions T
-      LEFT JOIN Users U ON T.UserId = U.Id
-      ORDER BY T.CreatedAt DESC
+      SELECT T.Id, T.TieuDe AS Title, T.SoTien AS Amount, T.LoaiGiaoDich AS Type, T.TrangThai AS Status, T.NgayTao AS CreatedAt, T.MaThamChieu AS RefCode, U.TenDangNhap AS RecruiterName
+      FROM GiaoDich T
+      LEFT JOIN NguoiDung U ON T.MaNguoiDung = U.Id
+      ORDER BY T.NgayTao DESC
     `);
     res.json(result.recordset);
   } catch (err) {

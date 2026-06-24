@@ -4,78 +4,26 @@ import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../../components/common/Navbar";
 import axios from "axios";
 import ApplyJob from "./ApplyJob";
-
-
-// ─── SVG Icons ───────────────────────────────────────────────────────────────
-const CheckIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, marginTop: 3 }}>
-    <circle cx="8" cy="8" r="8" fill="#0a5c9e" />
-    <path d="M4.5 8l2.5 2.5 4.5-4.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-const LocationIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
-    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
-    <circle cx="12" cy="9" r="2.5" />
-  </svg>
-);
-const SalaryIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
-    <circle cx="12" cy="12" r="10" />
-    <path d="M12 6v2m0 8v2M9.5 9.5c0-1.1.9-2 2.5-2s2.5.9 2.5 2-.9 2-2.5 2-2.5.9-2.5 2 .9 2 2.5 2 2.5-.9 2.5-2" />
-  </svg>
-);
-const BuildingIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
-    <rect x="2" y="3" width="20" height="18" rx="1" />
-    <path d="M9 21V9h6v12M9 9H5V3h14v6h-4" />
-  </svg>
-);
-const GlobeIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
-    <circle cx="12" cy="12" r="10" />
-    <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-  </svg>
-);
-const BookmarkIcon = ({ saved }) => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill={saved ? "#0a5c9e" : "none"} stroke="#0a5c9e" strokeWidth="2">
-    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-  </svg>
-);
-const ExternalIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2">
-    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-const ShieldIcon = () => (
-  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0a5c9e" strokeWidth="1.8">
-    <path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V7l-9-5z" />
-    <path d="M9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-const PlaneIcon = () => (
-  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8">
-    <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-const AlertIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-    <line x1="12" y1="9" x2="12" y2="13" />
-    <line x1="12" y1="17" x2="12.01" y2="17" />
-  </svg>
-);
-const TrophyIcon = () => (
-  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0a5c9e" strokeWidth="1.8">
-    <path d="M6 9H4.5a2.5 2.5 0 0 0 0 5H6m12 0h1.5a2.5 2.5 0 0 0 0-5H18" />
-    <path d="M8 21h8M12 17v4M7 4h10v8a5 5 0 0 1-10 0V4z" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-const GrowthIcon = () => (
-  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0a5c9e" strokeWidth="1.8">
-    <path d="M22 12h-4l-3 9L9 3l-3 9H2" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
+import {
+  CheckCircle2,
+  MapPin,
+  DollarSign,
+  Building2,
+  Globe,
+  Bookmark,
+  ExternalLink,
+  ShieldCheck,
+  Send,
+  AlertTriangle,
+  Trophy,
+  TrendingUp,
+  MessageCircle,
+  Clock,
+  ChevronRight,
+  Lightbulb,
+  GraduationCap,
+  BookOpen,
+} from "lucide-react";
 
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -307,10 +255,10 @@ const JobDetail = () => {
   }
 
   const benefits = [
-    { icon: <ShieldIcon />, title: "Bảo hiểm sức khỏe cao cấp", desc: "Gói chăm sóc sức khỏe toàn diện cho cả gia đình.", dark: false },
-    { icon: <PlaneIcon />, title: "Du lịch hàng năm", desc: "Chuyến du lịch nước ngoài resort 5★.", dark: true },
-    { icon: <TrophyIcon />, title: "Thưởng hiệu quả", desc: "Thưởng hàng quý và cuối năm xứng đáng.", dark: false },
-    { icon: <GrowthIcon />, title: "Đào tạo & Phát triển", desc: "Hỗ trợ 100% chi phí khoá học nâng cấp tại nước ngoài.", dark: false },
+    { icon: <ShieldCheck size={26} color="#0a5c9e" />, title: "Bảo hiểm sức khỏe cao cấp", desc: "Gói chăm sóc sức khỏe toàn diện cho cả gia đình.", dark: false },
+    { icon: <Send size={26} color="white" />, title: "Du lịch hàng năm", desc: "Chuyến du lịch nước ngoài resort 5★.", dark: true },
+    { icon: <Trophy size={26} color="#0a5c9e" />, title: "Thưởng hiệu quả", desc: "Thưởng hàng quý và cuối năm xứng đáng.", dark: false },
+    { icon: <TrendingUp size={26} color="#0a5c9e" />, title: "Đào tạo & Phát triển", desc: "Hỗ trợ 100% chi phí khoá học nâng cấp tại nước ngoài.", dark: false },
   ];
 
   // ── Inline styles ──
@@ -354,36 +302,39 @@ const JobDetail = () => {
               <div style={{ flex: 1 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
                   <span style={s.hotBadge}>HOT JOB</span>
-                  <span style={{ color: "#9ca3af", fontSize: 12 }}>⏱ Đăng {job.postedAgo}</span>
+                  <span style={{ color: "#9ca3af", fontSize: 12, display: "flex", alignItems: "center", gap: 4 }}>
+                    <Clock size={12} /> Đăng {job.postedAgo}
+                  </span>
                 </div>
                 <h1 style={{ fontSize: 20, fontWeight: 800, color: "#111827", lineHeight: 1.3, marginBottom: 10 }}>{job.JobTitle}</h1>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
                   <div style={{ width: 20, height: 20, background: "#0a5c9e", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <BuildingIcon />
+                    <Building2 size={13} color="white" />
                   </div>
                   <span style={{ color: "#0a5c9e", fontWeight: 600, fontSize: 13 }}>{job.CompanyName}</span>
                 </div>
                 <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 5, color: "#16a34a", fontWeight: 600, fontSize: 13 }}>
-                    <SalaryIcon />{job.SalaryRange}
+                    <DollarSign size={14} style={{ flexShrink: 0 }} />{job.SalaryRange}
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 5, color: "#6b7280", fontSize: 13 }}>
-                    <LocationIcon />{job.Location}
+                    <MapPin size={14} style={{ flexShrink: 0 }} />{job.Location}
                   </div>
                 </div>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-end", flexShrink: 0 }}>
                 <button style={s.applyBtn} onClick={handleApply}>
-                  {applied ? "Đã ứng tuyển ▶" : "Ứng tuyển ngay ▶"}
+                  {applied ? "Đã ứng tuyển" : "Ứng tuyển ngay"}
+                  <ChevronRight size={16} />
                 </button>
                 <button
-                  style={{ ...s.saveBtn, background: "linear-gradient(135deg,#16a34a,#10b981)", color: "#fff", border: "none", width: "100%", justifyContent: "center", fontWeight: 700 }}
+                  style={{ ...s.saveBtn, background: "linear-gradient(135deg,#0f6dbf,#0a5c9e)", color: "#fff", border: "none", width: "100%", justifyContent: "center", fontWeight: 700 }}
                   onClick={handleChatWithEmployer}
                 >
-                  💬 Nhắn tin
+                  <MessageCircle size={15} /> Nhắn tin
                 </button>
                 <button style={{ ...s.saveBtn, width: "100%", justifyContent: "center" }} onClick={() => setSaved(!saved)}>
-                  <BookmarkIcon saved={saved} />{saved ? "Đã lưu tin" : "Lưu tin"}
+                  <Bookmark size={15} fill={saved ? "#0a5c9e" : "none"} color="#0a5c9e" />{saved ? "Đã lưu tin" : "Lưu tin"}
                 </button>
               </div>
             </div>
@@ -396,9 +347,9 @@ const JobDetail = () => {
               {job.Description ? (
 
                 job.Description.split('\n').map((item, i) => (
-                  item.trim() && ( // Chỉ hiển thị nếu dòng đó có chữ
+                  item.trim() && (
                     <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                      <CheckIcon />
+                      <CheckCircle2 size={16} color="#0a5c9e" style={{ flexShrink: 0, marginTop: 3 }} />
                       <span style={{ fontSize: 13.5, color: "#374151", lineHeight: 1.6 }}>
                         {item}
                       </span>
@@ -415,9 +366,9 @@ const JobDetail = () => {
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {job.Requirements ? (
                 job.Requirements.split('\n').map((item, i) => (
-                  item.trim() && ( // Chỉ hiển thị nếu dòng đó có chữ
+                  item.trim() && (
                     <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                      <CheckIcon />
+                      <CheckCircle2 size={16} color="#0a5c9e" style={{ flexShrink: 0, marginTop: 3 }} />
                       <span style={{ fontSize: 13.5, color: "#374151", lineHeight: 1.6 }}>
                         {item}
                       </span>
@@ -450,7 +401,7 @@ const JobDetail = () => {
           {suggestedCourses.length > 0 && (
             <div style={{ ...s.card, background: "linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)", border: "1.5px dashed #bfdbfe" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                <span style={{ fontSize: 18 }}>💡</span>
+                <Lightbulb size={18} color="#f59e0b" />
                 <div style={{ fontSize: 15, fontWeight: 800, color: "#1e3a8a", textTransform: "uppercase", letterSpacing: "0.5px" }}>
                   Gợi ý lộ trình học tập nâng cao năng lực
                 </div>
@@ -496,7 +447,9 @@ const JobDetail = () => {
                     >
                       <div style={{ background: catColor, padding: "8px 12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <span style={{ fontSize: 10.5, fontWeight: 800, color: "#fff", textTransform: "uppercase", letterSpacing: "0.5px" }}>{catLabel}</span>
-                        <span style={{ fontSize: 10, background: "rgba(255,255,255,0.2)", color: "#fff", fontWeight: 700, padding: "2px 6px", borderRadius: 20 }}>🎓 PRO</span>
+                        <span style={{ fontSize: 10, background: "rgba(255,255,255,0.2)", color: "#fff", fontWeight: 700, padding: "2px 6px", borderRadius: 20, display: "flex", alignItems: "center", gap: 3 }}>
+                          <GraduationCap size={10} /> PRO
+                        </span>
                       </div>
                       <div style={{ padding: 14, flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                         <div>
@@ -504,8 +457,8 @@ const JobDetail = () => {
                             {c.TieuDe || c.name}
                           </h4>
                           <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 11, color: "#64748b", marginBottom: 12 }}>
-                            <span>⏱️ {c.Duration || "45 giờ"}</span>
-                            <span>📚 {c.LecturesCount || 50} bài học</span>
+                            <span style={{ display: "flex", alignItems: "center", gap: 3 }}><Clock size={11} /> {c.Duration || "45 giờ"}</span>
+                            <span style={{ display: "flex", alignItems: "center", gap: 3 }}><BookOpen size={11} /> {c.LecturesCount || 50} bài học</span>
                           </div>
                         </div>
                         <div>
@@ -515,7 +468,7 @@ const JobDetail = () => {
                               <div style={{ fontSize: 13, fontWeight: 800, color: "#2563eb" }}>{c.Price ? c.Price.toLocaleString() : "1,500,000"}đ</div>
                             </div>
                             <span style={{ fontSize: 11, fontWeight: 700, color: "#2563eb", display: "flex", alignItems: "center", gap: 4 }}>
-                              Chi tiết ➔
+                              Chi tiết <ChevronRight size={13} />
                             </span>
                           </div>
                         </div>
@@ -539,9 +492,9 @@ const JobDetail = () => {
               </div>
               <div style={{ fontWeight: 700, fontSize: 14, color: "#1f2937", marginBottom: 2 }}>{job.CompanyName}</div>
               <div style={{ color: "#6b7280", fontSize: 12, fontStyle: "italic", marginBottom: 12 }}>"{job.companySlogan}"</div>
-              <div style={s.infoRow}><BuildingIcon />{job.Size}</div>
-              <div style={s.infoRow}><GlobeIcon /><span style={{ color: "#0a5c9e" }}>{job.WebsiteURL}</span></div>
-              <div style={s.infoRow}><LocationIcon />{job.Location}</div>
+              <div style={s.infoRow}><Building2 size={14} style={{ flexShrink: 0 }} />{job.Size}</div>
+              <div style={s.infoRow}><Globe size={14} style={{ flexShrink: 0 }} /><span style={{ color: "#0a5c9e" }}>{job.WebsiteURL}</span></div>
+              <div style={s.infoRow}><MapPin size={14} style={{ flexShrink: 0 }} />{job.Location}</div>
             </div>
           </div>
 
@@ -567,7 +520,7 @@ const JobDetail = () => {
                 onClick={handleOpenReport}
                 style={{ fontSize: 12.5, fontWeight: 600, color: "#ea580c", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 5 }}
               >
-                <AlertIcon /> Báo cáo tin tuyển dụng vi phạm
+                <AlertTriangle size={14} style={{ flexShrink: 0 }} /> Báo cáo tin tuyển dụng vi phạm
               </span>
             </div>
           </div>
@@ -670,7 +623,7 @@ const JobDetail = () => {
             fontFamily: "'Be Vietnam Pro',sans-serif"
           }}>
             <h3 style={{ fontSize: 16, fontWeight: 800, color: "#e11d48", marginBottom: 6, display: "flex", alignItems: "center", gap: 6 }}>
-              <span>⚠️</span> Báo cáo tin tuyển dụng vi phạm
+              <span style={{display: 'flex', alignItems: 'center', gap: 4}}><AlertTriangle size={14}/> Báo cáo tin tuyển dụng vi phạm</span>
             </h3>
             <p style={{ fontSize: 12.5, color: "#64748b", marginBottom: 18 }}>
               Phản ánh của bạn giúp VietJob giữ gìn môi trường tìm việc an toàn, lành mạnh. Chúng tôi cam kết bảo mật danh tính người báo cáo.

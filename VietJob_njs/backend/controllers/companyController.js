@@ -6,17 +6,34 @@ const getTopCompanies = async (req, res) => {
         // Sửa câu lệnh SQL để lồng thêm cột đếm JobCount
         const result = await pool.request().query(`
             SELECT 
-                C.*, 
+                C.MaCongTy AS CompanyID, 
+                C.TenCongTy AS CompanyName, 
+                C.DuongDanLogo AS LogoURL, 
+                C.MoTa AS Description, 
+                C.DuongDanWebsite AS WebsiteURL, 
+                C.DiaDiem AS Location, 
+                C.NoiBat AS IsHot, 
+                C.NgayTao AS CreatedAt, 
+                C.NganhNghe AS Industry, 
+                C.QuyMo AS Size, 
+                C.QuocGia AS Country, 
+                C.ThoiGianLamViec AS WorkingTime, 
+                C.LuongTrungBinh AS AverageSalary, 
+                C.DanhGia AS Rating, 
+                C.SoLuongDanhGia AS ReviewCount, 
+                C.MoTaChiTiet AS LongDescription, 
+                C.DuongDayNong AS Hotline, 
+                C.AnhVanPhong AS OfficePhotos,
                 (SELECT COUNT(*) 
-                 FROM Jobs J 
-                 WHERE J.CompanyID = C.CompanyID AND J.IsActive = 1) AS JobCount,
-                -- Lấy chuỗi Skills từ một công việc bất kỳ của công ty để hiển thị trên Card
-                (SELECT TOP 1 J.Skills 
-                 FROM Jobs J 
-                 WHERE J.CompanyID = C.CompanyID AND J.IsActive = 1
-                 ORDER BY J.CreatedAt DESC) AS CompanySkills
-            FROM Companies C
-            WHERE C.IsHot = 1
+                 FROM CongViec J 
+                 WHERE J.MaCongTy = C.MaCongTy AND J.TrangThaiHoatDong = 1) AS JobCount,
+                -- Lấy chuỗi KyNang từ một công việc bất kỳ của công ty để hiển thị trên Card
+                (SELECT TOP 1 J.KyNang 
+                 FROM CongViec J 
+                 WHERE J.MaCongTy = C.MaCongTy AND J.TrangThaiHoatDong = 1
+                 ORDER BY J.NgayTao DESC) AS CompanySkills
+            FROM CongTy C
+            WHERE C.NoiBat = 1
         `);
         res.status(200).json(result.recordset);
     } catch (err) {
@@ -33,14 +50,29 @@ const getCompanyDetail = async (req, res) => {
             .input('id', id)
             .query(`
                 SELECT 
-                    C.*, 
-                    -- Đảm bảo có cột AverageSalary hoặc tên tương tự trong bảng Companies
-                    C.AverageSalary, 
+                    C.MaCongTy AS CompanyID, 
+                    C.TenCongTy AS CompanyName, 
+                    C.DuongDanLogo AS LogoURL, 
+                    C.MoTa AS Description, 
+                    C.DuongDanWebsite AS WebsiteURL, 
+                    C.DiaDiem AS Location, 
+                    C.NoiBat AS IsHot, 
+                    C.NgayTao AS CreatedAt, 
+                    C.NganhNghe AS Industry, 
+                    C.QuyMo AS Size, 
+                    C.QuocGia AS Country, 
+                    C.ThoiGianLamViec AS WorkingTime, 
+                    C.LuongTrungBinh AS AverageSalary, 
+                    C.DanhGia AS Rating, 
+                    C.SoLuongDanhGia AS ReviewCount, 
+                    C.MoTaChiTiet AS LongDescription, 
+                    C.DuongDayNong AS Hotline, 
+                    C.AnhVanPhong AS OfficePhotos, 
                     (SELECT COUNT(*) 
-                     FROM Jobs J 
-                     WHERE J.CompanyID = C.CompanyID AND J.IsActive = 1) AS JobCount
-                FROM Companies C
-                WHERE C.CompanyID = @id
+                     FROM CongViec J 
+                     WHERE J.MaCongTy = C.MaCongTy AND J.TrangThaiHoatDong = 1) AS JobCount
+                FROM CongTy C
+                WHERE C.MaCongTy = @id
             `);
 
         if (result.recordset.length === 0) {
@@ -61,9 +93,9 @@ const getCompanyJobs = async (req, res) => {
         const result = await pool.request()
             .input('id', id)
             .query(`
-                SELECT JobID, JobTitle, SalaryRange, JobType, Skills, Experience, Location, Benefits
-                FROM Jobs 
-                WHERE CompanyID = @id AND IsActive = 1
+                SELECT MaCongViec AS JobID, TieuDeCongViec AS JobTitle, MucLuong AS SalaryRange, LoaiCongViec AS JobType, KyNang, KinhNghiem AS Experience, DiaDiem AS Location, QuyenLoi AS Benefits
+                FROM CongViec 
+                WHERE MaCongTy = @id AND TrangThaiHoatDong = 1
             `);
         res.status(200).json(result.recordset);
     } catch (err) {
@@ -83,12 +115,29 @@ const getCompanyByEmployer = async (req, res) => {
             .input('userId', sql.Int, userId)
             .query(`
                 SELECT 
-                    C.*, 
+                    C.MaCongTy AS CompanyID, 
+                    C.TenCongTy AS CompanyName, 
+                    C.DuongDanLogo AS LogoURL, 
+                    C.MoTa AS Description, 
+                    C.DuongDanWebsite AS WebsiteURL, 
+                    C.DiaDiem AS Location, 
+                    C.NoiBat AS IsHot, 
+                    C.NgayTao AS CreatedAt, 
+                    C.NganhNghe AS Industry, 
+                    C.QuyMo AS Size, 
+                    C.QuocGia AS Country, 
+                    C.ThoiGianLamViec AS WorkingTime, 
+                    C.LuongTrungBinh AS AverageSalary, 
+                    C.DanhGia AS Rating, 
+                    C.SoLuongDanhGia AS ReviewCount, 
+                    C.MoTaChiTiet AS LongDescription, 
+                    C.DuongDayNong AS Hotline, 
+                    C.AnhVanPhong AS OfficePhotos, 
                     U.Email AS EmployerEmail, 
-                    U.Phone AS EmployerPhone, 
-                    U.Username AS RepresentativeName
-                FROM Users U
-                JOIN Companies C ON U.CompanyID = C.CompanyID
+                    U.SoDienThoai AS EmployerPhone, 
+                    U.TenDangNhap AS RepresentativeName
+                FROM NguoiDung U
+                JOIN CongTy C ON U.MaCongTy = C.MaCongTy
                 WHERE U.Id = @userId
             `);
 
@@ -115,7 +164,7 @@ const updateCompanyByEmployer = async (req, res) => {
         // 1. Tìm CompanyID của User
         const userResult = await pool.request()
             .input('userId', sql.Int, userId)
-            .query(`SELECT CompanyID FROM Users WHERE Id = @userId`);
+            .query(`SELECT MaCongTy AS CompanyID FROM NguoiDung WHERE Id = @userId`);
 
         if (userResult.recordset.length === 0) {
             return res.status(404).json({ message: "Không tìm thấy tài khoản người dùng." });
@@ -143,21 +192,21 @@ const updateCompanyByEmployer = async (req, res) => {
             .input('hotline', sql.NVarChar, hotline || null)
             .input('officePhotos', sql.NVarChar(sql.MAX), officePhotos || null)
             .query(`
-                UPDATE Companies 
-                SET CompanyName = @companyName,
-                    LogoURL = @logoURL,
-                    Description = @description,
-                    WebsiteURL = @websiteURL,
-                    Location = @location,
-                    Industry = @industry,
-                    Size = @size,
-                    Country = @country,
-                    WorkingTime = @workingTime,
-                    AverageSalary = @averageSalary,
-                    LongDescription = @longDescription,
-                    Hotline = @hotline,
-                    OfficePhotos = @officePhotos
-                WHERE CompanyID = @companyId
+                UPDATE CongTy 
+                SET TenCongTy = @companyName,
+                    DuongDanLogo = @logoURL,
+                    MoTa = @description,
+                    DuongDanWebsite = @websiteURL,
+                    DiaDiem = @location,
+                    NganhNghe = @industry,
+                    QuyMo = @size,
+                    QuocGia = @country,
+                    ThoiGianLamViec = @workingTime,
+                    LuongTrungBinh = @averageSalary,
+                    MoTaChiTiet = @longDescription,
+                    DuongDayNong = @hotline,
+                    AnhVanPhong = @officePhotos
+                WHERE MaCongTy = @companyId
             `);
 
         // 3. Cập nhật bảng Users
@@ -167,10 +216,10 @@ const updateCompanyByEmployer = async (req, res) => {
             .input('phone', sql.NVarChar, phone || null)
             .input('username', sql.NVarChar, representativeName)
             .query(`
-                UPDATE Users 
+                UPDATE NguoiDung 
                 SET Email = @email,
-                    Phone = @phone,
-                    Username = @username
+                    SoDienThoai = @phone,
+                    TenDangNhap = @username
                 WHERE Id = @userId
             `);
 

@@ -14,7 +14,8 @@ import {
   Search, 
   Loader2, 
   RefreshCw,
-  Wallet
+  Wallet,
+  User
 } from 'lucide-react';
 
 export default function RevenueManager() {
@@ -371,7 +372,7 @@ export default function RevenueManager() {
                         </td>
                         {/* Recruiter Name */}
                         <td style={{ padding: "14px 20px", color: "#334155", fontWeight: 600 }}>
-                          👤 {t.RecruiterName || "Không xác định"}
+                          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><User size={14}/> {t.RecruiterName || "Không xác định"}</span>
                         </td>
                         {/* Type Badge */}
                         <td style={{ padding: "14px 20px" }}>

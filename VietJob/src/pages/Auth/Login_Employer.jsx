@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { Eye, EyeOff, Mail, Lock, Check, LogIn, Globe, Building2, Users, Zap, AlertTriangle } from "lucide-react";
 
 
 const C = {
@@ -19,17 +20,7 @@ const C = {
 };
 
 function EyeIcon({ open }) {
-  return open ? (
-    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-      <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" />
-      <line x1="1" y1="1" x2="23" y2="23" />
-    </svg>
-  ) : (
-    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  );
+  return open ? <Eye size={16} /> : <EyeOff size={16} />;
 }
 
 function InputField({ label, type = "text", placeholder, value, onChange, error, icon }) {
@@ -126,7 +117,7 @@ function ForgotModal({ onClose }) {
             </p>
             <InputField
               label="Email công ty"
-              icon={<svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>}
+              icon={<Mail size={16} />}
               placeholder="hr@company.com"
               value={email}
               onChange={e => setEmail(e.target.value)}
@@ -243,7 +234,7 @@ export default function EmployerLogin() {
                 background: "rgba(59,130,246,0.2)", border: "1px solid rgba(59,130,246,0.3)",
                 borderRadius: 99, padding: "5px 14px", marginBottom: 16,
               }}>
-                <span style={{ fontSize: 12 }}>🏢</span>
+                <Building2 size={12} className="text-blue-200" />
                 <span style={{ fontSize: 12, color: "rgba(255,255,255,0.8)", fontWeight: 600, letterSpacing: "0.05em" }}>
                   CỔNG NHÀ TUYỂN DỤNG
                 </span>
@@ -263,9 +254,9 @@ export default function EmployerLogin() {
             {/* Stats */}
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {[
-                { icon: "🏢", label: "500+", desc: "Doanh nghiệp tin dùng" },
-                { icon: "👥", label: "12,000+", desc: "Ứng viên chất lượng" },
-                { icon: "⚡", label: "3x", desc: "Tuyển dụng nhanh hơn" },
+                { icon: <Building2 size={24} className="text-blue-300" />, label: "500+", desc: "Doanh nghiệp tin dùng" },
+                { icon: <Users size={24} className="text-blue-300" />, label: "12,000+", desc: "Ứng viên chất lượng" },
+                { icon: <Zap size={24} className="text-blue-300" />, label: "3x", desc: "Tuyển dụng nhanh hơn" },
               ].map((s, i) => (
                 <div key={i} style={{
                   display: "flex", alignItems: "center", gap: 12,
@@ -273,7 +264,7 @@ export default function EmployerLogin() {
                   border: "1px solid rgba(255,255,255,0.08)",
                   borderRadius: 12, padding: "12px 14px",
                 }}>
-                  <span style={{ fontSize: 20 }}>{s.icon}</span>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>{s.icon}</div>
                   <div>
                     <div style={{ fontSize: 15, fontWeight: 700, color: "#fff" }}>{s.label}</div>
                     <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)" }}>{s.desc}</div>
@@ -309,9 +300,7 @@ export default function EmployerLogin() {
                 margin: "0 auto 20px",
                 boxShadow: "0 8px 24px rgba(16,185,129,0.3)",
               }}>
-                <svg width="32" height="32" fill="none" stroke="#fff" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path d="M20 6L9 17l-5-5" />
-                </svg>
+                <Check size={32} color="#fff" strokeWidth={2.5} />
               </div>
               <h2 style={{ fontSize: 24, fontWeight: 800, margin: "0 0 10px", color: C.text }}>
                 Đăng nhập thành công!
@@ -346,7 +335,7 @@ export default function EmployerLogin() {
                 {/* Email */}
                 <InputField
                   label="Email công ty"
-                  icon={<svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>}
+                  icon={<Mail size={16} />}
                   placeholder="hr@company.com"
                   value={form.email}
                   onChange={set("email")}
@@ -365,7 +354,7 @@ export default function EmployerLogin() {
                     </span>
                   </div>
                   <InputField
-                    icon={<svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0110 0v4" /></svg>}
+                    icon={<Lock size={16} />}
                     type="password"
                     placeholder="Nhập mật khẩu của bạn"
                     value={form.password}
@@ -387,9 +376,7 @@ export default function EmployerLogin() {
                     }}
                   >
                     {remember && (
-                      <svg width="11" height="11" fill="none" stroke="#fff" strokeWidth="2.5" viewBox="0 0 24 24">
-                        <path d="M20 6L9 17l-5-5" />
-                      </svg>
+                      <Check size={11} color="#fff" strokeWidth={2.5} />
                     )}
                   </div>
                   <span
@@ -407,7 +394,7 @@ export default function EmployerLogin() {
                     borderRadius: 10, padding: "12px 16px",
                     fontSize: 13, color: "#B91C1C", lineHeight: 1.5,
                   }}>
-                    ⚠️ {errors.api}
+                    <span style={{display: 'flex', alignItems: 'center', gap: 4}}><AlertTriangle size={14}/> {errors.api}</span>
                   </div>
                 )}
 
@@ -439,9 +426,7 @@ export default function EmployerLogin() {
                     </>
                   ) : (
                     <>
-                      <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                        <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" />
-                      </svg>
+                      <LogIn size={16} strokeWidth={2.5} />
                       Đăng Nhập
                     </>
                   )}
@@ -468,12 +453,7 @@ export default function EmployerLogin() {
                   onMouseEnter={e => { e.currentTarget.style.background = "#F8FAFF"; e.currentTarget.style.borderColor = "#93C5FD"; }}
                   onMouseLeave={e => { e.currentTarget.style.background = C.white; e.currentTarget.style.borderColor = "#E2E8F0"; }}
                 >
-                  <svg width="18" height="18" viewBox="0 0 48 48">
-                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
-                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
-                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
-                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
-                  </svg>
+                  <Globe className="text-blue-500" size={18} />
                   Đăng nhập bằng Google
                 </button>
 
