@@ -5,7 +5,6 @@ import Sidebar_empl from "../../components/common/Employer_c/Sidebar_empl.jsx";
 
 const API = "http://localhost:5000/api";
 
-// Lấy userId từ localStorage
 const getUserId = () => {
     try {
         const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -48,9 +47,8 @@ export default function Quan_Ly_Khoa_Hoc() {
     const [activeTab, setActiveTab] = useState("Tất cả");
     const [toast, setToast] = useState(null);
 
-    // Modal state
     const [showModal, setShowModal] = useState(false);
-    const [modalMode, setModalMode] = useState("create"); // "create" | "edit"
+    const [modalMode, setModalMode] = useState("create");
     const [selectedCourse, setSelectedCourse] = useState(null);
     const [form, setForm] = useState({
         tieuDe: "",
@@ -70,13 +68,11 @@ export default function Quan_Ly_Khoa_Hoc() {
 
     const userId = getUserId();
 
-    // Show toast message
     const showToast = (message, success = true) => {
         setToast({ message, success });
         setTimeout(() => setToast(null), 3000);
     };
 
-    // Fetch courses
     const fetchCourses = async () => {
         if (!userId) {
             setLoading(false);
@@ -100,7 +96,6 @@ export default function Quan_Ly_Khoa_Hoc() {
         fetchCourses();
     }, [userId]);
 
-    // Handle Open Create Modal
     const handleOpenCreate = () => {
         setModalMode("create");
         setForm({
@@ -120,7 +115,6 @@ export default function Quan_Ly_Khoa_Hoc() {
         setShowModal(true);
     };
 
-    // Handle Open Edit Modal
     const handleOpenEdit = (course) => {
         setModalMode("edit");
         setSelectedCourse(course);
@@ -141,7 +135,6 @@ export default function Quan_Ly_Khoa_Hoc() {
         setShowModal(true);
     };
 
-    // Form validation
     const validate = () => {
         const errors = {};
         if (!form.tieuDe.trim()) errors.tieuDe = "Tiêu đề khóa học không được để trống";
@@ -153,7 +146,6 @@ export default function Quan_Ly_Khoa_Hoc() {
         return errors;
     };
 
-    // Save course (Create or Update)
     const handleSaveCourse = async (e) => {
         e.preventDefault();
         const errors = validate();
@@ -196,7 +188,6 @@ export default function Quan_Ly_Khoa_Hoc() {
         }
     };
 
-    // Delete course
     const handleDeleteCourse = async (courseId) => {
         if (!window.confirm("Bạn có chắc chắn muốn xóa khóa học này không?")) return;
 
@@ -218,7 +209,6 @@ export default function Quan_Ly_Khoa_Hoc() {
         }
     };
 
-    // Filter courses based on activeTab
     const filteredCourses = courses.filter((c) => {
         if (activeTab === "Tất cả") return true;
         if (activeTab === "Đang bán") return c.TrangThai === "Đang bán";
@@ -236,7 +226,6 @@ export default function Quan_Ly_Khoa_Hoc() {
                 <Topbar_empl />
 
                 <div style={{ padding: "30px 40px", flex: 1 }}>
-                    {/* Header */}
                     <div style={{ display: "flex", justifyContent: "between", alignItems: "center", marginBottom: 28, gap: 16 }}>
                         <div>
                             <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: "#0f172a" }}>Quản Lý Khoá Học</h1>
@@ -252,7 +241,6 @@ export default function Quan_Ly_Khoa_Hoc() {
                         </button>
                     </div>
 
-                    {/* Navigation tabs */}
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #e2e8f0", marginBottom: 20 }}>
                         <div style={{ display: "flex", gap: 8 }}>
                             {["Tất cả", "Đang bán", "Chờ duyệt", "Nháp", "Đã ẩn"].map((tab) => (
@@ -275,7 +263,6 @@ export default function Quan_Ly_Khoa_Hoc() {
                         </div>
                     </div>
 
-                    {/* Course List */}
                     {loading ? (
                         <div style={{ textAlign: "center", padding: "60px 0", color: "#888" }}>
                             <div style={{ fontSize: 16 }}>Đang tải dữ liệu...</div>
@@ -349,7 +336,6 @@ export default function Quan_Ly_Khoa_Hoc() {
                 </div>
             </main>
 
-            {/* CREATE / EDIT COURSE MODAL */}
             {showModal && (
                 <div style={{
                     position: "fixed", inset: 0, background: "rgba(15,23,42,0.5)",
@@ -360,7 +346,6 @@ export default function Quan_Ly_Khoa_Hoc() {
                         background: "#fff", borderRadius: 16, width: "90%", maxWidth: 640,
                         boxShadow: "0 24px 60px rgba(0,0,0,0.15)", overflow: "hidden"
                     }}>
-                        {/* Header */}
                         <div style={{
                             background: "linear-gradient(135deg, #1e3a8a, #2563eb)",
                             padding: "20px 24px", color: "#fff", display: "flex",
@@ -376,10 +361,8 @@ export default function Quan_Ly_Khoa_Hoc() {
                             }}>✕</button>
                         </div>
 
-                        {/* Form */}
                         <form onSubmit={handleSaveCourse} style={{ padding: "24px", display: "flex", flexDirection: "column", gap: 16, maxHeight: "80vh", overflowY: "auto" }}>
 
-                            {/* Tiêu đề & Mô tả */}
                             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                                 <label style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>Tiêu đề khóa học <span style={{ color: "#ef4444" }}>*</span></label>
                                 <input
@@ -409,7 +392,6 @@ export default function Quan_Ly_Khoa_Hoc() {
                                 />
                             </div>
 
-                            {/* Grid 2 cột: Chuyên mục & Trình độ */}
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                                     <label style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>Chuyên mục <span style={{ color: "#ef4444" }}>*</span></label>
@@ -433,7 +415,6 @@ export default function Quan_Ly_Khoa_Hoc() {
                                 </div>
                             </div>
 
-                            {/* Grid 2 cột: Thời lượng & Số bài học */}
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                                     <label style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>Thời lượng <span style={{ color: "#ef4444" }}>*</span></label>
@@ -465,7 +446,6 @@ export default function Quan_Ly_Khoa_Hoc() {
                                 </div>
                             </div>
 
-                            {/* Grid 2 cột: Giảng viên & Đối tác */}
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                                     <label style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>Giảng viên chính <span style={{ color: "#ef4444" }}>*</span></label>
@@ -493,7 +473,6 @@ export default function Quan_Ly_Khoa_Hoc() {
                                 </div>
                             </div>
 
-                            {/* Grid 2 cột: Học phí hiện tại & Học phí gốc */}
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                                     <label style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>Học phí khuyến mãi (đ) <span style={{ color: "#ef4444" }}>*</span></label>
@@ -521,7 +500,6 @@ export default function Quan_Ly_Khoa_Hoc() {
                                 </div>
                             </div>
 
-                            {/* Trạng thái khóa học */}
                             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                                 <label style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>Trạng thái hiển thị</label>
                                 <select
@@ -542,7 +520,6 @@ export default function Quan_Ly_Khoa_Hoc() {
                                 </select>
                             </div>
 
-                            {/* Footer Actions */}
                             <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 10 }}>
                                 <button type="button" onClick={() => setShowModal(false)} style={{
                                     padding: "9px 18px", borderRadius: 8, border: "1px solid #e2e8f0",
@@ -563,7 +540,6 @@ export default function Quan_Ly_Khoa_Hoc() {
                 </div>
             )}
 
-            {/* Custom Toast Alert */}
             {toast && (
                 <div style={{
                     position: "fixed", bottom: 28, right: 28,

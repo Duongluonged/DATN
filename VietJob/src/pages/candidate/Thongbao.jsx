@@ -11,7 +11,6 @@ const getUserFromStorage = () => {
   catch { return {}; }
 };
 
-// ─── Map thời gian ────────────────────────────────────────────────
 const timeAgo = (dateStr) => {
   if (!dateStr) return "";
   const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
@@ -22,7 +21,6 @@ const timeAgo = (dateStr) => {
   return `${Math.floor(diff / 604800)} tuần trước`;
 };
 
-// ─── Map loại thông báo → icon & màu ────────────────────────────
 const TYPE_CONFIG = {
   invite: {
     icon: <Mail size={20} className="text-[#16A34A]" />,
@@ -51,7 +49,6 @@ const TABS = [
   { key: "system", label: "Hệ thống" },
 ];
 
-// ─── MAIN COMPONENT ──────────────────────────────────────────────
 const Thongbao = () => {
   const user = getUserFromStorage();
   const userId = user?.id;
@@ -61,7 +58,6 @@ const Thongbao = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [markingAll, setMarkingAll] = useState(false);
 
-  // Fetch thông báo từ API
   const fetchNotifications = useCallback(async (type = "all") => {
     if (!userId) { setLoading(false); return; }
     setLoading(true);
@@ -80,7 +76,6 @@ const Thongbao = () => {
     fetchNotifications(activeTab);
   }, [activeTab, fetchNotifications]);
 
-  // Đánh dấu 1 thông báo đã đọc
   const handleRead = async (notifId) => {
     try {
       await axios.patch(`${API}/notifications/${notifId}/read`);
@@ -92,7 +87,6 @@ const Thongbao = () => {
     }
   };
 
-  // Đánh dấu tất cả đã đọc
   const handleMarkAllRead = async () => {
     if (!userId) return;
     setMarkingAll(true);
@@ -116,7 +110,6 @@ const Thongbao = () => {
         <Sidebar />
 
         <main className="flex-1 overflow-y-auto p-10">
-          {/* ── Header ── */}
           <div className="flex justify-between items-end mb-8">
             <div>
               <div className="flex items-center gap-3 mb-1">
@@ -130,7 +123,6 @@ const Thongbao = () => {
               <p className="text-[14px] text-[#64748B]">Cập nhật những cơ hội và tin tức mới nhất dành cho bạn.</p>
             </div>
 
-            {/* Actions */}
             <div className="flex items-center gap-3">
               {unreadCount > 0 && (
                 <button
@@ -152,7 +144,6 @@ const Thongbao = () => {
             </div>
           </div>
 
-          {/* ── Filter Tabs ── */}
           <div className="flex gap-2 bg-[#F1F5F9] p-1 rounded-xl border border-[#E2E8F0] w-fit mb-6">
             {TABS.map((tab) => (
               <button
@@ -168,13 +159,11 @@ const Thongbao = () => {
             ))}
           </div>
 
-          {/* ── Loading ── */}
           {loading ? (
             <div className="flex items-center justify-center py-20">
               <Loader2 size={36} className="animate-spin text-[#3B82F6]" />
             </div>
           ) : notifications.length === 0 ? (
-            /* ── Empty State ── */
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <div className="w-20 h-20 bg-[#F1F5F9] rounded-full flex items-center justify-center mb-4">
                 <Bell size={36} className="text-[#CBD5E1]" />
@@ -187,7 +176,6 @@ const Thongbao = () => {
               </p>
             </div>
           ) : (
-            /* ── Notifications List ── */
             <div className="space-y-4">
               {notifications.map((item) => {
                 const cfg = TYPE_CONFIG[item.Type] || TYPE_CONFIG.system;
@@ -203,15 +191,12 @@ const Thongbao = () => {
                         : "border-[#F1F5F9] opacity-80 hover:opacity-100"
                       }`}
                   >
-                    {/* Blue indicator for unread */}
                     {isNew && <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#2563EB] rounded-l-2xl" />}
 
-                    {/* Icon */}
                     <div className={`w-12 h-12 ${cfg.iconBg} rounded-xl flex items-center justify-center shrink-0`}>
                       {cfg.icon}
                     </div>
 
-                    {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start mb-1 gap-4">
                         <div className="flex items-center gap-2 flex-wrap">

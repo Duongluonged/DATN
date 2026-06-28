@@ -17,12 +17,10 @@ function Sidebar() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // Xóa toàn bộ thông tin phiên đăng nhập
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     localStorage.removeItem("username");
 
-    // Điều hướng về trang Login
     navigate("/login");
   };
 
@@ -39,7 +37,7 @@ function Sidebar() {
   return (
     <aside className="sticky top-0 w-64 min-w-[256px] h-screen bg-white border-r border-gray-200 flex flex-col font-sans">
 
-      {/* Logo Section */}
+
       <div className="flex items-center gap-3 p-6 border-b border-gray-100">
         <div className="w-9 h-9 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
           IT
@@ -50,7 +48,7 @@ function Sidebar() {
         </div>
       </div>
 
-      {/* Navigation */}
+
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
         {menuItems.map((item, index) => (
           item.type === "divider" ? (
@@ -73,7 +71,7 @@ function Sidebar() {
         ))}
       </nav>
 
-      {/* Bottom Actions */}
+
       <div className="p-3 border-t border-gray-100 space-y-1">
         <NavLink
           to="/admin/support"

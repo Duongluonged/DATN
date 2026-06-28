@@ -1,6 +1,5 @@
 const { sql, pool, poolConnect } = require("../config/db");
 
-// ─── Helper: tự động thêm cột CvFilePath, CvFileName nếu chưa tồn tại ─────────
 async function ensureCvFileColumns() {
     await poolConnect;
     await pool.request().query(`
@@ -17,7 +16,6 @@ async function ensureCvFileColumns() {
     `);
 }
 
-// ─── Helper: lấy hoặc tạo CandidateCv cho user ───────────────────────────────
 async function getOrCreateCvId(userId) {
     await poolConnect;
     let result = await pool.request()
@@ -36,23 +34,18 @@ async function getOrCreateCvId(userId) {
     return result.recordset[0].Id;
 }
 
-// ─── Helper: chuyển YYYY-MM → YYYY-MM-01 (DATE hợp lệ cho SQL Server) ─────────
 function toDate(val) {
     if (!val) return null;
     return val.length === 7 ? `${val}-01` : val;
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// CV CHÍNH (Bio + Skills)
-// GET  /api/cv/:userId
-// ═══════════════════════════════════════════════════════════════════════════════
 exports.getCv = async (req, res) => {
     const { userId } = req.params;
     try {
         await ensureCvFileColumns();
         const result = await pool.request()
             .input("MaNguoiDung", sql.Int, Number(userId))
-            .query("SELECT Id, GioiThieu AS Bio, KyNang, DuongDanFileCv AS CvFilePath, TenFileCv AS CvFileName FROM dbo.CvUngVien WHERE MaNguoiDung = @MaNguoiDung");
+            .query("SELECT Id, GioiThieu AS Bio, KyNang AS Skills, DuongDanFileCv AS CvFilePath, TenFileCv AS CvFileName FROM dbo.CvUngVien WHERE MaNguoiDung = @MaNguoiDung");
 
         if (result.recordset.length === 0) {
             return res.json({ cvId: null, bio: "", skills: "", cvFilePath: null, cvFileName: null });
@@ -71,10 +64,6 @@ exports.getCv = async (req, res) => {
     }
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// LƯU BIO
-// POST /api/cv/:userId/bio   body: { bio }
-// ═══════════════════════════════════════════════════════════════════════════════
 exports.saveBio = async (req, res) => {
     const { userId } = req.params;
     const { bio } = req.body;
@@ -91,10 +80,6 @@ exports.saveBio = async (req, res) => {
     }
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// LƯU SKILLS (chuỗi "ReactJS, Node.js, ...")
-// POST /api/cv/:userId/skills   body: { skills }
-// ═══════════════════════════════════════════════════════════════════════════════
 exports.saveSkills = async (req, res) => {
     const { userId } = req.params;
     const { skills } = req.body;
@@ -111,11 +96,7 @@ exports.saveSkills = async (req, res) => {
     }
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// HỌC VẤN
-// ═══════════════════════════════════════════════════════════════════════════════
 
-// GET /api/cv/:userId/education
 exports.getEducation = async (req, res) => {
     const { userId } = req.params;
     try {
@@ -136,7 +117,6 @@ exports.getEducation = async (req, res) => {
     }
 };
 
-// POST /api/cv/:userId/education
 exports.addEducation = async (req, res) => {
     const { userId } = req.params;
     const { school, major, from, to } = req.body;
@@ -160,7 +140,6 @@ exports.addEducation = async (req, res) => {
     }
 };
 
-// PUT /api/cv/:userId/education/:id
 exports.updateEducation = async (req, res) => {
     const { userId, id } = req.params;
     const { school, major, from, to } = req.body;
@@ -190,7 +169,6 @@ exports.updateEducation = async (req, res) => {
     }
 };
 
-// DELETE /api/cv/:userId/education/:id
 exports.deleteEducation = async (req, res) => {
     const { userId, id } = req.params;
     try {
@@ -210,11 +188,7 @@ exports.deleteEducation = async (req, res) => {
     }
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// KINH NGHIỆM
-// ═══════════════════════════════════════════════════════════════════════════════
 
-// GET /api/cv/:userId/experience
 exports.getExperience = async (req, res) => {
     const { userId } = req.params;
     try {
@@ -235,7 +209,6 @@ exports.getExperience = async (req, res) => {
     }
 };
 
-// POST /api/cv/:userId/experience
 exports.addExperience = async (req, res) => {
     const { userId } = req.params;
     const { company, position, from, to, description } = req.body;
@@ -260,7 +233,6 @@ exports.addExperience = async (req, res) => {
     }
 };
 
-// PUT /api/cv/:userId/experience/:id
 exports.updateExperience = async (req, res) => {
     const { userId, id } = req.params;
     const { company, position, from, to, description } = req.body;
@@ -292,7 +264,6 @@ exports.updateExperience = async (req, res) => {
     }
 };
 
-// DELETE /api/cv/:userId/experience/:id
 exports.deleteExperience = async (req, res) => {
     const { userId, id } = req.params;
     try {
@@ -312,10 +283,6 @@ exports.deleteExperience = async (req, res) => {
     }
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// LƯU FILE CV UPLOAD
-// PUT /api/cv/:userId/cv-file   body: { fileUrl, fileName }
-// ═══════════════════════════════════════════════════════════════════════════════
 exports.saveCvFile = async (req, res) => {
     const { userId } = req.params;
     const { fileUrl, fileName } = req.body;
@@ -341,10 +308,6 @@ exports.saveCvFile = async (req, res) => {
     }
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// XÓA FILE CV UPLOAD
-// DELETE /api/cv/:userId/cv-file
-// ═══════════════════════════════════════════════════════════════════════════════
 exports.deleteCvFile = async (req, res) => {
     const { userId } = req.params;
     try {

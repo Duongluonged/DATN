@@ -3,8 +3,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { handleGoogleCallback } from '../../hooks/useSocialLogin';
 import { Globe } from 'lucide-react';
 
-// Trang này được Google redirect về sau khi người dùng đồng ý
-// URL: /auth/google/callback?code=...&state=...
 const GoogleCallback = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -39,7 +37,7 @@ const GoogleCallback = () => {
         setStatus(err.response?.data?.error || err.message || 'Đăng nhập Google thất bại.');
         setTimeout(() => navigate('/login'), 3000);
       });
-  }, []); // chỉ chạy 1 lần
+  }, []);
 
   return (
     <div style={{
@@ -50,12 +48,10 @@ const GoogleCallback = () => {
         background: '#fff', borderRadius: 16, padding: '48px 40px',
         boxShadow: '0 8px 32px rgba(0,0,0,0.10)', textAlign: 'center', maxWidth: 400
       }}>
-        {/* Google Icon */}
         <div style={{ margin: '0 auto 24px', width: 64, height: 64 }}>
           <Globe size={64} color="#4285F4" />
         </div>
 
-        {/* Spinner */}
         {!isError && (
           <div style={{
             width: 40, height: 40, border: '4px solid #e5e7eb',

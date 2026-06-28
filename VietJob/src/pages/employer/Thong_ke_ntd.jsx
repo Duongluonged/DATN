@@ -13,7 +13,6 @@ export default function Thongke_ntd() {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Get current recruiter user
     let user = null;
     try {
         const storedUser = localStorage.getItem("user");
@@ -25,7 +24,6 @@ export default function Thongke_ntd() {
     }
     const userId = user?.id;
 
-    // Fetch recruiter stats from SQL via API
     const fetchStats = async () => {
         if (!userId) return;
         setLoading(true);
@@ -43,7 +41,6 @@ export default function Thongke_ntd() {
         fetchStats();
     }, [userId]);
 
-    // Fallbacks
     const totalJobs = stats?.totalJobs ?? 0;
     const totalApplicants = stats?.totalApplicants ?? 0;
     const pendingApplications = stats?.pendingApplications ?? 0;
@@ -57,13 +54,11 @@ export default function Thongke_ntd() {
         <div style={{ display: "flex", height: "100vh", fontFamily: "'Be Vietnam Pro','Segoe UI',sans-serif", background: "#f8fafc", color: "#1e293b" }}>
             <Sidebar_empl />
 
-            {/* Main */}
             <main style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
                 <Topbar_empl />
 
                 <div style={{ flex: 1, overflowY: "auto", padding: "22px 24px" }}>
                     
-                    {/* Header */}
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 20 }}>
                         <div>
                             <h1 style={{ fontSize: 20, fontWeight: 800, margin: 0, color: "#1e3a8a", display: "flex", alignItems: "center", gap: 8 }}>
@@ -88,7 +83,6 @@ export default function Thongke_ntd() {
                         </div>
                     </div>
 
-                    {/* Stat cards grid */}
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 24 }}>
                         {[
                             { label: "Tổng tin tuyển dụng", value: totalJobs, change: "+12%", up: true, icon: <Briefcase size={20} style={{ color: "#2563eb" }} />, iconBg: "rgba(37, 99, 235, 0.1)" },
@@ -112,10 +106,8 @@ export default function Thongke_ntd() {
                         ))}
                     </div>
 
-                    {/* Charts grid */}
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 20, marginBottom: 24 }}>
                         
-                        {/* Weekly Applicant trend */}
                         <div style={{ background: "#ffffff", borderRadius: 14, border: "1px solid #e2e8f0", padding: "20px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.01)" }}>
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
                                 <div>
@@ -161,7 +153,6 @@ export default function Thongke_ntd() {
                             )}
                         </div>
 
-                        {/* Industry breakdown */}
                         <div style={{ background: "#ffffff", borderRadius: 14, border: "1px solid #e2e8f0", padding: "20px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.01)" }}>
                             <h4 style={{ margin: "0 0 16px 0", fontWeight: 800, fontSize: 15, display: "flex", alignItems: "center", gap: 6, color: "#1e3a8a" }}>
                                 <PieChart size={16} style={{ color: "#16a34a" }} /> Phân tích loại hình CV
@@ -189,14 +180,12 @@ export default function Thongke_ntd() {
                         </div>
                     </div>
 
-                    {/* Featured active jobs table */}
                     <div style={{ background: "#ffffff", borderRadius: 14, border: "1px solid #e2e8f0", overflow: "hidden", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.01)" }}>
                         <div style={{ padding: "16px 20px", borderBottom: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                             <h4 style={{ margin: 0, fontWeight: 800, fontSize: 15, color: "#1e3a8a" }}>Việc làm đang tuyển nổi bật</h4>
                             <span style={{ fontSize: 10.5, fontWeight: 700, padding: "2px 8px", borderRadius: 10, background: "#eff6ff", color: "#2563eb" }}>LIVE DATA</span>
                         </div>
 
-                        {/* Table Header */}
                         <div style={{ display: "grid", gridTemplateColumns: "3fr 1.2fr 1.2fr 1.2fr", gap: 12, padding: "10px 20px", background: "#f8fafc", fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1px solid #f1f5f9" }}>
                             <span>Tên công việc</span>
                             <span>Trạng thái VIP</span>
@@ -250,7 +239,6 @@ export default function Thongke_ntd() {
                     </div>
                 </div>
 
-                {/* Footer */}
                 <footer style={{ borderTop: "1px solid #e8eaf0", padding: "10px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#ffffff", fontSize: 11.5, color: "#94a3b8" }}>
                     <span>© 2023 VietJob Portal. Báo cáo thống kê cơ sở dữ liệu thời gian thực.</span>
                     <div style={{ display: "flex", gap: 18 }}>

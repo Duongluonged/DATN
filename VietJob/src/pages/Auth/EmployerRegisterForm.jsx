@@ -17,7 +17,6 @@ const COMPANY_SIZES = ["1–10 người", "11–50 người", "51–200 người
 
 import { User, Mail, Building, Lock, Phone, Globe, MapPin, Users, Tag, FileText, AlertTriangle } from "lucide-react";
 
-/* ─── icons (inline SVG) ─────────────────────────────────── */
 const iconProps = { size: 16, color: "#94a3b8" };
 const UserIcon = () => <User {...iconProps} />;
 const MailIcon = () => <Mail {...iconProps} />;
@@ -101,7 +100,6 @@ export default function EmployerRegisterForm() {
     }
   };
 
-  /* ── Success screen ─────────────────────────────────────── */
   if (success) {
     return (
       <div style={styles.page}>
@@ -129,7 +127,6 @@ export default function EmployerRegisterForm() {
     text: "#111827", muted: "#6b7280",
   };
 
-  /* ── Main form ──────────────────────────────────────────── */
   return (
     <>
       <div style={{ fontFamily: "'Be Vietnam Pro', sans-serif", background: c.bg, color: c.text, minheight: "100vh", display: "flex", flexDirection: "column", overflow: "hidden", fontSize: 13 }}>
@@ -138,12 +135,9 @@ export default function EmployerRegisterForm() {
         <div style={styles.page}>
           <div style={styles.card}>
 
-            {/* ── LEFT PANEL ── */}
             <div style={styles.leftPanel}>
-              {/* overlay gradient */}
               <div style={styles.overlay} />
 
-              {/* content */}
               <div style={styles.leftContent}>
 
                 <div style={{ marginTop: "auto" }}>
@@ -155,7 +149,6 @@ export default function EmployerRegisterForm() {
                     những chuyên gia IT hàng đầu một cách nhanh chóng và chính xác.
                   </p>
 
-                  {/* avatars row */}
                   <div style={styles.avatarRow}>
                     {[1, 2, 3].map((_, i) => (
                       <div key={i} style={{ width: 40, height: 40, borderRadius: "50%", background: c.border, border: `2px solid ${c.white}`, display: "flex", alignItems: "center", justifyContent: "center", marginLeft: i > 0 ? -12 : 0, zIndex: 3 - i }}>
@@ -168,7 +161,6 @@ export default function EmployerRegisterForm() {
               </div>
             </div>
 
-            {/* ── RIGHT PANEL ── */}
             <div style={styles.rightPanel}>
               <h1 style={styles.formTitle}>Tạo tài khoản Nhà tuyển dụng</h1>
               <p style={styles.formSub}>
@@ -181,7 +173,6 @@ export default function EmployerRegisterForm() {
 
               <form onSubmit={handleSubmit} noValidate style={{ marginTop: 20 }}>
 
-                {/* ── Section: Thông tin đăng nhập ── */}
                 <div style={styles.sectionLabel}>Thông tin đăng nhập</div>
 
                 <InputField
@@ -228,7 +219,6 @@ export default function EmployerRegisterForm() {
                   />
                 </div>
 
-                {/* ── Section: Thông tin công ty ── */}
                 <div style={{ ...styles.sectionLabel, marginTop: 8 }}>Thông tin công ty</div>
 
                 <InputField
@@ -259,7 +249,6 @@ export default function EmployerRegisterForm() {
                   placeholder="123 Nguyễn Huệ, Q1, TP.HCM"
                 />
 
-                {/* Submit */}
                 <button
                   type="submit"
                   className="btn-primary"
@@ -270,20 +259,17 @@ export default function EmployerRegisterForm() {
                 </button>
               </form>
 
-              {/* Divider */}
               <div style={styles.divider}>
                 <span style={styles.dividerLine} />
                 <span style={styles.dividerText}>HOẶC THAM GIA VỚI</span>
                 <span style={styles.dividerLine} />
               </div>
 
-              {/* Google */}
               <button className="btn-google" style={styles.btnGoogle}>
                 <GoogleIcon />
                 &nbsp; Đăng ký bằng Google
               </button>
 
-              {/* Login link */}
               <p style={styles.loginHint}>
                 Đã có tài khoản?{" "}
                 <a href="/Login_Employer" style={styles.loginLink}>
@@ -298,7 +284,6 @@ export default function EmployerRegisterForm() {
   );
 }
 
-/* ── InputField helper ────────────────────────────────────── */
 function InputField({ label, icon, error, ...inputProps }) {
   return (
     <div style={{ marginBottom: 14 }}>
@@ -319,7 +304,6 @@ function InputField({ label, icon, error, ...inputProps }) {
   );
 }
 
-/* ── SelectField helper ───────────────────────────────────── */
 function SelectField({ label, icon, options, error, ...selectProps }) {
   return (
     <div style={{ marginBottom: 14 }}>
@@ -345,7 +329,6 @@ function SelectField({ label, icon, options, error, ...selectProps }) {
   );
 }
 
-/* ── TextareaField helper ─────────────────────────────────── */
 function TextareaField({ label, icon, error, rows = 3, ...textareaProps }) {
   return (
     <div style={{ marginBottom: 14 }}>
@@ -369,7 +352,6 @@ function TextareaField({ label, icon, error, rows = 3, ...textareaProps }) {
   );
 }
 
-/* ── Global CSS (hover states etc.) ──────────────────────── */
 const globalCSS = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
@@ -410,7 +392,6 @@ const globalCSS = `
   }
 `;
 
-/* ── Styles ───────────────────────────────────────────────── */
 const styles = {
   page: {
     minHeight: "100vh",
@@ -432,7 +413,6 @@ const styles = {
     boxShadow: "0 20px 60px rgba(0,0,0,0.15)",
   },
 
-  /* LEFT */
   leftPanel: {
     flex: "0 0 42%",
     position: "relative",
@@ -513,7 +493,6 @@ const styles = {
     color: "rgba(255,255,255,0.8)",
   },
 
-  /* RIGHT */
   rightPanel: {
     flex: 1,
     background: "#fff",

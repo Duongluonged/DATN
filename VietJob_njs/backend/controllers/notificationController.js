@@ -1,11 +1,10 @@
 const { pool, poolConnect, sql } = require('../config/db');
 
-// ─── 1. Lấy danh sách thông báo của ứng viên ─────────────────────
 const getNotifications = async (req, res) => {
     try {
         await poolConnect;
         const { userId } = req.params;
-        const { type } = req.query; // 'job' | 'invite' | 'system' | undefined = all
+        const { type } = req.query;
 
         const request = pool.request().input('userId', sql.Int, parseInt(userId));
         let query = `
@@ -29,7 +28,6 @@ const getNotifications = async (req, res) => {
     }
 };
 
-// ─── 2. Đếm thông báo chưa đọc ────────────────────────────────────
 const getUnreadCount = async (req, res) => {
     try {
         await poolConnect;
@@ -44,7 +42,6 @@ const getUnreadCount = async (req, res) => {
     }
 };
 
-// ─── 3. Đánh dấu một thông báo đã đọc ─────────────────────────────
 const markAsRead = async (req, res) => {
     try {
         await poolConnect;
@@ -59,7 +56,6 @@ const markAsRead = async (req, res) => {
     }
 };
 
-// ─── 4. Đánh dấu TẤT CẢ đã đọc ───────────────────────────────────
 const markAllAsRead = async (req, res) => {
     try {
         await poolConnect;

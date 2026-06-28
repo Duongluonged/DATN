@@ -192,18 +192,15 @@ export default function Quan_ly_HoSo_Cty() {
           hotline: d.Hotline || ""
         });
 
-        // Parse benefits if present in database (stored as JSON array or text)
         if (d.Benefits) {
           try {
             const parsed = JSON.parse(d.Benefits);
             if (Array.isArray(parsed)) setBenefits(parsed);
           } catch {
-            // Fallback for simple comma separated list
             setBenefits(d.Benefits.split(",").map(b => b.trim()));
           }
         }
 
-        // Parse office photos if present
         if (d.OfficePhotos) {
           try {
             const parsed = JSON.parse(d.OfficePhotos);
@@ -252,8 +249,8 @@ export default function Quan_ly_HoSo_Cty() {
       setSaving(true);
       const payload = {
         ...form,
-        benefits: JSON.stringify(benefits), // Save benefits as JSON string
-        officePhotos: JSON.stringify(photos) // Save office photos as JSON string
+        benefits: JSON.stringify(benefits),
+        officePhotos: JSON.stringify(photos)
       };
 
       await axios.put(`${API}/companies/employer/${userId}`, payload);
@@ -281,14 +278,11 @@ export default function Quan_ly_HoSo_Cty() {
     <div className="bg-[#f5f7fb] min-h-screen flex font-sans">
       <Sidebar_empl />
 
-      {/* CONTENT */}
       <main className="flex-1 overflow-y-auto">
         <Topbar_empl />
 
-        {/* BODY */}
         <div className="p-8">
 
-          {/* TOAST NOTIFICATION */}
           {toast && (
             <div className={`fixed top-5 right-5 z-50 flex items-center gap-3 px-6 py-4 rounded-xl shadow-lg border transition-all duration-300 ${toast.type === "success"
               ? "bg-green-50 border-green-200 text-green-800"
@@ -299,7 +293,6 @@ export default function Quan_ly_HoSo_Cty() {
             </div>
           )}
 
-          {/* HEADER ROW */}
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-2xl font-bold text-[#111827] m-0">Hồ sơ công ty</h1>
@@ -342,7 +335,6 @@ export default function Quan_ly_HoSo_Cty() {
           ) : (
             <div className="space-y-6">
 
-              {/* BASIC INFO */}
               <div className="bg-white rounded-[28px] p-7 border border-[#edf1f7]">
                 <div className="border-b border-[#edf1f7] pb-5 mb-6">
                   <h2 className="font-bold text-lg text-[#111827]">Thông tin cơ bản</h2>
@@ -350,7 +342,6 @@ export default function Quan_ly_HoSo_Cty() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-8">
-                  {/* LOGO */}
                   <div className="border border-dashed border-gray-200 rounded-3xl h-[220px] bg-[#f8fafc] flex flex-col items-center justify-center p-4">
                     <input
                       type="file"
@@ -394,7 +385,6 @@ export default function Quan_ly_HoSo_Cty() {
                     </div>
                   </div>
 
-                  {/* FORM FIELDS */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <Input
                       label="Tên công ty"
@@ -439,7 +429,6 @@ export default function Quan_ly_HoSo_Cty() {
                 </div>
               </div>
 
-              {/* GALLERY SECTION */}
               <div className="bg-white rounded-[28px] p-7 border border-[#edf1f7]">
                 <div className="flex items-center justify-between mb-5">
                   <div>
@@ -474,7 +463,6 @@ export default function Quan_ly_HoSo_Cty() {
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
 
-                      {/* Delete Overlay */}
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
                         <button
                           type="button"
@@ -488,7 +476,6 @@ export default function Quan_ly_HoSo_Cty() {
                     </div>
                   ))}
 
-                  {/* UPLOADER TRIGGER BOX */}
                   {photoUploading ? (
                     <div className="border border-dashed border-blue-300 rounded-[22px] h-[220px] flex flex-col items-center justify-center bg-blue-50/30 p-4 text-center">
                       <Loader2 size={32} className="text-blue-600 animate-spin" />
@@ -507,12 +494,9 @@ export default function Quan_ly_HoSo_Cty() {
                 </div>
               </div>
 
-              {/* DETAILED INFORMATION & SIDEBAR */}
               <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-6">
 
-                {/* LEFT COL: EDITOR / TEXTAREA */}
                 <div className="space-y-6">
-                  {/* SHORT DESCRIPTION */}
                   <div className="bg-white rounded-[28px] p-6 border border-[#edf1f7]">
                     <h3 className="font-bold text-[17px] text-[#111827] mb-3">Mô tả ngắn doanh nghiệp</h3>
                     <p className="text-xs text-gray-400 mb-4">Mô tả ngắn gọn cốt lõi tầm nhìn của công ty (Hiển thị ngoài trang tìm kiếm).</p>
@@ -525,7 +509,6 @@ export default function Quan_ly_HoSo_Cty() {
                     />
                   </div>
 
-                  {/* FULL INTRO */}
                   <div className="bg-white rounded-[28px] p-6 border border-[#edf1f7]">
                     <h3 className="font-bold text-[17px] text-[#111827] mb-3">Giới thiệu chi tiết công ty</h3>
                     <p className="text-xs text-gray-400 mb-4">Chia sẻ về lịch sử, sứ mệnh, giá trị cốt lõi và định hướng tương lai.</p>
@@ -539,10 +522,8 @@ export default function Quan_ly_HoSo_Cty() {
                   </div>
                 </div>
 
-                {/* RIGHT COL: BENEFITS & METADATA */}
                 <div className="space-y-6">
 
-                  {/* BENEFITS */}
                   <div className="bg-white rounded-[28px] p-6 border border-[#edf1f7]">
                     <h3 className="font-bold text-[17px] text-[#111827] mb-1">Phúc lợi công ty</h3>
                     <p className="text-xs text-gray-400 mb-4">Các đặc quyền và ưu đãi công ty cung cấp cho ứng viên.</p>
@@ -582,7 +563,6 @@ export default function Quan_ly_HoSo_Cty() {
                     </div>
                   </div>
 
-                  {/* METADATA FORM FIELDS */}
                   <div className="bg-white rounded-[28px] p-6 border border-[#edf1f7] space-y-4">
                     <h3 className="font-bold text-[17px] text-[#111827] mb-1">Thông tin bổ sung</h3>
 
@@ -645,7 +625,6 @@ export default function Quan_ly_HoSo_Cty() {
 
               </div>
 
-              {/* BOTTOM ACTION FOOTER */}
               <div className="flex justify-end gap-3 bg-white rounded-2xl p-4 border border-[#edf1f7]">
                 <button
                   onClick={fetchCompanyProfile}

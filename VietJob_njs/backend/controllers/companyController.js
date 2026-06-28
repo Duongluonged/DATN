@@ -3,7 +3,6 @@ const { sql, pool, poolConnect } = require('../config/db');
 const getTopCompanies = async (req, res) => {
     try {
         await poolConnect;
-        // Sửa câu lệnh SQL để lồng thêm cột đếm JobCount
         const result = await pool.request().query(`
             SELECT 
                 C.MaCongTy AS CompanyID, 
@@ -85,11 +84,10 @@ const getCompanyDetail = async (req, res) => {
 };
 
 
-// Thêm hàm này vào companyController.js
 const getCompanyJobs = async (req, res) => {
     try {
         await poolConnect;
-        const { id } = req.params; // ID của công ty
+        const { id } = req.params;
         const result = await pool.request()
             .input('id', id)
             .query(`
@@ -161,7 +159,6 @@ const updateCompanyByEmployer = async (req, res) => {
             longDescription, email, phone, representativeName, hotline, officePhotos
         } = req.body;
 
-        // 1. Tìm CompanyID của User
         const userResult = await pool.request()
             .input('userId', sql.Int, userId)
             .query(`SELECT MaCongTy AS CompanyID FROM NguoiDung WHERE Id = @userId`);
@@ -175,7 +172,6 @@ const updateCompanyByEmployer = async (req, res) => {
             return res.status(404).json({ message: "Tài khoản chưa được liên kết với bất kỳ công ty nào." });
         }
 
-        // 2. Cập nhật bảng Companies
         await pool.request()
             .input('companyId', sql.Int, companyId)
             .input('companyName', sql.NVarChar, companyName)
@@ -209,7 +205,6 @@ const updateCompanyByEmployer = async (req, res) => {
                 WHERE MaCongTy = @companyId
             `);
 
-        // 3. Cập nhật bảng Users
         await pool.request()
             .input('userId', sql.Int, userId)
             .input('email', sql.NVarChar, email)

@@ -46,14 +46,12 @@ export default function CandidateMessages() {
         setTimeout(() => setToast(null), 3500);
     };
 
-    // Helper for initials
     const getInitials = (name = "") => {
         const parts = name.trim().split(" ");
         if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
         return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     };
 
-    // File converter
     const toBase64 = file => new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
@@ -61,7 +59,6 @@ export default function CandidateMessages() {
         reader.onerror = error => reject(error);
     });
 
-    // ─── FETCH CONVERSATIONS ──────────────────────────────────────
     const fetchConversations = async () => {
         if (!userId) return;
         try {
@@ -72,21 +69,18 @@ export default function CandidateMessages() {
         }
     };
 
-    // ─── FETCH MESSAGES ───────────────────────────────────────────
     const fetchMessages = async (partnerId) => {
         if (!userId || !partnerId) return;
         try {
             const res = await axios.get(`${API}/messages/history/${userId}/${partnerId}`);
             setMessages(res.data);
             
-            // Mark as read
             await axios.put(`${API}/messages/read/${userId}/${partnerId}`);
         } catch (err) {
             console.error("Lỗi lấy lịch sử tin nhắn của ứng viên:", err);
         }
     };
 
-    // ─── AUTO-POLLING INTERVAL ────────────────────────────────────
     useEffect(() => {
         fetchConversations();
         
@@ -95,24 +89,21 @@ export default function CandidateMessages() {
             if (activePartner) {
                 fetchMessages(activePartner.PartnerID);
             }
-        }, 3000); // 3 seconds poll
+        }, 3000);
 
         return () => clearInterval(interval);
     }, [userId, activePartner?.PartnerID]);
 
-    // Scroll to bottom
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
-    // Switch conversations
     const handleSelectPartner = (partner) => {
         setActivePartner(partner);
         setMessages([]);
         fetchMessages(partner.PartnerID);
     };
 
-    // Check query params for starting chats
     useEffect(() => {
         const queryParams = new URLSearchParams(window.location.search);
         const partnerIdParam = queryParams.get("partnerId");
@@ -122,7 +113,6 @@ export default function CandidateMessages() {
             if (found) {
                 handleSelectPartner(found);
             } else {
-                // Fetch recruiter's details
                 const fetchRecruiterInfo = async () => {
                     try {
                         const res = await axios.get(`${API}/auth/profile/${partnerId}`);
@@ -150,7 +140,6 @@ export default function CandidateMessages() {
         }
     }, [conversations, window.location.search]);
 
-    // ─── SEND MESSAGE ─────────────────────────────────────────────
     const handleSendMessage = async (e) => {
         e.preventDefault();
         if (!userId || !activePartner || !inputText.trim()) return;
@@ -174,7 +163,6 @@ export default function CandidateMessages() {
         }
     };
 
-    // ─── FILE UPLOAD ──────────────────────────────────────────────
     const handleFileUpload = async (e) => {
         const file = e.target.files[0];
         if (!file || !userId || !activePartner) return;
@@ -223,13 +211,10 @@ export default function CandidateMessages() {
             <div className="flex min-h-screen bg-gray-50 font-sans text-slate-700" style={{ fontFamily: "'Inter', sans-serif" }}>
                 <Sidebar />
 
-                {/* --- MAIN CONTENT --- */}
                 <main className="flex-1 p-8 flex flex-col h-[calc(100vh-80px)] overflow-hidden">
                     <div className="flex-1 bg-white rounded-3xl overflow-hidden border border-blue-100 flex shadow-sm">
                         
-                        {/* LEFT: CONVERSATIONS */}
                         <section className="w-[320px] border-r border-blue-50 bg-white flex flex-col h-full overflow-hidden flex-shrink-0">
-                            {/* Header search */}
                             <div className="p-4 border-b border-blue-50">
                                 <h3 className="font-bold text-base mb-3 text-slate-800">Trò chuyện</h3>
                                 <div className="h-9 bg-slate-50 rounded-xl px-3 flex items-center gap-2 border border-slate-100">
@@ -243,7 +228,6 @@ export default function CandidateMessages() {
                                 </div>
                             </div>
 
-                            {/* Conversation List */}
                             <div className="flex-1 overflow-y-auto p-2 space-y-1">
                                 {filteredConversations.length === 0 ? (
                                     <div className="text-center py-10 text-slate-400 text-xs">
@@ -262,7 +246,6 @@ export default function CandidateMessages() {
                                                     isActive ? "bg-blue-50 text-blue-900" : "hover:bg-slate-50"
                                                 }`}
                                             >
-                                                {/* Company/Employer Avatar */}
                                                 <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-sm">
                                                     {getInitials(c.CompanyName || c.PartnerName)}
                                                 </div>
@@ -292,11 +275,9 @@ export default function CandidateMessages() {
                             </div>
                         </section>
 
-                        {/* MIDDLE: CHAT CONTENT */}
                         <section className="flex-1 bg-slate-50/50 flex flex-col h-full overflow-hidden">
                             {activePartner ? (
                                 <>
-                                    {/* Header */}
                                     <div className="h-[70px] bg-white border-b border-blue-50 px-5 flex items-center justify-between flex-shrink-0 shadow-xs">
                                         <div className="flex items-center gap-3">
                                             <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs shadow-xs">
@@ -321,7 +302,6 @@ export default function CandidateMessages() {
                                         </div>
                                     </div>
 
-                                    {/* Message lists */}
                                     <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4">
                                         {messages.length === 0 ? (
                                             <div className="text-center py-20 text-slate-400 text-xs">
@@ -380,7 +360,6 @@ export default function CandidateMessages() {
                                         <div ref={messagesEndRef} />
                                     </div>
 
-                                    {/* Input Footer */}
                                     <div className="p-3 bg-white border-t border-blue-50 flex-shrink-0">
                                         <form onSubmit={handleSendMessage} className="h-11 bg-slate-50 rounded-xl px-3 flex items-center gap-2 border border-slate-100">
                                             <button
@@ -427,7 +406,6 @@ export default function CandidateMessages() {
                             )}
                         </section>
 
-                        {/* RIGHT: COMPANY DETAILS */}
                         <aside className="w-[280px] border-l border-blue-50 bg-white h-full overflow-y-auto flex-shrink-0 p-5">
                             {activePartner && activePartner.CompanyName ? (
                                 <div className="space-y-6">
@@ -485,7 +463,6 @@ export default function CandidateMessages() {
                 </main>
             </div>
 
-            {/* Toast */}
             {toast && (
                 <div style={{
                     position: "fixed", bottom: 28, right: 28,

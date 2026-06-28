@@ -37,13 +37,13 @@ function BannerSearch() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // State bộ lọc đồng bộ từ URL
+
   const [keyword, setKeyword] = useState(searchParams.get('keyword') || '');
   const [location, setLocation] = useState(searchParams.get('location') || 'Tất cả các địa điểm');
   const [salary, setSalary] = useState(searchParams.get('salary') || 'all');
   const [jobType, setJobType] = useState(searchParams.get('jobType') || 'all');
 
-  // Gọi API mỗi khi URL params thay đổi
+
   useEffect(() => {
     const fetchJobs = async () => {
       setLoading(true);
@@ -69,7 +69,7 @@ function BannerSearch() {
     fetchJobs();
   }, [searchParams]);
 
-  // Áp dụng bộ lọc → cập nhật URL
+
   const applyFilters = () => {
     const params = new URLSearchParams();
     if (keyword.trim()) params.set('keyword', keyword.trim());
@@ -94,8 +94,6 @@ function BannerSearch() {
     if (e.key === 'Enter') applyFilters();
   };
 
-
-
   return (
     <section
       className="w-full relative py-16 px-4 bg-cover bg-center bg-no-repeat"
@@ -105,7 +103,7 @@ function BannerSearch() {
 
       <div className="max-w-5xl mx-auto relative z-10">
 
-        {/* Thanh tìm kiếm */}
+
         <div className="flex items-center bg-white rounded-full shadow-2xl focus-within:ring-4 focus-within:ring-sky-500/30 transition-all overflow-hidden">
           <div className="flex-1 flex items-center px-5">
             <Search className="w-5 h-5 text-gray-400 shrink-0" />
@@ -126,9 +124,9 @@ function BannerSearch() {
           </button>
         </div>
 
-        {/* Bộ lọc */}
+
         <div className="flex flex-wrap gap-3 mt-5">
-          {/* Địa điểm */}
+
           <div className="relative">
             <select
               value={location}
@@ -142,7 +140,7 @@ function BannerSearch() {
             </div>
           </div>
 
-          {/* Mức lương */}
+
           <div className="relative">
             <select
               value={salary}
@@ -156,7 +154,6 @@ function BannerSearch() {
             </div>
           </div>
 
-          {/* Loại hình */}
           <div className="relative">
             <select
               value={jobType}

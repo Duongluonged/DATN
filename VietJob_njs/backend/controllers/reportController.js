@@ -1,6 +1,5 @@
 const { pool, poolConnect, sql } = require('../config/db');
 
-// ─── 1. Gửi báo cáo tin tuyển dụng vi phạm ───────────────────
 const createReport = async (req, res) => {
     try {
         await poolConnect;
@@ -10,7 +9,6 @@ const createReport = async (req, res) => {
             return res.status(400).json({ message: 'Thiếu thông tin bắt buộc (jobId, reason).' });
         }
 
-        // Thực thi chèn bản ghi vào bảng JobReports
         await pool.request()
             .input('jobId',       sql.Int,      jobId)
             .input('userId',      sql.Int,      userId || null)
@@ -28,7 +26,6 @@ const createReport = async (req, res) => {
     }
 };
 
-// ─── 2. Lấy toàn bộ danh sách khiếu nại (Dành cho Admin) ──────
 const getAllReports = async (req, res) => {
     try {
         await poolConnect;
@@ -52,12 +49,11 @@ const getAllReports = async (req, res) => {
     }
 };
 
-// ─── 3. Cập nhật trạng thái báo cáo (Xử lý khiếu nại) ─────────
 const updateReportStatus = async (req, res) => {
     try {
         await poolConnect;
         const { reportId } = req.params;
-        const { status } = req.body; // 'Resolved' hoặc 'Ignored'
+        const { status } = req.body;
 
         if (!status) {
             return res.status(400).json({ message: 'Thiếu trạng thái cập nhật.' });

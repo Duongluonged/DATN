@@ -1,7 +1,177 @@
 const { pool, poolConnect, sql } = require('../config/db');
 const nodemailer = require('nodemailer');
+const transporter = require('../config/mailer');
+const bcrypt = require('bcryptjs');
 
-// Lấy danh sách employer theo status
+exports.getAllUsers = async (req, res) => {
+  try {
+    await poolConnect;
+    const request = new sql.Request(pool);
+    const result = await request.query(`
+            SELECT u.Id, u.TenDangNhap AS Username, u.Email, u.TrangThai AS Status, u.NgayTao AS CreatedAt, r.TenVaiTro AS RoleName
+            FROM NguoiDung u
+            LEFT JOIN VaiTroNguoiDung ur ON u.Id = ur.MaNguoiDung
+            LEFT JOIN VaiTro r ON ur.MaVaiTro = r.MaVaiTro
+        `);
+    res.json(result.recordset);
+  } catch (err) {
+    console.error("Lỗi lấy danh sách user:", err);
+    res.status(500).json({ error: "Lỗi hệ thống" });
+  }
+};
+
+exports.getProfile = async (req, res) => {
+  const { userId } = req.params;
+  try {
+    await poolConnect;
+    const result = await pool.request()
+      .input('Id', sql.Int, Number(userId))
+      .query(`
+                SELECT Id, TenDangNhap AS Username, Email, SoDienThoai AS Phone, DiaChi AS Address, AnhDaiDien AS AvatarUrl
+                FROM NguoiDung WHERE Id = @Id
+            `);
+    if (result.recordset.length === 0)
+      return res.status(404).json({ error: 'Không tìm thấy người dùng' });
+    res.json(result.recordset[0]);
+  } catch (err) {
+    console.error('Lỗi getProfile:', err);
+    res.status(500).json({ error: 'Lỗi hệ thống' });
+  }
+};
+
+exports.updateProfile = async (req, res) => {
+  const { userId } = req.params;
+  const { phone, address, username, avatarUrl } = req.body;
+  try {
+    await poolConnect;
+    await pool.request()
+      .input('Id', sql.Int, Number(userId))
+      .input('SoDienThoai', sql.NVarChar, phone || null)
+      .input('DiaChi', sql.NVarChar, address || null)
+      .input('TenDangNhap', sql.NVarChar, username || null)
+      .input('AnhDaiDien', sql.NVarChar, avatarUrl !== undefined ? avatarUrl : null)
+      .query(`UPDATE NguoiDung SET 
+                SoDienThoai = @SoDienThoai, 
+                DiaChi = @DiaChi, 
+                TenDangNhap = COALESCE(@TenDangNhap, TenDangNhap),
+                AnhDaiDien = CASE WHEN @AnhDaiDien IS NOT NULL THEN @AnhDaiDien ELSE AnhDaiDien END
+            WHERE Id = @Id`);
+    res.json({ message: 'Cập nhật thành công' });
+  } catch (err) {
+    console.error('Lỗi updateProfile:', err);
+    res.status(500).json({ error: 'Lỗi hệ thống' });
+  }
+};
+
+
+exports.changePassword = async (req, res) => {
+  const { userId } = req.params;
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword)
+    return res.status(400).json({ error: 'Vui lòng nhập đủ mật khẩu cũ và mật khẩu mới.' });
+  if (newPassword.length < 6)
+    return res.status(400).json({ error: 'Mật khẩu mới phải có ít nhất 6 ký tự.' });
+  try {
+    await poolConnect;
+    const result = await pool.request()
+      .input('Id', sql.Int, Number(userId))
+      .query(`SELECT MatKhau AS Password FROM NguoiDung WHERE Id = @Id`);
+    if (result.recordset.length === 0)
+      return res.status(404).json({ error: 'Không tìm thấy người dùng.' });
+    const isMatch = await bcrypt.compare(currentPassword, result.recordset[0].Password);
+    if (!isMatch)
+      return res.status(400).json({ error: 'Mật khẩu hiện tại không đúng.' });
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await pool.request()
+      .input('Id', sql.Int, Number(userId))
+      .input('MatKhau', sql.NVarChar, hashed)
+      .query(`UPDATE NguoiDung SET MatKhau = @MatKhau WHERE Id = @Id`);
+    res.json({ message: 'Đổi mật khẩu thành công!' });
+  } catch (err) {
+    console.error('Lỗi changePassword:', err);
+    res.status(500).json({ error: 'Lỗi hệ thống' });
+  }
+};
+
+exports.deleteUser = async (req, res) => {
+  const { userId } = req.params;
+  try {
+    await poolConnect;
+    await pool.request()
+      .input('Id', sql.Int, Number(userId))
+      .query(`UPDATE NguoiDung SET TrangThai = 'locked' WHERE Id = @Id`);
+    res.json({ message: 'Đã khóa tài khoản người dùng thành công!' });
+  } catch (err) {
+    console.error('Lỗi deleteUser:', err);
+    res.status(500).json({ error: 'Lỗi hệ thống khi khóa người dùng.' });
+  }
+};
+
+exports.approveRecruiter = async (req, res) => {
+  const { userId, email } = req.body;
+
+  try {
+    await poolConnect;
+    const request = new sql.Request(pool);
+
+    await request
+      .input("Id", sql.Int, userId)
+      .input("TrangThai", sql.NVarChar, 'Approved')
+      .query(`
+                UPDATE NguoiDung 
+                SET TrangThai = @TrangThai
+                WHERE Id = @Id
+            `);
+
+    const mailOptions = {
+      from: '"VietJob Support" <support@vietjob.com>',
+      to: email,
+      subject: "[VietJob] Hồ sơ Nhà tuyển dụng đã được phê duyệt",
+      html: `
+                <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+                    <h2>Chúc mừng!</h2>
+                    <p>Hồ sơ công ty của bạn đã được hệ thống phê duyệt thành công.</p>
+                    <p>Ngay bây giờ, bạn đã có thể <strong>đăng nhập vào hệ thống</strong> bằng Email và Mật khẩu bạn đã tạo lúc đăng ký.</p>
+                    <br/>
+                    <p>Trân trọng,<br/>Đội ngũ VietJob.</p>
+                </div>
+            `
+    };
+
+    try {
+      await transporter.sendMail(mailOptions);
+    } catch (mailErr) {
+      console.error("Không thể gửi email, nhưng tài khoản đã được duyệt:", mailErr);
+    }
+
+    res.json({ message: "Đã phê duyệt thành công." });
+
+  } catch (err) {
+    console.error("Lỗi khi duyệt NTD:", err);
+    res.status(500).json({ error: "Lỗi hệ thống khi phê duyệt." });
+  }
+};
+
+exports.rejectRecruiter = async (req, res) => {
+  const { userId } = req.body;
+  try {
+    await poolConnect;
+    const request = new sql.Request(pool);
+    await request
+      .input("Id", sql.Int, userId)
+      .input("TrangThai", sql.NVarChar, 'rejected')
+      .query(`
+                UPDATE NguoiDung 
+                SET TrangThai = @TrangThai
+                WHERE Id = @Id
+            `);
+    res.json({ message: "Đã từ chối nhà tuyển dụng." });
+  } catch (err) {
+    console.error("Lỗi từ chối NTD:", err);
+    res.status(500).json({ error: "Lỗi hệ thống" });
+  }
+};
+
 exports.getEmployers = async (req, res) => {
   await poolConnect;
   const { status = 'pending', page = 1, limit = 10 } = req.query;
@@ -36,7 +206,7 @@ exports.getEmployers = async (req, res) => {
         OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY
       `);
 
-    // Đếm tổng
+
     const countResult = await pool.request()
       .input('status', sql.NVarChar, status)
       .query(`
@@ -58,11 +228,10 @@ exports.getEmployers = async (req, res) => {
   }
 };
 
-// Duyệt hoặc từ chối
 exports.updateStatus = async (req, res) => {
   await poolConnect;
-  const { id } = req.params;       // userId
-  const { status, reason } = req.body;  // 'approved' | 'rejected'
+  const { id } = req.params;
+  const { status, reason } = req.body;
 
   if (!['approved', 'rejected'].includes(status)) {
     return res.status(400).json({ message: 'Trạng thái không hợp lệ' });
@@ -74,7 +243,6 @@ exports.updateStatus = async (req, res) => {
       .input('status', sql.NVarChar, status)
       .query(`UPDATE NguoiDung SET TrangThai = @status WHERE Id = @id`);
 
-    // Lấy email để gửi thông báo
     const userResult = await pool.request()
       .input('id', sql.Int, Number(id))
       .query(`SELECT Email, TenDangNhap AS Username FROM NguoiDung WHERE Id = @id`);
@@ -117,31 +285,29 @@ async function sendEmail(email, username, status, reason) {
   });
 }
 
-// ─── Dashboard Stats ────────────────────────────────────────────────
+
 exports.getDashboardStats = async (req, res) => {
   await poolConnect;
   try {
-    // 1. Tổng người dùng
+
     const usersRes = await pool.request().query(`SELECT COUNT(*) AS total FROM NguoiDung`);
     const totalUsers = usersRes.recordset[0]?.total ?? 0;
 
-    // 2. Tổng tin tuyển dụng đang hoạt động
+
     const jobsRes = await pool.request().query(`SELECT COUNT(*) AS total FROM CongViec WHERE TrangThaiHoatDong = 1`);
     const totalJobs = jobsRes.recordset[0]?.total ?? 0;
 
-    // 3. Tổng khóa học hoạt động
+
     const coursesRes = await pool.request().query(
       `SELECT COUNT(*) AS total FROM KhoaHoc WHERE (DaXoa = 0 OR DaXoa IS NULL)`
     );
     const totalCourses = coursesRes.recordset[0]?.total ?? 0;
 
-    // 4. Báo cáo chờ xử lý
     const reportsRes = await pool.request().query(
       `SELECT COUNT(*) AS total FROM BaoCaoCongViec WHERE TrangThai = 'Pending'`
     );
     const pendingReports = reportsRes.recordset[0]?.total ?? 0;
 
-    // 5. User mới tháng này
     const newUsersRes = await pool.request().query(`
       SELECT COUNT(*) AS total FROM NguoiDung
       WHERE MONTH(ISNULL(NgayTao, GETDATE())) = MONTH(GETDATE()) 
@@ -149,10 +315,8 @@ exports.getDashboardStats = async (req, res) => {
     `);
     const newUsersThisMonth = newUsersRes.recordset[0]?.total ?? 0;
 
-    // 6. Tổng số doanh nghiệp
     let totalCompanies = 0;
     try {
-      // Đếm các công ty có liên kết với tài khoản nhà tuyển dụng đã được duyệt
       const r = await pool.request().query(`
         SELECT COUNT(DISTINCT u.MaCongTy) AS total 
         FROM NguoiDung u
@@ -172,7 +336,6 @@ exports.getDashboardStats = async (req, res) => {
       } catch (e2) { totalCompanies = 0; }
     }
 
-    // 7. Lương trung bình (lấy từ AverageSalary trong bảng Companies)
     let avgSalary = 0;
     try {
       const salaryRes = await pool.request().query(`
@@ -182,11 +345,9 @@ exports.getDashboardStats = async (req, res) => {
       `);
       avgSalary = Math.round(salaryRes.recordset[0]?.avg ?? 0);
     } catch (e) {
-      // AverageSalary có thể là text không parse được
       avgSalary = 0;
     }
 
-    // 8. Top 5 tin tuyển dụng gần nhất
     let hotJobs = [];
     try {
       const hotJobsRes = await pool.request().query(`
@@ -203,7 +364,6 @@ exports.getDashboardStats = async (req, res) => {
       console.warn('Lỗi lấy hotJobs:', e.message);
     }
 
-    // 9. Xu hướng đăng tuyển 6 tháng gần nhất
     let trend = [];
     try {
       const trendRes = await pool.request().query(`
@@ -237,7 +397,7 @@ exports.getDashboardStats = async (req, res) => {
   }
 };
 
-// Lấy toàn bộ giao dịch hệ thống (Quản lý doanh thu Admin)
+
 exports.getSystemTransactions = async (req, res) => {
   await poolConnect;
   try {

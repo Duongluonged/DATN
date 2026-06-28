@@ -14,15 +14,13 @@ export default function Statistical() {
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Fetch stats and courses from database
     const fetchData = async () => {
         setLoading(true);
         try {
-            // 1. Get overview stats
+
             const statsRes = await axios.get("http://localhost:5000/api/admin/stats");
             setStats(statsRes.data);
 
-            // 2. Get courses
             const coursesRes = await axios.get("http://localhost:5000/api/courses");
             setCourses(coursesRes.data);
         } catch (err) {
@@ -36,14 +34,14 @@ export default function Statistical() {
         fetchData();
     }, []);
 
-    // Safe variables with fallbacks
+
     const totalUsers = stats?.totalUsers ?? 0;
     const totalJobs = stats?.totalJobs ?? 0;
     const totalCourses = stats?.totalCourses ?? 0;
     const pendingReports = stats?.pendingReports ?? 0;
     const newUsersThisMonth = stats?.newUsersThisMonth ?? 0;
     const trendData = stats?.trend ?? [];
-    const latestCourses = courses.slice(0, 3); // Get top 3 newest courses
+    const latestCourses = courses.slice(0, 3);
 
     return (
         <div style={{ display: "flex", minHeight: "100vh", background: "#f4f6fb", fontFamily: "'Be Vietnam Pro', 'Segoe UI', sans-serif", color: "#1a1d27", fontSize: 13 }}>
@@ -53,7 +51,6 @@ export default function Statistical() {
                 <Topbar />
 
                 <main style={{ flex: 1, overflowY: "auto", padding: 20 }}>
-                    {/* Header section */}
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 24 }}>
                         <div>
                             <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 3 }}>Báo cáo Thống kê</div>
@@ -74,7 +71,6 @@ export default function Statistical() {
                         </button>
                     </div>
 
-                    {/* 1. Stats Grid */}
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 24 }}>
                         {[
                             { label: "Tổng người dùng", value: totalUsers, icon: <Users size={20} style={{ color: "#3b82f6" }} />, trend: `+${newUsersThisMonth} mới`, colorBg: "rgba(59,130,246,0.1)" },
@@ -99,9 +95,8 @@ export default function Statistical() {
                         ))}
                     </div>
 
-                    {/* 2. Middle Section - Line Chart Trend & Pie Chart */}
                     <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 20, marginBottom: 24 }}>
-                        {/* SVG Line Chart for Trend */}
+
                         <div style={{ background: "#ffffff", padding: 24, borderRadius: 12, border: "1px solid #e2e8f0", position: "relative" }}>
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                                 <h4 style={{ margin: 0, fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>
@@ -123,12 +118,12 @@ export default function Statistical() {
                                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                                     <div style={{ position: "relative", height: 180, width: "100%" }}>
                                         <svg viewBox="0 0 500 180" style={{ width: "100%", height: "100%", overflow: "visible" }}>
-                                            {/* Grid Lines */}
+
                                             {[0, 45, 90, 135, 180].map((yVal) => (
                                                 <line key={yVal} x1="0" y1={yVal} x2="500" y2={yVal} stroke="#f1f5f9" strokeWidth="1" />
                                             ))}
 
-                                            {/* Trend Line Path */}
+
                                             <path
                                                 fill="none"
                                                 stroke="#2563eb"
@@ -143,7 +138,7 @@ export default function Statistical() {
                                                 }).join(' ')}
                                             />
 
-                                            {/* Dots on line */}
+
                                             {trendData.map((item, idx) => {
                                                 const x = (idx / (trendData.length - 1)) * 500;
                                                 const maxVal = Math.max(...trendData.map(d => d.value), 5);
@@ -160,7 +155,6 @@ export default function Statistical() {
                                         </svg>
                                     </div>
 
-                                    {/* X-axis labels */}
                                     <div style={{ display: "flex", justifyContent: "space-between", padding: "0 10px" }}>
                                         {trendData.map((item, idx) => (
                                             <span key={idx} style={{ fontSize: 10, fontWeight: 600, color: "#64748b" }}>{item.month}</span>
@@ -170,7 +164,7 @@ export default function Statistical() {
                             )}
                         </div>
 
-                        {/* Industry classification dynamic progress */}
+
                         <div style={{ background: "#ffffff", padding: 24, borderRadius: 12, border: "1px solid #e2e8f0", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
                             <h4 style={{ margin: "0 0 20px 0", fontWeight: 700, width: "100%", display: "flex", alignItems: "center", gap: 6 }}>
                                 <PieChart size={16} style={{ color: "#10b981" }} />
@@ -206,9 +200,9 @@ export default function Statistical() {
                         </div>
                     </div>
 
-                    {/* 3. Bottom Section - Recent courses & Activities */}
+
                     <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 20 }}>
-                        {/* Latest courses list */}
+
                         <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid #e2e8f0", overflow: "hidden" }}>
                             <div style={{ padding: "16px 20px", borderBottom: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                                 <h4 style={{ margin: 0, fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>
@@ -249,7 +243,7 @@ export default function Statistical() {
                             </div>
                         </div>
 
-                        {/* Recent Activities timeline */}
+
                         <div style={{ background: "#ffffff", padding: 20, borderRadius: 12, border: "1px solid #e2e8f0" }}>
                             <h4 style={{ margin: "0 0 20px 0", fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>
                                 <Clock size={16} style={{ color: "#3b82f6" }} />

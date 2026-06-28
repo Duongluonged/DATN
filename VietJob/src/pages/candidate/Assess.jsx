@@ -18,7 +18,6 @@ export default function AssessCompany() {
     suggestion: "",
   });
 
-  // Lấy userId từ localStorage
   const getUserId = () => {
     try {
       const stored = JSON.parse(localStorage.getItem("user"));
@@ -69,7 +68,6 @@ export default function AssessCompany() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
-      {/* HEADER */}
       <div className="max-w-5xl mx-auto flex items-center justify-between mb-8">
         <button
           onClick={() => navigate(-1)}
@@ -79,7 +77,6 @@ export default function AssessCompany() {
           Quay lại
         </button>
 
-        {/* Logo VietJob */}
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-sm">V</span>
@@ -88,12 +85,10 @@ export default function AssessCompany() {
           <span className="text-xl font-bold text-gray-800">Job</span>
         </div>
 
-        {/* Placeholder để căn giữa logo */}
         <div className="w-16" />
       </div>
       <div className="max-w-5xl mx-auto flex gap-6 items-start">
 
-        {/* LEFT FORM */}
         <div className="flex-1 min-w-0 bg-white border border-gray-200 rounded-2xl p-6">
           <h1 className="text-xl font-semibold mb-2">Đánh giá {company?.CompanyName ?? "Đang tải..."}</h1>
           <p className="text-sm text-gray-500 mb-6 leading-relaxed">
@@ -101,7 +96,6 @@ export default function AssessCompany() {
             cho cộng đồng Developer đang tìm kiếm việc làm.
           </p>
 
-          {/* Đánh giá sao */}
           <div className="mb-6">
             <label className="text-sm font-medium block mb-2">
               Đánh giá tổng thể <span className="text-red-500">*</span>
@@ -123,7 +117,6 @@ export default function AssessCompany() {
             </div>
           </div>
 
-          {/* Tiêu đề */}
           <div className="mb-6">
             <input
               type="text"
@@ -134,7 +127,6 @@ export default function AssessCompany() {
             />
           </div>
 
-          {/* Chính sách làm thêm giờ */}
           <div className="mb-6">
             <label className="text-sm font-medium block mb-3">
               Bạn cảm thấy thế nào về chính sách làm thêm giờ? <span className="text-red-500">*</span>
@@ -164,7 +156,6 @@ export default function AssessCompany() {
             <p className="text-xs text-gray-400 mt-1">Giới hạn từ 50 đến 140 ký tự</p>
           </div>
 
-          {/* Điều yêu thích */}
           <div className="mb-6">
             <label className="text-sm font-medium block mb-2">
               Điều gì khiến bạn yêu thích khi làm việc ở đây? <span className="text-red-500">*</span>
@@ -179,7 +170,6 @@ export default function AssessCompany() {
             <p className="text-xs text-gray-400 mt-1">Giới hạn từ 50 đến 10000 ký tự</p>
           </div>
 
-          {/* Đề xuất cải thiện */}
           <div className="mb-6">
             <label className="text-sm font-medium block mb-2">
               Đề xuất cải thiện <span className="text-red-500">*</span>

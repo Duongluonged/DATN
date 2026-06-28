@@ -14,7 +14,6 @@ const ROLE_COLORS = {
 
 const TABS = ["Tất cả", "Nhà tuyển dụng", "Ứng viên"];
 
-// ─── Stat Card ────────────────────────────────────────────────
 function StatCard({ icon, label, value, change, up, loading }) {
   return (
     <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: 12, padding: 16 }}>
@@ -32,7 +31,6 @@ function StatCard({ icon, label, value, change, up, loading }) {
   );
 }
 
-// ─── User Table Component ─────────────────────────────────────
 function UserTable({ users, activeTab, setActiveTab, loading, onRefresh }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -72,16 +70,13 @@ function UserTable({ users, activeTab, setActiveTab, loading, onRefresh }) {
     }
   };
 
-  // Filter & Search logic
+
   const filteredUsers = users.filter(u => {
-    // 1. Skip admins
     if (u.RoleName === "Admin") return false;
 
-    // 2. Tab Filter
     if (activeTab === "Nhà tuyển dụng" && u.RoleName !== "Employer") return false;
     if (activeTab === "Ứng viên" && u.RoleName !== "Candidate") return false;
 
-    // 3. Status Dropdown Filter
     if (statusFilter !== "all") {
       const isPending = u.Status?.toLowerCase() === "pending" || u.Status?.toLowerCase() === "chờ duyệt";
       const isRejected = u.Status?.toLowerCase() === "rejected" || u.Status?.toLowerCase() === "từ chối";
@@ -93,7 +88,6 @@ function UserTable({ users, activeTab, setActiveTab, loading, onRefresh }) {
       if (statusFilter === "locked" && !isLocked && !isRejected) return false;
     }
 
-    // 4. Search text
     if (searchTerm.trim() !== "") {
       const s = searchTerm.toLowerCase();
       const nameMatch = u.Username?.toLowerCase().includes(s);
@@ -105,7 +99,7 @@ function UserTable({ users, activeTab, setActiveTab, loading, onRefresh }) {
     return true;
   });
 
-  // Pagination calculation
+
   const totalPages = Math.max(Math.ceil(filteredUsers.length / itemsPerPage), 1);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -117,10 +111,9 @@ function UserTable({ users, activeTab, setActiveTab, loading, onRefresh }) {
 
   return (
     <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: 12, marginBottom: 16, overflow: "hidden" }}>
-      {/* Header Controls */}
+
       <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #e2e8f0", gap: 12, flexWrap: "wrap" }}>
 
-        {/* Navigation Tabs */}
         <div style={{ display: "flex", gap: 2, background: "#f8fafc", borderRadius: 8, padding: 3 }}>
           {TABS.map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)}
@@ -136,7 +129,6 @@ function UserTable({ users, activeTab, setActiveTab, loading, onRefresh }) {
           ))}
         </div>
 
-        {/* Search & Filter Dropdowns */}
         <div style={{ display: "flex", gap: 8, alignItems: "center", flex: 1, justifyContent: "flex-end", maxWidth: 500 }}>
           <div style={{ position: "relative", flex: 1 }}>
             <Search size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#9ca3af" }} />
@@ -170,7 +162,6 @@ function UserTable({ users, activeTab, setActiveTab, loading, onRefresh }) {
         </div>
       </div>
 
-      {/* Table Body */}
       <div style={{ overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
@@ -257,7 +248,7 @@ function UserTable({ users, activeTab, setActiveTab, loading, onRefresh }) {
         </table>
       </div>
 
-      {/* Dynamic Pagination Footer */}
+
       <div style={{ padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid #e2e8f0", background: "#fcfdfe" }}>
         <div style={{ fontSize: 11.5, color: "#6b7280" }}>
           Hiển thị <b>{Math.min(indexOfLastItem, filteredUsers.length)}</b> trên <b>{filteredUsers.length}</b> người dùng
@@ -309,7 +300,6 @@ function UserTable({ users, activeTab, setActiveTab, loading, onRefresh }) {
   );
 }
 
-// ─── Activity Feed Component ───────────────────────────────────
 function ActivityFeed() {
   const activities = [
     { icon: <Key size={20} />, bg: "rgba(59,130,246,0.15)", title: "Xác thực tài khoản mới", desc: "Nhà tuyển dụng Dương Lê vừa hoàn tất xác minh doanh nghiệp VietJob và đã được kích hoạt.", time: "Vừa xong" },
@@ -334,7 +324,7 @@ function ActivityFeed() {
   );
 }
 
-// ─── Role Distribution Component ───────────────────────────────
+
 function RoleDistribution({ users }) {
   const total = users.length || 1;
   const candidates = users.filter(u => u.RoleName === "Candidate").length;
@@ -376,7 +366,7 @@ function RoleDistribution({ users }) {
   );
 }
 
-// ─── Main App Component ──────────────────────────────────────────
+
 export default function User_Manager() {
   const [activeNav, setActiveNav] = useState("User Management");
   const [activeTab, setActiveTab] = useState("Tất cả");
@@ -399,7 +389,6 @@ export default function User_Manager() {
     fetchUsers();
   }, []);
 
-  // Calculate dynamic stats
   const totalCount = users.filter(u => u.RoleName !== "Admin").length;
   const activeCount = users.filter(u =>
     u.RoleName !== "Admin" &&
@@ -425,7 +414,7 @@ export default function User_Manager() {
         <Topbar />
 
         <main style={{ flex: 1, overflowY: "auto", padding: 20 }}>
-          {/* Page header */}
+
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
             <div>
               <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 4 }}>Quản lý người dùng</div>
@@ -440,12 +429,12 @@ export default function User_Manager() {
             </div>
           </div>
 
-          {/* Dynamic Stats Cards */}
+
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 20 }}>
             {STATS.map(s => <StatCard key={s.label} {...s} loading={loading} />)}
           </div>
 
-          {/* Interactive User Table */}
+
           <UserTable
             users={users}
             activeTab={activeTab}
@@ -454,7 +443,6 @@ export default function User_Manager() {
             onRefresh={fetchUsers}
           />
 
-          {/* Bottom Feed & Density */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
             <ActivityFeed />
             <RoleDistribution users={users} />

@@ -1,6 +1,5 @@
 const { pool, poolConnect, sql } = require('../config/db');
 
-// ─── 1. Ứng viên nộp đơn ứng tuyển ────────────────────────────
 const postApplyJob = async (req, res) => {
     try {
         await poolConnect;
@@ -10,7 +9,6 @@ const postApplyJob = async (req, res) => {
             return res.status(400).json({ message: 'Thiếu thông tin bắt buộc (jobId, name).' });
         }
 
-        // Kiểm tra đã ứng tuyển chưa
         if (userId) {
             const existed = await pool.request()
                 .input('jobId',  sql.Int, jobId)
@@ -43,7 +41,6 @@ const postApplyJob = async (req, res) => {
     }
 };
 
-// ─── 2. Lấy danh sách ứng viên theo NHÀ TUYỂN DỤNG ────────────
 const getApplicationsByEmployer = async (req, res) => {
     try {
         await poolConnect;
@@ -84,7 +81,6 @@ const getApplicationsByEmployer = async (req, res) => {
     }
 };
 
-// ─── 3. Cập nhật trạng thái hồ sơ ─────────────────────────────
 const updateApplicationStatus = async (req, res) => {
     try {
         await poolConnect;
@@ -96,7 +92,6 @@ const updateApplicationStatus = async (req, res) => {
             return res.status(400).json({ message: 'Trạng thái không hợp lệ.' });
         }
 
-        // 1. Cập nhật trạng thái và thông tin lịch hẹn
         await pool.request()
             .input('appId',  sql.Int,     applicationId)
             .input('status', sql.NVarChar, status)
@@ -114,7 +109,6 @@ const updateApplicationStatus = async (req, res) => {
                 WHERE MaDonUngTuyen = @appId
             `);
 
-        // 2. Lấy thông tin ứng viên để gửi email
         const appResult = await pool.request()
             .input('appId', sql.Int, applicationId)
             .query(`
@@ -130,9 +124,7 @@ const updateApplicationStatus = async (req, res) => {
                 WHERE A.MaDonUngTuyen = @appId
             `);
 
-        // 3. Gửi email nếu có địa chỉ email và status cần thông báo
         const app = appResult.recordset[0];
-        // 3. Tự động tạo thông báo trong hệ thống
         if (app && app.UserId) {
             const notifMap = {
                 'Phỏng vấn': {
@@ -283,7 +275,6 @@ const updateApplicationStatus = async (req, res) => {
 };
 
 
-// ─── 4. Lấy lịch sử ứng tuyển của ứng viên ────────────────────
 const getApplicationsByCandidate = async (req, res) => {
     try {
         await poolConnect;

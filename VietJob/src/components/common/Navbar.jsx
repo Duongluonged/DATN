@@ -9,19 +9,18 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Hàm kiểm tra trạng thái đăng nhập
+
   const checkAuth = () => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       const userData = JSON.parse(storedUser);
       setUser(userData);
-      // Fetch avatar từ API
       const userId = userData?.id;
       if (userId) {
         fetch(`http://localhost:5000/api/auth/profile/${userId}`)
           .then(r => r.json())
           .then(data => { if (data?.AvatarUrl) setAvatarUrl(data.AvatarUrl); })
-          .catch(() => {});
+          .catch(() => { });
       }
     } else {
       setUser(null);
@@ -30,11 +29,10 @@ const Navbar = () => {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     checkAuth();
-  }, [location]); // Mỗi khi chuyển trang (login xong nhảy về home), Navbar sẽ tự kiểm tra lại
+  }, [location]);
 
-  // Đóng dropdown khi click ra ngoài
+
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (showDropdown && !e.target.closest('.dropdown-container')) {
@@ -61,15 +59,12 @@ const Navbar = () => {
   return (
     <header className="w-full bg-white border-b-4 border-blue-500 shadow-sm sticky top-0 z-50">
       <div className="w-full px-4 py-4 flex justify-between items-center">
-
-        {/* NHÓM BÊN TRÁI: Logo và Menu */}
         <div className="flex items-center gap-12">
           <Link to="/" className="text-2xl font-bold text-black tracking-wide hover:text-blue-600 transition-colors">
             VietJobs
           </Link>
 
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-700">
-            {/* Top Công Ty IT */}
             <div className="group relative cursor-pointer py-2">
               <div className="flex items-center gap-1 hover:text-blue-600 transition-colors">
                 <span>Top Công Ty IT</span>
@@ -81,7 +76,6 @@ const Navbar = () => {
               </div>
             </div>
 
-            {/* Khoá học */}
             <div className="group relative cursor-pointer py-2">
               <div className="flex items-center gap-1 hover:text-blue-600 transition-colors">
                 <span>Khoá học</span>
@@ -97,11 +91,9 @@ const Navbar = () => {
           </nav>
         </div>
 
-        {/* NHÓM BÊN PHẢI: Logic Đăng nhập / Profile */}
         <div className="flex items-center gap-4">
           {user ? (
             <div className="dropdown-container relative flex items-center gap-3 cursor-pointer py-1">
-              {/* Giới hạn tên quá dài bằng truncate */}
               <span className="text-sm font-semibold text-gray-700 hidden sm:inline-block max-w-[100px] truncate">
                 {user.username}
               </span>
@@ -116,7 +108,6 @@ const Navbar = () => {
                 }
               </div>
 
-              {/* Dropdown Menu */}
               {showDropdown && (
                 <div className="absolute top-full right-0 mt-1 w-52 bg-white rounded-md shadow-xl border border-gray-100 flex flex-col py-2 z-50">
                   <div className="px-4 py-2 border-b border-gray-50 mb-1">

@@ -6,7 +6,6 @@ import axios from "axios";
 
 const API = "http://localhost:5000/api";
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = {
   app: {
     display: "flex", height: "100vh",
@@ -14,11 +13,11 @@ const styles = {
     fontFamily: "'Be Vietnam Pro', 'Segoe UI', sans-serif",
     fontSize: 13, color: "#1a1a2e", overflow: "hidden",
   },
-  main:    { flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" },
+  main: { flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" },
   content: { flex: 1, overflowY: "auto", padding: 24 },
-  card:    { background: "#fff", borderRadius: 10, border: "0.5px solid #eee", padding: "14px 16px" },
-  statGrid:   { display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 20 },
-  midGrid:    { display: "grid", gridTemplateColumns: "1fr 300px", gap: 14, marginBottom: 14 },
+  card: { background: "#fff", borderRadius: 10, border: "0.5px solid #eee", padding: "14px 16px" },
+  statGrid: { display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 20 },
+  midGrid: { display: "grid", gridTemplateColumns: "1fr 300px", gap: 14, marginBottom: 14 },
   bottomGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 },
   btn: (variant) => ({
     display: "flex", alignItems: "center", gap: 5,
@@ -30,7 +29,6 @@ const styles = {
   }),
 };
 
-// ─── Stat Card ────────────────────────────────────────────────────────────────
 function StatCard({ label, value, sub, iconColor, iconBg, icon, loading }) {
   return (
     <div style={styles.card}>
@@ -58,7 +56,7 @@ function StatCard({ label, value, sub, iconColor, iconBg, icon, loading }) {
   );
 }
 
-// ─── Trend Chart ─────────────────────────────────────────────────────────────
+
 function TrendChart({ data, loading }) {
   if (loading) return (
     <div style={{ height: 140, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -124,7 +122,7 @@ function TrendChart({ data, loading }) {
   );
 }
 
-// ─── Growth Card ──────────────────────────────────────────────────────────────
+
 function GrowthCard({ value, loading }) {
   return (
     <div style={{ background: "#3b5bdb", borderRadius: 10, padding: 16, color: "#fff" }}>
@@ -146,7 +144,7 @@ function GrowthCard({ value, loading }) {
   );
 }
 
-// ─── Hot Jobs List ────────────────────────────────────────────────────────────
+
 function HotJobsList({ jobs, loading }) {
   return (
     <div style={styles.card}>
@@ -181,7 +179,6 @@ function HotJobsList({ jobs, loading }) {
   );
 }
 
-// ─── Reports Panel (placeholder — có thể kết nối API Reports sau) ─────────────
 function ReportsSummary({ count, loading }) {
   return (
     <div style={styles.card}>
@@ -208,7 +205,7 @@ function ReportsSummary({ count, loading }) {
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+
 export default function AdminDashboard() {
   const [activeNav, setActiveNav] = useState("dashboard");
   const [stats, setStats] = useState(null);
@@ -267,7 +264,6 @@ export default function AdminDashboard() {
         <Topbar />
 
         <div style={styles.content}>
-          {/* Page header */}
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
             <div>
               <div style={{ fontSize: 20, fontWeight: 700 }}>Bảng điều khiển Admin</div>
@@ -292,14 +288,12 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Stat cards */}
           <div style={styles.statGrid}>
             {statCards.map((s, i) => (
               <StatCard key={i} {...s} loading={loading} />
             ))}
           </div>
 
-          {/* Chart + Growth */}
           <div style={styles.midGrid}>
             <div style={styles.card}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -313,7 +307,6 @@ export default function AdminDashboard() {
             <GrowthCard value={stats?.newUsersThisMonth} loading={loading} />
           </div>
 
-          {/* Bottom */}
           <div style={styles.bottomGrid}>
             <ReportsSummary count={stats?.pendingReports} loading={loading} />
             <HotJobsList jobs={stats?.hotJobs ?? []} loading={loading} />

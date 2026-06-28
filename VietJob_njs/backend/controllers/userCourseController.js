@@ -1,6 +1,5 @@
 const { pool, poolConnect, sql } = require('../config/db');
 
-// ─── 1. Lấy danh sách lộ trình học tập của người dùng ─────────────────────────
 const getUserCourses = async (req, res) => {
     try {
         await poolConnect;
@@ -22,7 +21,6 @@ const getUserCourses = async (req, res) => {
     }
 };
 
-// ─── 2. Thêm khóa học vào danh sách quan tâm (Wishlist) ─────────────────────────
 const addUserCourse = async (req, res) => {
     try {
         await poolConnect;
@@ -32,7 +30,6 @@ const addUserCourse = async (req, res) => {
             return res.status(400).json({ message: 'Thiếu thông tin người dùng hoặc khóa học.' });
         }
 
-        // Kiểm tra xem khóa học đã tồn tại trong lộ trình chưa
         const checkExist = await pool.request()
             .input('userId', sql.Int, userId)
             .input('courseId', sql.NVarChar, courseId)
@@ -49,7 +46,6 @@ const addUserCourse = async (req, res) => {
             });
         }
 
-        // Thêm mới với trạng thái mặc định "Đang quan tâm"
         await pool.request()
             .input('userId', sql.Int, userId)
             .input('courseId', sql.NVarChar, courseId)
@@ -65,7 +61,6 @@ const addUserCourse = async (req, res) => {
     }
 };
 
-// ─── 3. Gỡ bỏ khóa học khỏi danh sách ─────────────────────────────────────────
 const removeUserCourse = async (req, res) => {
     try {
         await poolConnect;
@@ -90,7 +85,6 @@ const removeUserCourse = async (req, res) => {
     }
 };
 
-// ─── 4. Đăng ký học ngay (Thanh toán qua ví & Gửi mail link Driver khóa học) ───────
 const transporter = require('../config/mailer');
 
 const enrollUserCourse = async (req, res) => {
@@ -102,7 +96,6 @@ const enrollUserCourse = async (req, res) => {
             return res.status(400).json({ message: 'Thiếu thông tin người dùng hoặc khóa học.' });
         }
 
-        // 1. Lấy thông tin chi tiết khóa học (từ SQL hoặc Mock if mock ID)
         let courseTitle = "Khóa học Đào tạo Công nghệ";
         let coursePrice = 1500000;
         let nhaTuyenDungId = null;
@@ -111,7 +104,6 @@ const enrollUserCourse = async (req, res) => {
         const isMock = isNaN(courseId);
 
         if (!isMock) {
-            // Lấy từ bảng khoa_hoc
             const courseRes = await pool.request()
                 .input('courseId', sql.Int, parseInt(courseId))
                 .query(`
@@ -128,7 +120,6 @@ const enrollUserCourse = async (req, res) => {
                 driveLink = c.DriveLink || driveLink;
             }
         } else {
-            // Nếu là Mock course, tùy vào ID để gán giá trị trực quan
             if (courseId === 'web-1') {
                 courseTitle = 'Lập trình Web Fullstack với React & Node.js';
                 coursePrice = 2490000;
@@ -156,7 +147,6 @@ const enrollUserCourse = async (req, res) => {
             }
         }
 
-        // 2. Kiểm tra thông tin & số dư của Học viên
         const studentRes = await pool.request()
             .input('userId', sql.Int, userId)
             .query(`SELECT SoDu AS Balance, Email, TenDangNhap AS Username FROM NguoiDung WHERE Id = @userId`);
@@ -169,7 +159,6 @@ const enrollUserCourse = async (req, res) => {
         let activeStudentBalance = studentBalance;
 
         if (req.body.isBankTransfer) {
-            // Giả lập Webhook ngân hàng: tự động nạp tiền vào ví học viên nếu thiếu số dư để thanh toán khóa học
             if (studentBalance < coursePrice) {
                 const depositAmount = coursePrice - studentBalance;
                 await pool.request()
@@ -177,7 +166,6 @@ const enrollUserCourse = async (req, res) => {
                     .input('amount', sql.Int, depositAmount)
                     .query(`UPDATE NguoiDung SET SoDu = SoDu + @amount WHERE Id = @userId`);
                 
-                // Ghi log giao dịch nạp tiền qua VietQR Webhook
                 await pool.request()
                     .input('userId', sql.Int, userId)
                     .input('title', sql.NVarChar, `Nạp tiền tự động qua Webhook VietQR (Khớp lệnh: USER_${userId}_TXN_${req.body.txnId || 'MOCK'})`)
@@ -200,16 +188,13 @@ const enrollUserCourse = async (req, res) => {
             });
         }
 
-        // 3. Thực hiện thanh toán & Chia sẻ doanh thu (giao dịch SQL)
         const studentRefCode = "CSH" + Math.floor(1000000 + Math.random() * 9000000);
         
-        // Trừ tiền học viên
         await pool.request()
             .input('userId', sql.Int, userId)
             .input('price', sql.Int, coursePrice)
             .query(`UPDATE NguoiDung SET SoDu = SoDu - @price WHERE Id = @userId`);
 
-        // Ghi log giao dịch trừ tiền học viên
         await pool.request()
             .input('userId', sql.Int, userId)
             .input('title', sql.NVarChar, `Thanh toán mua khóa học: ${courseTitle}`)
@@ -222,18 +207,15 @@ const enrollUserCourse = async (req, res) => {
                 VALUES (@userId, @title, @amount, @type, @status, @refCode)
             `);
 
-        // Chia sẻ hoa hồng cho Nhà tuyển dụng (85% giá bán) nếu có liên kết NTD
         if (nhaTuyenDungId) {
             const recruiterAmount = Math.floor(coursePrice * 0.85);
             const recruiterRefCode = "CSR" + Math.floor(1000000 + Math.random() * 9000000);
 
-            // Cộng tiền vào ví NTD
             await pool.request()
                 .input('recruiterId', sql.Int, nhaTuyenDungId)
                 .input('amount', sql.Int, recruiterAmount)
                 .query(`UPDATE NguoiDung SET SoDu = SoDu + @amount WHERE Id = @recruiterId`);
 
-            // Ghi log giao dịch nhận hoa hồng của NTD
             await pool.request()
                 .input('recruiterId', sql.Int, nhaTuyenDungId)
                 .input('title', sql.NVarChar, `Doanh thu bán khóa học: ${courseTitle} (85%) từ học viên ${studentName}`)
@@ -247,7 +229,6 @@ const enrollUserCourse = async (req, res) => {
                 `);
         }
 
-        // 4. Thêm khóa học vào User_Courses với trạng thái "Đang theo học"
         const checkExist = await pool.request()
             .input('userId', sql.Int, userId)
             .input('courseId', sql.NVarChar, String(courseId))
@@ -272,7 +253,6 @@ const enrollUserCourse = async (req, res) => {
                 `);
         }
 
-        // 5. Gửi Email thông báo link Google Drive khóa học cho Học viên
         if (studentEmail) {
             const mailOptions = {
                 from: '"VietJob Support" <luongduongess@gmail.com>',
@@ -344,7 +324,6 @@ const enrollUserCourse = async (req, res) => {
                 `
             };
 
-            // Gửi email bất đồng bộ (không chặn phản hồi API để nâng cao trải nghiệm ứng viên)
             transporter.sendMail(mailOptions, (error, info) => {
                 if (error) {
                     console.error("❌ Lỗi gửi email biên lai khóa học:", error);

@@ -1,6 +1,5 @@
 const { sql, pool, poolConnect } = require('../config/db');
 
-// ─── 1. Lấy danh sách cuộc trò chuyện của một User ────────────────
 const getConversations = async (req, res) => {
     try {
         await poolConnect;
@@ -11,7 +10,6 @@ const getConversations = async (req, res) => {
             return res.status(400).json({ error: "UserId không hợp lệ." });
         }
 
-        // Truy vấn lấy danh sách hội thoại, tin nhắn cuối, thông tin đối tác và số tin chưa đọc
         const result = await pool.request()
             .input('userId', sql.Int, parsedUserId)
             .query(`
@@ -67,7 +65,6 @@ const getConversations = async (req, res) => {
     }
 };
 
-// ─── 2. Lấy lịch sử tin nhắn giữa hai User ─────────────────────────
 const getChatHistory = async (req, res) => {
     try {
         await poolConnect;
@@ -105,7 +102,6 @@ const getChatHistory = async (req, res) => {
     }
 };
 
-// ─── 3. Đánh dấu tin nhắn là đã đọc ───────────────────────────────
 const markAsRead = async (req, res) => {
     try {
         await poolConnect;
@@ -133,7 +129,6 @@ const markAsRead = async (req, res) => {
     }
 };
 
-// ─── 4. Gửi tin nhắn mới ─────────────────────────────────────────
 const sendMessage = async (req, res) => {
     try {
         await poolConnect;
@@ -179,7 +174,6 @@ const sendMessage = async (req, res) => {
     }
 };
 
-// ─── 5. Lấy nhà tuyển dụng của công ty để ứng viên chat ───────────────
 const getEmployerOfCompany = async (req, res) => {
     try {
         await poolConnect;

@@ -63,12 +63,12 @@ const Report_Management = () => {
     }
   };
 
-  // Lọc theo tabs
+
   const filteredReports = reports.filter(r => {
     if (activeTab === "KHẨN CẤP") {
       return r.Reason.includes("lừa đảo") || r.Reason.includes("phí") || r.Status === "Pending";
     }
-    return true; // TẤT CẢ
+    return true;
   });
 
   return (
@@ -96,7 +96,6 @@ const Report_Management = () => {
             </div>
           </div>
 
-          {/* Status Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             {[
               { label: "Chưa xử lý", value: String(reports.filter(r => r.Status === 'Pending').length).padStart(2, '0'), color: "border-red-500", textColor: "text-red-500" },
@@ -111,7 +110,6 @@ const Report_Management = () => {
             ))}
           </div>
 
-          {/* Main Content Table */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="p-6 border-b border-gray-50 flex justify-between items-center">
               <h3 className="font-bold text-gray-900">Danh sách khiếu nại mới nhất</h3>
@@ -176,7 +174,7 @@ const Report_Management = () => {
                         </td>
                         <td className="px-6 py-5 max-w-xs">
                           <p className="font-bold text-red-600">
-                            <span style={{display: 'flex', alignItems: 'center', gap: 4}}><AlertTriangle size={14}/> {r.Reason}</span>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><AlertTriangle size={14} /> {r.Reason}</span>
                           </p>
                           {r.Description && (
                             <p className="text-gray-500 text-[11px] mt-1 font-medium leading-relaxed">{r.Description}</p>
@@ -234,13 +232,11 @@ const Report_Management = () => {
               </table>
             )}
 
-            {/* Pagination / Table Footer */}
             <div className="p-6 border-t border-gray-50 flex justify-between items-center bg-gray-50/30">
               <p className="text-[11px] text-gray-400 font-medium">Hiển thị {filteredReports.length} khiếu nại của hệ thống VietJob</p>
             </div>
           </div>
 
-          {/* Bottom Section: Process & Support */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-10">
             <div className="lg:col-span-2">
               <h4 className="font-black text-gray-900 flex items-center gap-2 mb-6 uppercase tracking-wider text-sm border-l-4 border-blue-600 pl-3">
@@ -261,7 +257,6 @@ const Report_Management = () => {
               </div>
             </div>
 
-            {/* Support Card */}
             <div className="bg-blue-700 p-8 rounded-3xl text-white relative shadow-2xl shadow-blue-200 flex flex-col justify-between overflow-hidden group">
               <div className="relative z-10">
                 <ShieldAlert size={40} className="mb-6 opacity-80 group-hover:scale-110 transition-transform" />
@@ -282,7 +277,6 @@ const Report_Management = () => {
         </main>
       </div>
 
-      {/* Pop-up hiển thị nội dung tin tuyển dụng */}
       {viewingJobModalOpen && (
         <div style={{
           position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
@@ -294,7 +288,6 @@ const Report_Management = () => {
             boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)", overflow: "hidden", display: "flex", flexDirection: "column",
             fontFamily: "'Be Vietnam Pro',sans-serif"
           }}>
-            {/* Header */}
             <div style={{
               background: "linear-gradient(135deg,#1e3a8a,#3b82f6)", padding: "20px 24px",
               color: "#fff", display: "flex", justifyContent: "space-between", alignItems: "center", position: "relative"
@@ -324,7 +317,6 @@ const Report_Management = () => {
               </button>
             </div>
 
-            {/* Content Body */}
             <div style={{ padding: 24, overflowY: "auto", flex: 1, background: "#f8fafc" }}>
               {fetchingJob ? (
                 <div style={{ textAlign: "center", padding: "60px 0", color: "#64748b" }}>
@@ -337,7 +329,6 @@ const Report_Management = () => {
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-                  {/* Badges Grid */}
                   <div style={{
                     display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12,
                     background: "#fff", padding: 16, borderRadius: 16, border: "1px solid #e2e8f0"
@@ -355,7 +346,6 @@ const Report_Management = () => {
                     ))}
                   </div>
 
-                  {/* Mô tả công việc */}
                   <div style={{ background: "#fff", padding: 20, borderRadius: 16, border: "1px solid #e2e8f0" }}>
                     <h4 style={{ fontSize: 13, fontWeight: 800, color: "#1e293b", borderLeft: "4px solid #3b82f6", paddingLeft: 10, marginBottom: 10 }}>
                       MÔ TẢ CÔNG VIỆC
@@ -365,7 +355,6 @@ const Report_Management = () => {
                     </div>
                   </div>
 
-                  {/* Yêu cầu ứng viên */}
                   <div style={{ background: "#fff", padding: 20, borderRadius: 16, border: "1px solid #e2e8f0" }}>
                     <h4 style={{ fontSize: 13, fontWeight: 800, color: "#1e293b", borderLeft: "4px solid #3b82f6", paddingLeft: 10, marginBottom: 10 }}>
                       YÊU CẦU ỨNG VIÊN
@@ -375,7 +364,6 @@ const Report_Management = () => {
                     </div>
                   </div>
 
-                  {/* Quyền lợi được hưởng */}
                   <div style={{ background: "#fff", padding: 20, borderRadius: 16, border: "1px solid #e2e8f0" }}>
                     <h4 style={{ fontSize: 13, fontWeight: 800, color: "#1e293b", borderLeft: "4px solid #3b82f6", paddingLeft: 10, marginBottom: 10 }}>
                       QUYỀN LỢI ĐƯỢC HƯỞNG
@@ -385,7 +373,6 @@ const Report_Management = () => {
                     </div>
                   </div>
 
-                  {/* Supplementary details */}
                   <div style={{
                     background: "#fff", padding: 16, borderRadius: 16, border: "1px solid #e2e8f0",
                     display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16
@@ -405,7 +392,6 @@ const Report_Management = () => {
               )}
             </div>
 
-            {/* Footer buttons */}
             <div style={{
               padding: "16px 24px", background: "#fff", borderTop: "1px solid #e2e8f0",
               display: "flex", justifyContent: "flex-end"

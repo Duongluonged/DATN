@@ -169,7 +169,6 @@ export default function EmployerLogin() {
       });
       const { token, username, roles, id } = res.data;
 
-      // Chỉ cho phép Employer đăng nhập tại trang này
       if (!roles.includes("Employer")) {
         setErrors({ api: "Tài khoản này không phải nhà tuyển dụng. Vui lòng dùng trang đăng nhập dành cho ứng viên." });
         return;
@@ -196,7 +195,6 @@ export default function EmployerLogin() {
     }}>
 
 
-      {/* Card */}
       <div style={{
         display: "flex", width: "100%", maxWidth: 900,
         borderRadius: 24, overflow: "hidden",
@@ -205,14 +203,12 @@ export default function EmployerLogin() {
         minHeight: 560,
       }}>
 
-        {/* ── LEFT PANEL ── */}
         <div style={{
           flex: "0 0 340px", position: "relative", overflow: "hidden",
           background: "linear-gradient(160deg, #1E3A8A 0%, #1e40af 100%)",
           display: "flex", flexDirection: "column",
           padding: "40px 32px",
         }}>
-          {/* Logo */}
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "auto" }}>
             <div style={{
               width: 36, height: 36, borderRadius: 10,
@@ -226,7 +222,6 @@ export default function EmployerLogin() {
             </span>
           </div>
 
-          {/* Center content */}
           <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 28 }}>
             <div>
               <div style={{
@@ -251,7 +246,6 @@ export default function EmployerLogin() {
               </p>
             </div>
 
-            {/* Stats */}
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {[
                 { icon: <Building2 size={24} className="text-blue-300" />, label: "500+", desc: "Doanh nghiệp tin dùng" },
@@ -274,7 +268,6 @@ export default function EmployerLogin() {
             </div>
           </div>
 
-          {/* Bottom link */}
           <div style={{ marginTop: 28, borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: 20 }}>
             <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", margin: 0 }}>
               Bạn là ứng viên?{" "}
@@ -285,7 +278,6 @@ export default function EmployerLogin() {
           </div>
         </div>
 
-        {/* ── RIGHT PANEL ── */}
         <div style={{
           flex: 1, background: C.white,
           padding: "48px 44px",
@@ -332,7 +324,6 @@ export default function EmployerLogin() {
               </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-                {/* Email */}
                 <InputField
                   label="Email công ty"
                   icon={<Mail size={16} />}
@@ -342,7 +333,6 @@ export default function EmployerLogin() {
                   error={errors.email}
                 />
 
-                {/* Password */}
                 <div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                     <label style={{ fontSize: 13, fontWeight: 600, color: C.text }}>Mật khẩu</label>
@@ -363,7 +353,6 @@ export default function EmployerLogin() {
                   />
                 </div>
 
-                {/* Remember */}
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <div
                     onClick={() => setRemember(!remember)}
@@ -387,7 +376,6 @@ export default function EmployerLogin() {
                   </span>
                 </div>
 
-                {/* API Error */}
                 {errors.api && (
                   <div style={{
                     background: "#FEF2F2", border: "1px solid #FECACA",
@@ -398,7 +386,6 @@ export default function EmployerLogin() {
                   </div>
                 )}
 
-                {/* Submit Button */}
                 <button
                   onClick={handleLogin}
                   disabled={loading}
@@ -432,7 +419,6 @@ export default function EmployerLogin() {
                   )}
                 </button>
 
-                {/* Divider */}
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                   <div style={{ flex: 1, height: 1, background: "#E2E8F0" }} />
                   <span style={{ fontSize: 12, color: C.muted, fontWeight: 600, whiteSpace: "nowrap" }}>
@@ -441,7 +427,6 @@ export default function EmployerLogin() {
                   <div style={{ flex: 1, height: 1, background: "#E2E8F0" }} />
                 </div>
 
-                {/* Google */}
                 <button
                   style={{
                     width: "100%", padding: "12px 0",
@@ -457,7 +442,6 @@ export default function EmployerLogin() {
                   Đăng nhập bằng Google
                 </button>
 
-                {/* Register link */}
                 <p style={{ textAlign: "center", fontSize: 13, color: C.muted, margin: 0 }}>
                   Chưa có tài khoản nhà tuyển dụng?{" "}
                   <Link

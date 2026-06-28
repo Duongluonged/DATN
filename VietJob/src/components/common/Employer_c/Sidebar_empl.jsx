@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom"; // Thêm useNavigate
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
     LayoutDashboard,
@@ -52,18 +52,16 @@ function Sidebar_Empl() {
     }, [userId]);
 
     const handleLogout = () => {
-        // 1. Xóa thông tin đăng nhập của nhà tuyển dụng
         localStorage.removeItem("user");
         localStorage.removeItem("token");
 
-        // 2. Thông báo cho người dùng
         alert("Bạn đã đăng xuất thành công!");
 
-        // 3. Điều hướng về trang đăng nhập nhà tuyển dụng
+
         navigate("/login_employer");
     };
 
-    // Tạo danh sách menu để code gọn hơn và dễ quản lý
+
     const menuItems = [
         { to: "/employer/Quan_ly_tin_tuyen_dung", icon: <Briefcase size={20} />, label: "Quản lý tin tuyển dụng" },
         { to: "/employer/Quan_ly_Hoso_Cty", icon: <Building2 size={20} />, label: "Quản lý hồ sơ công ty" },
@@ -77,7 +75,6 @@ function Sidebar_Empl() {
     return (
         <aside className="w-64 bg-white border-r border-blue-100 p-6 flex flex-col" style={{ fontFamily: "'Inter', sans-serif", flexShrink: 0, height: "100vh", position: "sticky", top: 0, overflow: "hidden" }}>
 
-            {/* Avatar / Company Section */}
             <div className="flex items-center gap-3 mb-10 p-2 border border-dashed border-blue-300 rounded-lg">
                 {company?.LogoURL ? (
                     <div className="w-10 h-10 rounded-full bg-white border border-blue-100 flex items-center justify-center overflow-hidden shadow-sm flex-shrink-0">
@@ -96,7 +93,6 @@ function Sidebar_Empl() {
                 </div>
             </div>
 
-            {/* Navigation */}
             <nav className="space-y-2 flex-1">
                 {menuItems.map((item) => (
                     <NavLink
@@ -115,7 +111,7 @@ function Sidebar_Empl() {
                 ))}
             </nav>
 
-            {/* Logout Action */}
+
             <div className="pt-6 border-t border-blue-50">
                 <button
                     onClick={handleLogout}

@@ -26,17 +26,15 @@ export default function HoSoDinhKem() {
 
   const [userId, setUserId] = useState(null);
 
-  // CV file hiện tại lưu trong CandidateCv
   const [cvFilePath, setCvFilePath] = useState(null);
   const [cvFileName, setCvFileName] = useState(null);
 
   const [dragging, setDragging] = useState(false);
-  const [pending, setPending] = useState(null);    // { file, previewName, previewSize }
+  const [pending, setPending] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [toast, setToast] = useState(null);
 
-  // Lấy userId
   useEffect(() => {
     try {
       const stored = JSON.parse(localStorage.getItem("user"));
@@ -45,7 +43,6 @@ export default function HoSoDinhKem() {
     } catch { }
   }, []);
 
-  // Fetch CV hiện tại (bao gồm cvFilePath + cvFileName)
   useEffect(() => {
     if (!userId) return;
     axios.get(`${API}/cv/${userId}`)
@@ -61,7 +58,6 @@ export default function HoSoDinhKem() {
     setTimeout(() => setToast(null), 3500);
   };
 
-  // ── Chọn file ──────────────────────────────────────────────────────────────
   const handleFileSelect = (file) => {
     if (!file) return;
     const ext = file.name.split(".").pop().toLowerCase();
@@ -84,12 +80,10 @@ export default function HoSoDinhKem() {
     handleFileSelect(e.dataTransfer.files[0]);
   };
 
-  // ── Upload → lưu URL vào CandidateCv ──────────────────────────────────────
   const handleUpload = async () => {
     if (!pending || !userId) return;
     setUploading(true);
     try {
-      // Đọc base64
       const base64 = await new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result);
@@ -97,7 +91,6 @@ export default function HoSoDinhKem() {
         reader.readAsDataURL(pending.file);
       });
 
-      // Upload file lên server
       const uploadRes = await axios.post(`http://localhost:5000/api/upload`, {
         base64,
         fileName: pending.file.name,
@@ -105,7 +98,6 @@ export default function HoSoDinhKem() {
 
       const fileUrl = uploadRes.data.url;
 
-      // Lưu URL vào cột CvFilePath trong CandidateCv
       await axios.put(`${API}/cv/${userId}/cv-file`, {
         fileUrl,
         fileName: pending.file.name,
@@ -124,7 +116,6 @@ export default function HoSoDinhKem() {
     }
   };
 
-  // ── Xóa CV ─────────────────────────────────────────────────────────────────
   const handleDelete = async () => {
     if (!window.confirm("Bạn có chắc muốn xóa CV này không?")) return;
     setDeleting(true);
@@ -140,10 +131,8 @@ export default function HoSoDinhKem() {
     }
   };
 
-  // ── Điều hướng sang trang Hồ sơ ───────────────────────────────────────────
   const handleGoToProfile = () => navigate("/candidate/Hoso");
 
-  // Màu theo extension
   const extBadge = (name) => {
     const ext = (name || "").split(".").pop().toLowerCase();
     if (ext === "pdf") return { color: "#dc2626", bg: "#fee2e2", label: "PDF" };
@@ -157,7 +146,6 @@ export default function HoSoDinhKem() {
     <div style={{ fontFamily: "'Inter', sans-serif", background: "#f3f4f6", color: "#111827", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Navbar />
 
-      {/* Toast */}
       {toast && (
         <div style={{
           position: "fixed", top: 80, right: 24, zIndex: 9999,
@@ -179,7 +167,6 @@ export default function HoSoDinhKem() {
 
         <main style={{ flex: 1, overflowY: "auto", padding: "28px 32px", display: "flex", flexDirection: "column", gap: 24 }}>
 
-          {/* Page header */}
           <div>
             <h1 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>Hồ sơ đính kèm</h1>
             <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.7 }}>
@@ -187,10 +174,8 @@ export default function HoSoDinhKem() {
             </p>
           </div>
 
-          {/* Upload + Tips row */}
           <div style={{ display: "flex", gap: 16 }}>
 
-            {/* Upload card */}
             <div
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
@@ -214,7 +199,6 @@ export default function HoSoDinhKem() {
                 onChange={handleInputChange}
               />
 
-              {/* ── Trạng thái: Chưa có CV và chưa chọn file ── */}
               {!cvFilePath && !pending && (
                 <>
                   <div style={{
@@ -234,7 +218,6 @@ export default function HoSoDinhKem() {
                 </>
               )}
 
-              {/* ── Trạng thái: Đã chọn file, chưa upload ── */}
               {pending && (
                 <div style={{ width: "100%", maxWidth: 480 }} onClick={(e) => e.stopPropagation()}>
                   <div style={{
@@ -286,7 +269,6 @@ export default function HoSoDinhKem() {
                 </div>
               )}
 
-              {/* ── Trạng thái: Đã có CV ── */}
               {cvFilePath && !pending && (
                 <div style={{ width: "100%", maxWidth: 520 }} onClick={(e) => e.stopPropagation()}>
                   <div style={{
@@ -353,7 +335,6 @@ export default function HoSoDinhKem() {
               )}
             </div>
 
-            {/* Tip card */}
             <div style={{
               width: 230, background: "linear-gradient(135deg,#1e40af,#2563eb)",
               borderRadius: 16, padding: 24, color: "#fff", flexShrink: 0,
@@ -381,7 +362,6 @@ export default function HoSoDinhKem() {
             </div>
           </div>
 
-          {/* Promo banner */}
           <div style={{
             background: "#fff", border: "1px solid #e5e7eb", borderRadius: 16,
             padding: "24px 28px", display: "flex", alignItems: "center",
@@ -413,7 +393,6 @@ export default function HoSoDinhKem() {
                 </button>
               </div>
             </div>
-            {/* Illustration */}
             <div style={{
               width: 130, height: 90, background: "linear-gradient(135deg,#1e3a5f,#2563eb)",
               borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center",

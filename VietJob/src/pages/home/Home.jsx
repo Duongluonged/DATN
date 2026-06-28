@@ -9,7 +9,6 @@ const TopCompaniesSection = () => {
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
-        // Gọi đến API Node.js của bạn
         const response = await axios.get("http://localhost:5000/api/companies/top-companies");
         setCompanies(response.data);
       } catch (error) {
@@ -37,7 +36,6 @@ const TopCompaniesSection = () => {
               companyName={company.CompanyName}
               logoUrl={company.LogoURL}
               description={company.Description}
-              // TRUYỀN DỮ LIỆU SKILLS Ở ĐÂY
               skills={company.CompanySkills} 
               JobCount={company.JobCount}
               highlight={company.IsHot}

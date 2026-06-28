@@ -6,15 +6,13 @@ const Navbar = () => {
     const [user, setUser] = useState(null);
     const [showDropdown, setShowDropdown] = useState(false);
     const navigate = useNavigate();
-    const location = useLocation(); // Dùng để theo dõi sự thay đổi đường dẫn
+    const location = useLocation();
 
-    // Hàm kiểm tra trạng thái đăng nhập
     const checkAuth = () => {
-        const storedUser = localStorage.getItem("user"); // Lấy object 'user'
+        const storedUser = localStorage.getItem("user");
 
         if (storedUser) {
             const userData = JSON.parse(storedUser);
-            // Đảm bảo userData có trường username (hoặc name tùy backend trả về)
             setUser(userData);
         } else {
             setUser(null);
@@ -22,11 +20,9 @@ const Navbar = () => {
     };
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         checkAuth();
-    }, [location]); // Mỗi khi chuyển trang (login xong nhảy về home), Navbar sẽ tự kiểm tra lại
+    }, [location]);
 
-    // Đóng dropdown khi click ra ngoài
     useEffect(() => {
         const handleClickOutside = (e) => {
             if (showDropdown && !e.target.closest('.dropdown-container')) {
@@ -48,7 +44,6 @@ const Navbar = () => {
         <header className="w-full bg-white border-b-4 border-blue-500 shadow-sm sticky top-0 z-50">
             <div className="w-full px-4 py-4 flex justify-between items-center">
 
-                {/* NHÓM BÊN TRÁI: Logo và Menu */}
                 <div className="flex items-center gap-12">
                     <Link to="/" className="text-2xl font-bold text-black tracking-wide hover:text-blue-600 transition-colors">
                         VietJobs
@@ -59,12 +54,9 @@ const Navbar = () => {
                     </Link>
 
                 </div>
-
-                {/* NHÓM BÊN PHẢI: Logic Đăng nhập / Profile */}
                 <div className="flex items-center gap-4">
                     {user ? (
                         <div className="dropdown-container relative flex items-center gap-3 cursor-pointer py-1">
-                            {/* Giới hạn tên quá dài bằng truncate */}
                             <span className="text-sm font-semibold text-gray-700 hidden sm:inline-block max-w-[100px] truncate">
                                 {user.username}
                             </span>
@@ -75,7 +67,7 @@ const Navbar = () => {
                                 {user.username.charAt(0).toUpperCase()}
                             </div>
 
-                            {/* Dropdown Menu */}
+
                             {showDropdown && (
                                 <div className="absolute top-full right-0 mt-1 w-52 bg-white rounded-md shadow-xl border border-gray-100 flex flex-col py-2 z-50">
                                     <div className="px-4 py-2 border-b border-gray-50 mb-1">

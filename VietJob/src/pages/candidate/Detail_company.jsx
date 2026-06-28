@@ -12,7 +12,7 @@ export default function Detail_company() {
   const [following, setFollowing] = useState(false);
   const navigate = useNavigate();
   const [company, setCompanyDetail] = useState(null);
-  const [job, setJob] = useState(null); // Mảng chứa công việc từ database
+  const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [assess, setAssess] = useState();
 
@@ -29,11 +29,9 @@ export default function Detail_company() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // 1. Phải có đầy đủ /api/companies/ trước biến ${id}
         const companyRes = await axios.get(`http://localhost:5000/api/companies/${id}`);
         setCompanyDetail(companyRes.data);
 
-        // 2. Phải có đầy đủ /api/companies/ trước ${id}/jobs
         const jobsRes = await axios.get(`http://localhost:5000/api/companies/${id}/jobs`);
         setJob(jobsRes.data);
 
@@ -64,7 +62,6 @@ export default function Detail_company() {
 
   return (
     <div style={{ fontFamily: "'DM Sans', 'Segoe UI', sans-serif", background: "#f5f6fa", minHeight: "100vh", color: "#1a1a2e" }}>
-      {/* Google Font import via style tag */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -90,13 +87,10 @@ export default function Detail_company() {
 
       <Navbar />
 
-      {/* Hero / Company Banner */}
       <div style={{ maxWidth: 1600, margin: "28px auto 0", padding: "0 24px" }}>
         <div style={{ background: "white", borderRadius: 16, border: "1.5px dashed #b3ccf5", overflow: "hidden", boxShadow: "0 2px 16px rgba(26,115,232,0.06)" }}>
 
-          {/* Company info row */}
           <div style={{ padding: "0 28px 20px", display: "flex", alignItems: "flex-end", gap: 20, marginTop: -40 }}>
-            {/* Logo */}
             <div style={{ width: 80, height: 80, background: "white", borderRadius: 16, border: "3px solid white", boxShadow: "0 4px 12px rgba(0,0,0,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               {company.LogoURL}
             </div>
@@ -115,7 +109,6 @@ export default function Detail_company() {
             </div>
           </div>
 
-          {/* Stats bar */}
           <div style={{ borderTop: "1px solid #f0f0f0", padding: "12px 28px", display: "flex", gap: 40 }}>
             {[[company.ReviewCount || "0+", "Đánh giá"], [company.Rating || "0★", "Điểm TB"], [company.AverageSalary || "86 US$", "Lương TB"]].map(([val, label]) => (
               <div key={label}>
@@ -126,11 +119,8 @@ export default function Detail_company() {
           </div>
         </div>
 
-        {/* Main content grid */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 24, marginTop: 24 }}>
-          {/* Left column */}
           <div>
-            {/* Company Info chips */}
             <div style={{ background: "white", borderRadius: 14, border: "1px solid #e8ecf0", padding: "18px 22px", marginBottom: 20, display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
               <div className="info-chip">
                 <span><Factory /></span>
@@ -169,7 +159,6 @@ export default function Detail_company() {
               </div>
             </div>
 
-            {/* About section */}
             <div style={{ background: "white", borderRadius: 14, border: "1px solid #e8ecf0", padding: "20px 22px", marginBottom: 20 }}>
               <div className="section-tab">VỀ {company.CompanyName}</div>
               <p style={{ fontSize: 13.5, lineHeight: 1.75, color: "#444" }}>
@@ -178,7 +167,6 @@ export default function Detail_company() {
               <p style={{ fontSize: 13.5, lineHeight: 1.75, color: "#444", marginTop: 10 }}>
                 Với đội ngũ hơn 200 nhân sự, chúng tôi không ngừng tìm kiếm những tài năng xuất sắc có đam mê đổi mới và sáng tạo. Chúng tôi cam kết mang lại môi trường làm việc chuyên nghiệp, năng động và đầy cơ hội phát triển bản thân.
               </p>
-              {/* Product preview mockup */}
               <div style={{ marginTop: 16, background: "#f5f6fa", borderRadius: 10, padding: 16, border: "1px solid #e8ecf0" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                   <div style={{ display: "flex", gap: 8 }}>
@@ -226,7 +214,6 @@ export default function Detail_company() {
             </div>
           </div>
 
-          {/* Right column - Job listings */}
           <div>
             <h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "20px", color: "#111" }}>
               {company.JobCount} Việc làm đang tuyển dụng
@@ -237,7 +224,7 @@ export default function Detail_company() {
                 <div
                   key={job.JobID || job.id}
                   onClick={() => {
-                    navigate(`/job-detail/${job.JobID}`); // Viết thường chữ n ở đây
+                    navigate(`/job-detail/${job.JobID}`);
                   }}
                   className="job-card"
                   style={{
@@ -248,13 +235,10 @@ export default function Detail_company() {
                     boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
                     flexShrink: 0,
 
-                    // 2. Chuyển con trỏ chuột thành dạng bàn tay
                     cursor: "pointer",
 
-                    // 3. Hiệu ứng chuyển cảnh mượt mà
                     transition: "all 0.2s ease-in-out",
                   }}
-                  // 4. Thêm hiệu ứng Hover trực tiếp bằng inline style (hoặc dùng CSS class)
                   onMouseEnter={(e) => {
                     e.currentTarget.style.borderColor = "#1a73e8";
                     e.currentTarget.style.boxShadow = "0 4px 12px rgba(26,115,232,0.12)";
@@ -266,17 +250,14 @@ export default function Detail_company() {
                     e.currentTarget.style.transform = "translateY(0)";
                   }}
                 >
-                  {/* Thời gian đăng tin */}
                   <div style={{ fontSize: "13px", color: "#999", marginBottom: "12px" }}>
                     Đăng 15 ngày trước
                   </div>
 
-                  {/* Tiêu đề công việc */}
                   <h3 style={{ fontSize: "18px", fontWeight: "700", color: "#111", marginBottom: "16px" }}>
                     {job.JobTitle || "Chưa có tiêu đề công việc"}
                   </h3>
 
-                  {/* Logo và Tên công ty */}
                   <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
                     <div style={{ width: "40px", height: "40px", border: "1px solid #eee", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", padding: "5px" }}>
                       <div style={{ background: "#1a1a2e", borderRadius: "50%", width: "24px", height: "24px", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "8px" }}>{company.LogoURL}</div>
@@ -284,7 +265,6 @@ export default function Detail_company() {
                     <span style={{ fontSize: "15px", color: "#555" }}>{company.CompanyName || "Chưa có tên công ty"}</span>
                   </div>
 
-                  {/* Mức lương / Quyền lợi */}
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#28a745", fontWeight: "600", fontSize: "15px", marginBottom: "16px", borderBottom: "1px dashed #eee", paddingBottom: "16px" }}>
                     <div style={{ background: "#28a745", borderRadius: "50%", padding: "2px" }}>
                       <Banknote size={14} color="white" />
@@ -292,7 +272,6 @@ export default function Detail_company() {
                     {job.SalaryRange || "Mức lương chưa được công bố"}
                   </div>
 
-                  {/* Thông tin chi tiết: Ngành nghề & Địa điểm */}
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px", color: "#666", fontSize: "14px" }}>
                       <Briefcase size={16} />
@@ -306,12 +285,10 @@ export default function Detail_company() {
                     </div>
                   </div>
 
-                  {/* Tags kỹ năng */}
                   <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                    {/* 1. Kiểm tra Skills tồn tại, 2. Split chuỗi thành mảng, 3. Map qua từng phần tử */}
                     {job.Skills?.split(",").map((tag, index) => (
                       <span
-                        key={`${job.id}-${tag}-${index}`} // Tạo key duy nhất kết hợp với index
+                        key={`${job.id}-${tag}-${index}`}
                         style={{
                           background: "#f8f9fa",
                           color: "#666",
@@ -321,11 +298,10 @@ export default function Detail_company() {
                           border: "1px solid #eee"
                         }}
                       >
-                        {tag.trim()} {/* Dùng .trim() để xóa khoảng trắng dư thừa */}
+                        {tag.trim()} 
                       </span>
                     ))}
 
-                    {/* Chỉ hiển thị +2 nếu cần thiết, hoặc có thể ẩn đi nếu đã map hết */}
                     <span style={{ background: "#f8f9fa", color: "#666", padding: "4px 10px", borderRadius: "20px", fontSize: "13px", border: "1px solid #eee" }}>
                       +2
                     </span>

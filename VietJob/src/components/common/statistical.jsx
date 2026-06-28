@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-// Hàm format số đẹp: 1500 → "1.5k", 25 → "25"
 const formatNumber = (n) => {
   if (!n || n === 0) return '0';
   if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
-  if (n >= 1000)    return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+  if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
   return n.toString();
 };
 
@@ -46,11 +45,9 @@ const Stats = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4">
           {statData.map((stat, index) => (
             <div key={index} className="flex flex-col items-center text-center">
-              {/* Con số nổi bật màu xanh */}
               <h2 className={`text-3xl md:text-4xl font-extrabold text-[#3BA3F2] mb-2 tracking-tight transition-all duration-500 ${loading ? 'opacity-40 animate-pulse' : 'opacity-100'}`}>
                 {stat.number}
               </h2>
-              {/* Chữ mô tả nhỏ phía dưới */}
               <p className="text-[11px] md:text-xs font-bold text-gray-500 tracking-widest uppercase">
                 {stat.label}
               </p>

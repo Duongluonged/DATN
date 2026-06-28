@@ -26,7 +26,6 @@ import {
 } from "lucide-react";
 
 
-// ─── Component ────────────────────────────────────────────────────────────────
 const JobDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -71,10 +70,8 @@ const JobDetail = () => {
 
   useEffect(() => {
     if (job && courses.length > 0) {
-      // 1. Gộp toàn bộ văn bản công việc để tìm kỹ năng yêu cầu
       const jobText = `${job.JobTitle} ${job.Description || ""} ${job.Requirements || ""} ${job.NganhNghe || ""}`.toLowerCase();
 
-      // 2. Xác định Chuyên mục phù hợp nhất dựa trên từ khóa công việc
       let matchedCategory = 'web';
       if (jobText.includes('mobile') || jobText.includes('flutter') || jobText.includes('react native') || jobText.includes('android') || jobText.includes('ios')) {
         matchedCategory = 'mobile';
@@ -84,7 +81,6 @@ const JobDetail = () => {
         matchedCategory = 'design-gamedev';
       }
 
-      // 3. Danh sách các kỹ năng kỹ thuật & công nghệ cốt lõi
       const skillKeywords = [
         "react", "node", "express", "mongodb", "next.js", "tailwind", "html", "css", "javascript", "typescript", "frontend", "backend", "fullstack",
         "flutter", "dart", "react native", "android", "ios", "swift", "kotlin", "mobile", "app",
@@ -92,12 +88,9 @@ const JobDetail = () => {
         "figma", "ui", "ux", "design", "thiết kế", "prototype", "gamedev", "unity", "c#", "game 3d"
       ];
 
-      // Lọc các kỹ năng có xuất hiện trong thông tin tuyển dụng
       const activeJobSkills = skillKeywords.filter(skill => jobText.includes(skill));
 
-      // 4. Tính điểm độ phù hợp cho từng khóa học
       const scoredCourses = courses.map(course => {
-        // Tự động phân loại chuyên mục cho khóa học nếu trong database bị trống/null
         let courseCat = (course.Category || "").toLowerCase();
         const courseTitle = (course.TieuDe || course.name || "").toLowerCase();
         if (!courseCat) {
@@ -115,19 +108,16 @@ const JobDetail = () => {
         const courseText = `${courseTitle} ${(course.MoTa || "").toLowerCase()} ${courseCat}`.toLowerCase();
         let score = 0;
 
-        // Ưu tiên cao nhất cho khóa học cùng Chuyên mục đã xác định
         if (courseCat === matchedCategory) {
           score += 15;
         }
 
-        // Điểm cộng cho từng kỹ năng cụ thể trùng khớp
         activeJobSkills.forEach(skill => {
           if (courseText.includes(skill)) {
             score += 5;
           }
         });
 
-        // Trả về đối tượng khóa học đã được cập nhật Category sạch sẽ để UI kết xuất chuẩn
         return {
           course: {
             ...course,
@@ -137,10 +127,8 @@ const JobDetail = () => {
         };
       });
 
-      // 5. CHỈ giữ lại các khóa học có điểm độ tương thích cao (tối thiểu là 10 điểm)
       const validSuggestions = scoredCourses.filter(item => item.score >= 10);
 
-      // Sắp xếp giảm dần theo điểm số và lấy ra tối đa 3 khóa học phù hợp nhất
       validSuggestions.sort((a, b) => b.score - a.score);
       const top3 = validSuggestions.slice(0, 3).map(item => item.course);
 
@@ -149,7 +137,6 @@ const JobDetail = () => {
   }, [job, courses]);
 
 
-  // Hàm xử lý ứng tuyển
   const handleApply = () => {
     const token = localStorage.getItem("user");
     if (token) {
@@ -261,7 +248,6 @@ const JobDetail = () => {
     { icon: <TrendingUp size={26} color="#0a5c9e" />, title: "Đào tạo & Phát triển", desc: "Hỗ trợ 100% chi phí khoá học nâng cấp tại nước ngoài.", dark: false },
   ];
 
-  // ── Inline styles ──
   const s = {
     page: { fontFamily: "'Be Vietnam Pro','Segoe UI',sans-serif", background: "#f0f4f8", minHeight: "100vh" },
     container: { maxWidth: 1100, margin: "24px auto", padding: "0 16px", display: "grid", gridTemplateColumns: "1fr 300px", gap: 20 },
@@ -481,7 +467,6 @@ const JobDetail = () => {
           )}
         </div>
 
-        {/* ── RIGHT ── */}
         <div style={s.right}>
           <div style={{ background: "#fff", borderRadius: 10, overflow: "hidden", boxShadow: "0 1px 8px rgba(0,0,0,0.07)" }}>
             <div style={s.compBody}>
@@ -554,7 +539,6 @@ const JobDetail = () => {
               Gửi lời chào hoặc câu hỏi đến nhà tuyển dụng công ty <strong style={{ color: "#0a5c9e" }}>{job.CompanyName}</strong>. Tin nhắn sẽ được gửi và hiển thị trong mục Tin nhắn.
             </p>
 
-            {/* Gợi ý tin nhắn mẫu */}
             <div style={{ marginBottom: 14 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>Lời chào gợi ý</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -629,7 +613,6 @@ const JobDetail = () => {
               Phản ánh của bạn giúp VietJob giữ gìn môi trường tìm việc an toàn, lành mạnh. Chúng tôi cam kết bảo mật danh tính người báo cáo.
             </p>
 
-            {/* Chọn lý do */}
             <div style={{ marginBottom: 16 }}>
               <label style={{ fontSize: 12, fontWeight: 700, color: "#475569", display: "block", marginBottom: 8 }}>
                 Vui lòng chọn lý do vi phạm:
@@ -667,7 +650,6 @@ const JobDetail = () => {
               </div>
             </div>
 
-            {/* Giải thích chi tiết */}
             <div style={{ marginBottom: 20 }}>
               <label style={{ fontSize: 12, fontWeight: 700, color: "#475569", display: "block", marginBottom: 6 }}>
                 Mô tả chi tiết vi phạm (nếu có):
@@ -684,7 +666,6 @@ const JobDetail = () => {
               />
             </div>
 
-            {/* Điều hướng chân trang */}
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
               <button
                 onClick={() => { setReportModalOpen(false); }}

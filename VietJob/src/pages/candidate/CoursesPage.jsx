@@ -8,7 +8,6 @@ import {
 } from 'lucide-react';
 
 const mockCourses = [
-  // Lập trình Web
   {
     id: 'web-1',
     title: 'Lập trình Web Fullstack với React & Node.js',
@@ -42,7 +41,6 @@ const mockCourses = [
     bgGradient: 'from-sky-600 to-indigo-500'
   },
 
-  // Lập trình Mobile
   {
     id: 'mobile-1',
     title: 'Lập trình Flutter đa nền tảng cho iOS & Android',
@@ -76,7 +74,6 @@ const mockCourses = [
     bgGradient: 'from-indigo-600 to-purple-500'
   },
 
-  // Dữ liệu & AI
   {
     id: 'data-ai-1',
     title: 'Khoa học dữ liệu (Data Science) với Python thực chiến',
@@ -110,7 +107,6 @@ const mockCourses = [
     bgGradient: 'from-teal-600 to-cyan-500'
   },
 
-  // Thiết kế & Gamedev
   {
     id: 'design-gamedev-1',
     title: 'Thiết kế UI/UX Chuyên nghiệp với Figma',
@@ -162,7 +158,6 @@ export default function CoursesPage() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // States for user learning paths & checkout
   const [user, setUser] = useState(null);
   const [userCourses, setUserCourses] = useState([]);
   const [toast, setToast] = useState(null);
@@ -170,10 +165,9 @@ export default function CoursesPage() {
   const [candidateBalance, setCandidateBalance] = useState(0);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
 
-  // Dynamic VietQR & Webhook mock states
   const [currentTxnId, setCurrentTxnId] = useState('');
-  const [copiedField, setCopiedField] = useState(null); // 'stk' | 'noidung' | null
-  const [paymentStep, setPaymentStep] = useState('checkout'); // 'checkout' | 'verifying' | 'success'
+  const [copiedField, setCopiedField] = useState(null);
+  const [paymentStep, setPaymentStep] = useState('checkout');
   const [countdown, setCountdown] = useState(5);
 
   const showToast = (message, success = true) => {
@@ -203,7 +197,6 @@ export default function CoursesPage() {
     }
   };
 
-  // Sync URL parameter to active tab state
   useEffect(() => {
     if (urlCategory && categoriesMap[urlCategory]) {
       setActiveTab(urlCategory);
@@ -212,7 +205,6 @@ export default function CoursesPage() {
     }
   }, [urlCategory]);
 
-  // Fetch courses and check user authentication
   useEffect(() => {
     const parsedUser = checkAuth();
     if (parsedUser && parsedUser.id) {
@@ -289,7 +281,6 @@ export default function CoursesPage() {
     }
   };
 
-  // Add/remove from wishlist (Danh sách quan tâm)
   const handleWishlist = async (courseId) => {
     const parsedUser = checkAuth();
     if (!parsedUser) {
@@ -305,7 +296,6 @@ export default function CoursesPage() {
         return;
       }
 
-      // Remove from wishlist
       try {
         const res = await fetch('http://localhost:5000/api/user-courses/remove', {
           method: 'POST',
@@ -322,7 +312,6 @@ export default function CoursesPage() {
         showToast("Lỗi kết nối máy chủ.", false);
       }
     } else {
-      // Add to wishlist
       try {
         const res = await fetch('http://localhost:5000/api/user-courses/add', {
           method: 'POST',
@@ -342,7 +331,6 @@ export default function CoursesPage() {
     }
   };
 
-  // Open checkout modal and fetch balance
   const handleEnroll = async (course) => {
     const parsedUser = checkAuth();
     if (!parsedUser) {
@@ -358,13 +346,11 @@ export default function CoursesPage() {
       return;
     }
 
-    // Generate unique 6-digit transaction ID & reset states
     const txnId = String(Math.floor(100000 + Math.random() * 900000));
     setCurrentTxnId(txnId);
     setPaymentStep('checkout');
     setCountdown(5);
 
-    // Fetch user's current wallet balance
     try {
       const res = await fetch(`http://localhost:5000/api/wallet/info/${parsedUser.id}`);
       if (res.ok) {
@@ -378,14 +364,12 @@ export default function CoursesPage() {
     setSelectedCourseForCheckout(course);
   };
 
-  // Confirm payment and enroll with simulated bank transfer Webhook
   const confirmCheckout = async () => {
     if (!user || !selectedCourseForCheckout) return;
 
     setPaymentStep('verifying');
     setCheckoutLoading(true);
 
-    // Start 5-second countdown verification animation
     let currentCountdown = 5;
     const interval = setInterval(() => {
       currentCountdown -= 1;
@@ -396,7 +380,6 @@ export default function CoursesPage() {
     }, 1000);
 
     try {
-      // Call API triggering payment checkout and nạp tiền simulation via isBankTransfer
       const res = await fetch('http://localhost:5000/api/user-courses/enroll', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -409,7 +392,6 @@ export default function CoursesPage() {
       });
       const data = await res.json();
 
-      // Wait for the full 5 seconds to complete for high-fidelity webhook simulation
       setTimeout(() => {
         clearInterval(interval);
         setCheckoutLoading(false);
@@ -437,7 +419,6 @@ export default function CoursesPage() {
     setTimeout(() => setCopiedField(null), 1500);
   };
 
-  // Filter courses based on activeTab and searchQuery
   const filteredCourses = courses.filter(c => {
     const matchesTab = activeTab === 'all' || c.category === activeTab;
     const matchesSearch = c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -454,7 +435,6 @@ export default function CoursesPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       <Navbar />
 
-      {/* Hero Banner Section */}
       <section className="relative w-full bg-gradient-to-r from-blue-700 via-indigo-800 to-blue-900 text-white py-16 px-6 overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500 rounded-full opacity-10 blur-3xl" />
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-cyan-400 rounded-full opacity-10 blur-3xl" />
@@ -515,7 +495,6 @@ export default function CoursesPage() {
         </div>
       </section>
 
-      {/* Main Navigation & Filter Panel */}
       <section className="w-full bg-white border-b border-gray-100 shadow-sm sticky top-[72px] z-40">
         <div className="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
 
@@ -554,7 +533,6 @@ export default function CoursesPage() {
         </div>
       </section>
 
-      {/* Course List Layout */}
       <main className="max-w-6xl w-full mx-auto px-4 py-12 flex-grow">
 
         <div className="mb-8 flex items-center justify-between">
@@ -604,7 +582,6 @@ export default function CoursesPage() {
                   key={c.id}
                   className="group bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full"
                 >
-                  {/* Course Header Banner / Visual Gradient */}
                   <div className={`h-40 bg-gradient-to-br ${c.bgGradient} relative p-6 flex flex-col justify-between shrink-0`}>
 
                     <div className="flex justify-between items-start w-full">
@@ -612,7 +589,6 @@ export default function CoursesPage() {
                         {categoriesMap[c.category]?.label}
                       </span>
 
-                      {/* Heart Wishlist icon */}
                       <button
                         onClick={(e) => { e.preventDefault(); handleWishlist(c.id); }}
                         className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 border border-white/10 flex items-center justify-center text-white transition-all backdrop-blur-sm active:scale-90"
@@ -640,9 +616,7 @@ export default function CoursesPage() {
                     </div>
                   </div>
 
-                  {/* Course Content Details */}
                   <div className="p-6 flex flex-col flex-1">
-                    {/* Reviews & Star Rating */}
                     <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 mb-3">
                       <span className="flex items-center text-amber-500 gap-0.5 bg-amber-50 px-2 py-0.5 rounded font-bold">
                         <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
@@ -656,12 +630,10 @@ export default function CoursesPage() {
                       )}
                     </div>
 
-                    {/* Course Description */}
                     <p className="text-gray-500 text-sm leading-relaxed mb-6 line-clamp-3 flex-1">
                       {c.desc}
                     </p>
 
-                    {/* Metadata fields (duration, lectures, level) */}
                     <div className="grid grid-cols-3 gap-2 py-3 border-t border-b border-gray-100 text-center mb-6 shrink-0">
                       <div className="space-y-0.5">
                         <span className="block text-[10px] text-gray-400 font-bold uppercase tracking-wider">Thời lượng</span>
@@ -683,7 +655,6 @@ export default function CoursesPage() {
                       </div>
                     </div>
 
-                    {/* Instructor Details */}
                     <div className="flex items-center gap-3 mb-6 shrink-0">
                       <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm shrink-0 border border-blue-200">
                         <User className="w-4 h-4" />
@@ -694,7 +665,6 @@ export default function CoursesPage() {
                       </div>
                     </div>
 
-                    {/* Course Pricing and Register Action button */}
                     <div className="flex items-end justify-between mt-auto shrink-0 pt-4 border-t border-gray-50">
                       <div>
                         {c.oldPrice && (
@@ -736,7 +706,6 @@ export default function CoursesPage() {
 
       </main>
 
-      {/* Trust Badges Footer Area */}
       <section className="w-full bg-white border-t border-gray-100 py-12 px-6">
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
           <div className="flex items-start gap-4">
@@ -769,7 +738,6 @@ export default function CoursesPage() {
         </div>
       </section>
 
-      {/* Custom Toast Alert */}
       {toast && (
         <div className={`fixed bottom-8 right-8 text-white px-6 py-3.5 rounded-xl text-sm font-semibold shadow-2xl z-[9999] flex items-center gap-2 animate-bounce ${toast.success ? 'bg-emerald-600' : 'bg-red-600'
           }`}>
@@ -778,13 +746,11 @@ export default function CoursesPage() {
         </div>
       )}
 
-      {/* CHECKOUT PAYMENT CONFIRMATION MODAL */}
       {selectedCourseForCheckout && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
           <div className={`bg-white rounded-3xl overflow-hidden shadow-2xl border border-gray-100 flex flex-col relative transition-all duration-300 ${paymentStep === 'checkout' ? 'max-w-4xl w-full' : 'max-w-md w-full'
             }`}>
 
-            {/* Close button (only visible in checkout step) */}
             {paymentStep === 'checkout' && (
               <button
                 onClick={() => setSelectedCourseForCheckout(null)}
@@ -794,7 +760,6 @@ export default function CoursesPage() {
               </button>
             )}
 
-            {/* Header Banner */}
             <div className="bg-gradient-to-r from-blue-700 via-indigo-800 to-blue-900 p-6 text-white text-center md:text-left">
               <span className="inline-block text-[10px] font-bold tracking-widest uppercase bg-blue-500/30 border border-blue-400/20 px-3 py-1 rounded-full text-blue-200 mb-2">
                 Hệ thống Khớp lệnh chuyển khoản tự động
@@ -803,26 +768,21 @@ export default function CoursesPage() {
               <p className="text-xs text-blue-200/80 mt-1">Quét mã QR động để kích hoạt tài liệu học tập ngay lập tức</p>
             </div>
 
-            {/* STEP 1: QR & INFO CHECKOUT */}
             {paymentStep === 'checkout' && (
               <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-gray-100">
 
-                {/* Left Column: Bank QR Code Sheet */}
                 <div className="flex-1 p-6 md:p-8 bg-slate-50/50 flex flex-col items-center justify-center space-y-6">
                   <div className="text-center">
                     <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2">Mã QR Thanh Toán (VietQR)</span>
 
-                    {/* Simulated mobile card for QR */}
                     <div className="bg-white p-5 rounded-3xl shadow-md border border-gray-100 relative group max-w-[260px] mx-auto">
                       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-50/10 opacity-0 group-hover:opacity-100 rounded-3xl transition-opacity duration-300 pointer-events-none" />
 
-                      {/* MB Bank Badge on QR */}
                       <div className="flex justify-between items-center mb-3">
                         <span className="text-[9px] font-black text-blue-800 tracking-wider">MB BANK</span>
                         <span className="text-[9px] font-bold bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded">VietQR</span>
                       </div>
 
-                      {/* Generates high-fidelity QR image including Bank STK and transfer details */}
                       <img
                         src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
                           `Ngân hàng: MB Bank\nSTK: 0987654321\nTên: VIETJOB ACADEMY\nSố tiền: ${selectedCourseForCheckout.price}\nNội dung: USER_${user?.id}_TXN_${currentTxnId}`
@@ -835,7 +795,6 @@ export default function CoursesPage() {
                     </div>
                   </div>
 
-                  {/* Bank info grid with Copy action buttons */}
                   <div className="w-full space-y-3 bg-white rounded-2xl p-4 border border-gray-100 text-sm">
 
                     <div className="flex justify-between items-center">
@@ -884,11 +843,9 @@ export default function CoursesPage() {
                   </div>
                 </div>
 
-                {/* Right Column: Checkout Instruction & Summary */}
                 <div className="flex-1 p-6 md:p-8 flex flex-col justify-between space-y-6">
 
                   <div className="space-y-4">
-                    {/* Course Summary Item */}
                     <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                       <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest block mb-1">Khóa học đăng ký</span>
                       <h4 className="text-base font-extrabold text-gray-800 leading-snug">
@@ -901,7 +858,6 @@ export default function CoursesPage() {
                       </div>
                     </div>
 
-                    {/* Step Guideline */}
                     <div className="space-y-3">
                       <h5 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Các bước thực hiện:</h5>
 
@@ -929,7 +885,6 @@ export default function CoursesPage() {
                     </div>
                   </div>
 
-                  {/* Checkout Actions */}
                   <div className="space-y-3 pt-4 border-t border-gray-100">
                     <button
                       onClick={confirmCheckout}
@@ -951,16 +906,13 @@ export default function CoursesPage() {
               </div>
             )}
 
-            {/* STEP 2: VERIFYING MOCK BANK WEBHOOK (5-SECOND COUNTDOWN) */}
             {paymentStep === 'verifying' && (
               <div className="p-8 text-center space-y-6 flex flex-col items-center justify-center">
 
-                {/* Visual loading ring */}
                 <div className="relative w-28 h-28 flex items-center justify-center">
                   <div className="absolute inset-0 border-4 border-slate-100 rounded-full" />
                   <div className="absolute inset-0 border-4 border-blue-600 rounded-full border-t-transparent animate-spin" />
 
-                  {/* Countdown number indicator */}
                   <div className="text-3xl font-black text-blue-600 animate-pulse">
                     {countdown}s
                   </div>
@@ -973,7 +925,6 @@ export default function CoursesPage() {
                   </p>
                 </div>
 
-                {/* Simulated matching transaction badge */}
                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 w-full font-mono text-xs text-gray-600 space-y-1">
                   <div className="flex justify-between">
                     <span className="text-slate-400">Trạng thái:</span>
@@ -995,11 +946,9 @@ export default function CoursesPage() {
               </div>
             )}
 
-            {/* STEP 3: TRANSACTION SUCCESS & CONFETTI TICKET */}
             {paymentStep === 'success' && (
               <div className="p-8 text-center space-y-6 flex flex-col items-center justify-center">
 
-                {/* Success Animation Tick */}
                 <div className="w-20 h-20 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-500 shadow-xl shadow-emerald-500/10 animate-bounce">
                   <CheckCircle2 className="w-10 h-10" />
                 </div>
@@ -1014,7 +963,6 @@ export default function CoursesPage() {
                   </p>
                 </div>
 
-                {/* Email details card */}
                 <div className="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-4 w-full text-xs text-emerald-800 flex items-start gap-3 text-left">
                   <Mail className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                   <div>
@@ -1024,7 +972,6 @@ export default function CoursesPage() {
                   </div>
                 </div>
 
-                {/* Final redirection button */}
                 <button
                   onClick={() => {
                     setSelectedCourseForCheckout(null);

@@ -3,8 +3,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { handleLinkedInCallback } from '../../hooks/useSocialLogin';
 import { Briefcase } from 'lucide-react';
 
-// Trang này được LinkedIn redirect về sau khi người dùng đồng ý
-// URL: /auth/linkedin/callback?code=...&state=...
 const LinkedInCallback = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -39,7 +37,7 @@ const LinkedInCallback = () => {
         setStatus(err.response?.data?.error || err.message || 'Đăng nhập LinkedIn thất bại.');
         setTimeout(() => navigate('/login'), 3000);
       });
-  }, []); // chỉ chạy 1 lần
+  }, []);
 
   return (
     <div style={{
@@ -50,7 +48,6 @@ const LinkedInCallback = () => {
         background: '#fff', borderRadius: 16, padding: '48px 40px',
         boxShadow: '0 8px 32px rgba(0,0,0,0.10)', textAlign: 'center', maxWidth: 400
       }}>
-        {/* LinkedIn Icon */}
         <div style={{
           width: 64, height: 64, background: '#0A66C2', borderRadius: '50%',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -59,7 +56,6 @@ const LinkedInCallback = () => {
           <Briefcase size={36} color="white" />
         </div>
 
-        {/* Spinner nếu đang xử lý */}
         {!isError && (
           <div style={{
             width: 40, height: 40, border: '4px solid #e5e7eb',
@@ -68,7 +64,6 @@ const LinkedInCallback = () => {
           }} />
         )}
 
-        {/* Error icon */}
         {isError && (
           <div style={{ fontSize: 36, marginBottom: 16 }}>❌</div>
         )}

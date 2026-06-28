@@ -17,7 +17,6 @@ export default function CourseManage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
-  // 1. Fetch courses from backend API
   const fetchCourses = async () => {
     setLoading(true);
     try {
@@ -34,7 +33,6 @@ export default function CourseManage() {
     fetchCourses();
   }, []);
 
-  // 2. Approve Course (set to 'Đang bán')
   const handleApprove = async (courseId, title) => {
     if (!window.confirm(`Xác nhận phê duyệt khóa học "${title}"?`)) return;
     try {
@@ -46,7 +44,7 @@ export default function CourseManage() {
     }
   };
 
-  // 3. Reject/Close Course (set to 'Đã ẩn')
+
   const handleReject = async (courseId, title) => {
     if (!window.confirm(`Xác nhận đóng/từ chối khóa học "${title}"?`)) return;
     try {
@@ -58,13 +56,12 @@ export default function CourseManage() {
     }
   };
 
-  // Filter & Search Logic
   const filteredCourses = courses.filter(c => {
-    // Search text matches course title or provider
+
     const matchesSearch = c.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.provider?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    // Status matching
+
     if (statusFilter !== "all") {
       const dbStatus = c.status?.toLowerCase();
       if (statusFilter === "open" && dbStatus !== "đang mở" && dbStatus !== "active" && dbStatus !== "đang bán") return false;
@@ -75,7 +72,7 @@ export default function CourseManage() {
     return matchesSearch;
   });
 
-  // Dynamic calculations for Stats
+
   const totalCourses = courses.length;
   const openCourses = courses.filter(c => {
     const s = c.status?.toLowerCase();
@@ -86,7 +83,7 @@ export default function CourseManage() {
     return s === "chờ duyệt" || s === "pending" || s === "nháp";
   }).length;
 
-  // Pagination calculation
+
   const totalPages = Math.max(Math.ceil(filteredCourses.length / itemsPerPage), 1);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -104,7 +101,6 @@ export default function CourseManage() {
         <Topbar />
 
         <main style={{ flex: 1, overflowY: "auto", padding: 20 }}>
-          {/* 1. Header Section */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 20 }}>
             <div>
               <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 3 }}>Quản lý khóa học</div>
@@ -125,7 +121,6 @@ export default function CourseManage() {
             </button>
           </div>
 
-          {/* 2. Dynamic Stats Cards */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, marginBottom: 24 }}>
             {[
               { label: "Tổng số khóa học", value: totalCourses, icon: <BookOpen style={{ color: "#3b82f6" }} />, colorBg: "rgba(59,130,246,0.1)" },
@@ -146,9 +141,7 @@ export default function CourseManage() {
             ))}
           </div>
 
-          {/* 3. Table Section */}
           <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid #e2e8f0", overflow: "hidden" }}>
-            {/* Table Filter Controls */}
             <div style={{ padding: 16, borderBottom: "1px solid #f1f5f9", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
               <div style={{ position: "relative", width: "100%", maxWidth: 380 }}>
                 <Search style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#9ca3af" }} size={16} />
@@ -182,7 +175,6 @@ export default function CourseManage() {
               </div>
             </div>
 
-            {/* Main Table */}
             <div style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
                 <thead>
@@ -287,7 +279,6 @@ export default function CourseManage() {
               </table>
             </div>
 
-            {/* Dynamic Pagination */}
             <div style={{ padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid #e2e8f0", background: "#fcfdfe" }}>
               <div style={{ fontSize: 11.5, color: "#64748b" }}>
                 Hiển thị <b>{Math.min(indexOfLastItem, filteredCourses.length)}</b> trên <b>{filteredCourses.length}</b> khóa học
@@ -337,7 +328,6 @@ export default function CourseManage() {
             </div>
           </div>
 
-          {/* 4. Bottom Section */}
           <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 20, marginTop: 24 }}>
             <div style={{ background: "#ffffff", padding: 20, borderRadius: 12, border: "1px solid #e2e8f0" }}>
               <h4 style={{ margin: "0 0 16px 0", fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>

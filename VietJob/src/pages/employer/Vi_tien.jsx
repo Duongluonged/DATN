@@ -9,7 +9,6 @@ import {
 
 const suggestedAmounts = [2000000, 5000000, 10000000];
 
-// ⚠️ Thay account bằng số tài khoản thật của hệ thống
 const banks = [
     { id: "vcb", name: "Vietcombank", bin: "970436", account: "1014597123", accountName: "VIETJOB SYSTEM", icon: <Landmark size={15}/>, color: "#16a34a" },
     { id: "tpb", name: "TPBank",      bin: "970423", account: "0987654321", accountName: "VIETJOB SYSTEM", icon: <Building size={15}/>, color: "#7c3aed" },
@@ -29,11 +28,9 @@ export default function CareerCuratorWallet() {
     const [qrRefCode, setQrRefCode] = useState("");
     const [confirmLoading, setConfirmLoading] = useState(false);
 
-    // Dynamic state for highlighting and selling courses
     const [selectedJobId, setSelectedJobId] = useState("");
     const [highlightLoading, setHighlightLoading] = useState(false);
 
-    // Get current recruiter user
     let user = null;
     try {
         const storedUser = localStorage.getItem("user");
@@ -45,7 +42,6 @@ export default function CareerCuratorWallet() {
     }
     const userId = user?.id;
 
-    // Fetch Wallet & DB Info
     const fetchWalletData = async () => {
         if (!userId) return;
         setLoading(true);
@@ -67,7 +63,6 @@ export default function CareerCuratorWallet() {
 
     const finalAmount = customAmount ? parseInt(customAmount.replace(/\D/g, "")) || 0 : selectedAmount;
 
-    // 1. Hiển thị modal QR thanh toán
     const handleShowQR = () => {
         if (!userId) return;
         if (finalAmount <= 0) { alert("Vui lòng chọn hoặc nhập số tiền hợp lệ!"); return; }
@@ -76,7 +71,6 @@ export default function CareerCuratorWallet() {
         setShowQR(true);
     };
 
-    // 2. Xác nhận đã chuyển khoản → ghi vào DB
     const handleConfirmPayment = async () => {
         const bankObj = banks.find(b => b.id === selectedBank);
         setConfirmLoading(true);
@@ -96,7 +90,6 @@ export default function CareerCuratorWallet() {
         }
     };
 
-    // 2. Handle activating VIP package for company
     const handleHighlightCompany = async () => {
         if (!userId) return;
 
@@ -121,7 +114,6 @@ export default function CareerCuratorWallet() {
         }
     };
 
-    // Filter transaction list
     const filteredTransactions = transactions.filter(t => {
         if (activeFilter === "Nạp ví" && t.Type !== "Nap") return false;
         if (activeFilter === "Thanh toán" && t.Type !== "ThanhToan") return false;
@@ -133,16 +125,13 @@ export default function CareerCuratorWallet() {
         <div style={{ display: "flex", height: "100vh", fontFamily: "'Be Vietnam Pro','Segoe UI',sans-serif", background: "#f8fafc", color: "#1e293b" }}>
             <Sidebar_empl />
 
-            {/* Main */}
             <main style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
                 <Topbar_empl />
                 
                 <div style={{ flex: 1, overflowY: "auto", padding: "24px", display: "grid", gridTemplateColumns: "1fr 340px", gap: 24 }}>
                     
-                    {/* LEFT COLUMN: BALANCE & TRANSACTIONS & COURSE SALE COMMISSION */}
                     <div style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 24 }}>
                         
-                        {/* Balance premium card */}
                         <div style={{ background: "linear-gradient(135deg, #1e3a8a 0%, #3b82f6 60%, #8b5cf6 100%)", borderRadius: 16, padding: "24px", color: "#ffffff", position: "relative", overflow: "hidden", boxShadow: "0 10px 25px -5px rgba(59, 130, 246, 0.3)" }}>
                             <div style={{ position: "absolute", right: -20, top: -20, width: 140, height: 140, borderRadius: "50%", background: "rgba(255,255,255,0.06)" }} />
                             <div style={{ position: "absolute", right: 40, bottom: -30, width: 100, height: 100, borderRadius: "50%", background: "rgba(255,255,255,0.04)" }} />
@@ -181,7 +170,6 @@ export default function CareerCuratorWallet() {
                             </div>
                         </div>
 
-                        {/* HIGHLIGHT JOB VIP SERVICE SECTION */}
                         <div style={{ background: "#ffffff", borderRadius: 16, border: "1px solid #e2e8f0", padding: 22, boxShadow: "0 4px 6px -1px rgba(0,0,0,0.02)" }}>
                             <h4 style={{ margin: "0 0 10px 0", fontWeight: 800, fontSize: 16, display: "flex", alignItems: "center", gap: 8, color: "#1e3a8a" }}>
                                 <Sparkles size={20} style={{ color: "#eab308" }} />
@@ -215,7 +203,6 @@ export default function CareerCuratorWallet() {
                             </div>
                         </div>
 
-                        {/* AUTOMATIC COURSE SALES REVENUE SPLIT INFO */}
                         <div style={{ background: "#ffffff", borderRadius: 16, border: "1px solid #e2e8f0", padding: 22, boxShadow: "0 4px 6px -1px rgba(0,0,0,0.02)" }}>
                             <h4 style={{ margin: "0 0 10px 0", fontWeight: 800, fontSize: 16, display: "flex", alignItems: "center", gap: 8, color: "#1e3a8a" }}>
                                 <BookOpen size={20} style={{ color: "#3b82f6" }} />
@@ -239,7 +226,6 @@ export default function CareerCuratorWallet() {
                             </div>
                         </div>
 
-                        {/* Transaction history section */}
                         <div style={{ background: "#ffffff", borderRadius: 16, border: "1px solid #e2e8f0", overflow: "hidden", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.02)" }}>
                             <div style={{ padding: "16px 20px", borderBottom: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                                 <h4 style={{ margin: 0, fontWeight: 800, fontSize: 15, color: "#1e3a8a" }}>Lịch sử giao dịch ví</h4>
@@ -326,10 +312,8 @@ export default function CareerCuratorWallet() {
                         </div>
                     </div>
 
-                    {/* RIGHT COLUMN: WALLET TOP-UP PANEL */}
                     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
                         
-                        {/* Top-up Panel */}
                         <div style={{ background: "#ffffff", borderRadius: 16, border: "1px solid #e2e8f0", padding: 20, boxShadow: "0 4px 6px -1px rgba(0,0,0,0.02)" }}>
                             <h4 style={{ margin: "0 0 16px 0", fontWeight: 800, fontSize: 14.5, color: "#1e3a8a", display: "flex", alignItems: "center", gap: 6 }}>
                                 <QrCode size={18} /> Nạp tiền vào ví
@@ -415,7 +399,6 @@ export default function CareerCuratorWallet() {
                             </button>
                         </div>
 
-                        {/* Support details */}
                         <div style={{ background: "#ffffff", borderRadius: 16, border: "1px solid #e2e8f0", padding: 16, display: "flex", flexDirection: "column", gap: 12, boxShadow: "0 4px 6px -1px rgba(0,0,0,0.02)" }}>
                             <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
                                 <HelpCircle size={18} style={{ color: "#3b82f6", flexShrink: 0, marginTop: 1 }} />
@@ -428,7 +411,6 @@ export default function CareerCuratorWallet() {
                     </div>
                 </div>
             </main>
-            {/* QR Payment Modal */}
             {showQR && (() => {
                 const b = banks.find(x => x.id === selectedBank);
                 const qrUrl = `https://img.vietqr.io/image/${b.bin}-${b.account}-compact2.png?amount=${finalAmount}&addInfo=${qrRefCode}&accountName=${encodeURIComponent(b.accountName)}`;

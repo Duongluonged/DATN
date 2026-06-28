@@ -8,7 +8,6 @@ async function initChatDb() {
         console.log("Checking if Messages table exists...");
         const request = pool.request();
         
-        // Tạo bảng Messages
         await request.query(`
             IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Messages' AND xtype='U')
             BEGIN

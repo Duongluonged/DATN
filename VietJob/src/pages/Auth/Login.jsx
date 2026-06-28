@@ -10,7 +10,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [socialLoading, setSocialLoading] = useState(null); // 'google' | 'linkedin' | null
+  const [socialLoading, setSocialLoading] = useState(null);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
@@ -23,7 +23,6 @@ const Login = () => {
     white: "#fff", text: "#111827", muted: "#6b7280",
   };
 
-  // ── ĐĂNG NHẬP THƯỜNG ────────────────────────────────────────
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -55,26 +54,22 @@ const Login = () => {
     }
   };
 
-  // ── ĐĂNG NHẬP GOOGLE ────────────────────────────────────────
   const onGoogleClick = () => {
     setError("");
-    handleGoogleLogin(); // Redirect sang Google OAuth
+    handleGoogleLogin();
   };
 
-  // ── ĐĂNG NHẬP LINKEDIN ───────────────────────────────────────
   const onLinkedInClick = () => {
     setError("");
-    handleLinkedInLogin(); // Redirect sang LinkedIn OAuth
+    handleLinkedInLogin();
   };
 
   return (
     <div style={{ fontFamily: "'Be Vietnam Pro', sans-serif", background: c.bg, color: c.text, minheight: "100vh", display: "flex", flexDirection: "column", overflow: "hidden", fontSize: 13 }}>
       <Navbar />
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        {/* Container chính */}
         <div className="max-w-5xl w-full bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row h-[600px] -translate-y-12">
 
-          {/* Cột trái: Hình ảnh & Thương hiệu */}
           <div className="hidden md:flex md:w-1/2 relative flex-col justify-end">
             <div
               className="absolute inset-0 bg-cover bg-center"
@@ -92,14 +87,12 @@ const Login = () => {
             </div>
           </div>
 
-          {/* Cột phải: Form Đăng nhập */}
           <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Chào mừng trở lại</h2>
               <p className="text-gray-500 text-sm">Dành cho <strong>Ứng viên</strong> và <strong>Quản trị viên</strong>. Nhà tuyển dụng vui lòng dùng trang đăng nhập riêng.</p>
             </div>
 
-            {/* Thông báo lỗi */}
             {error && (
               <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
@@ -107,9 +100,7 @@ const Login = () => {
               </div>
             )}
 
-            {/* Gắn hàm handleLogin vào form */}
             <form className="space-y-5" onSubmit={handleLogin}>
-              {/* Input Email */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">
                   Email
@@ -124,7 +115,6 @@ const Login = () => {
                 />
               </div>
 
-              {/* Input Password */}
               <div>
                 <div className="flex justify-between items-center mb-1">
                   <label className="block text-sm font-semibold text-gray-700">
@@ -144,7 +134,6 @@ const Login = () => {
                 />
               </div>
 
-              {/* Checkbox Duy trì đăng nhập */}
               <div className="flex items-center">
                 <input
                   id="remember-me"
@@ -156,7 +145,6 @@ const Login = () => {
                 </label>
               </div>
 
-              {/* Nút Submit */}
               <button
                 type="submit"
                 disabled={loading || socialLoading !== null}
@@ -166,7 +154,6 @@ const Login = () => {
               </button>
             </form>
 
-            {/* Đường kẻ chia cắt */}
             <div className="mt-6 flex items-center justify-center">
               <div className="w-full h-px bg-gray-200"></div>
               <span className="px-4 text-xs font-semibold text-gray-400 uppercase bg-white absolute">
@@ -174,9 +161,7 @@ const Login = () => {
               </span>
             </div>
 
-            {/* Các nút Social Login */}
             <div className="mt-6 flex gap-4">
-              {/* Nút Google */}
               <button
                 id="btn-google-login"
                 type="button"
@@ -192,7 +177,6 @@ const Login = () => {
                 {socialLoading === 'google' ? 'Đang xử lý...' : 'Google'}
               </button>
 
-              {/* Nút LinkedIn */}
               <button
                 id="btn-linkedin-login"
                 type="button"
@@ -205,7 +189,6 @@ const Login = () => {
               </button>
             </div>
 
-            {/* Link Đăng ký */}
             <p className="mt-8 text-center text-sm text-gray-600">
               Chưa có tài khoản ứng viên?{' '}
               <Link to="/register" className="font-semibold text-blue-600 hover:text-blue-500">

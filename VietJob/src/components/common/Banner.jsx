@@ -68,7 +68,6 @@ function Banner() {
           "Kết nối bạn với những cơ hội hàng đầu tại Việt Nam"
         </p>
 
-        {/* Thanh tìm kiếm */}
         <div className="flex items-center bg-white rounded-full shadow-2xl focus-within:ring-4 focus-within:ring-sky-500/30 transition-all overflow-hidden">
           <div className="flex-1 flex items-center px-5">
             <Search className="w-5 h-5 text-gray-400 shrink-0" />
@@ -89,9 +88,8 @@ function Banner() {
           </button>
         </div>
 
-        {/* Bộ lọc */}
         <div className="flex flex-wrap gap-3 mt-5">
-          {/* Địa điểm */}
+
           <div className="relative">
             <select
               value={selectedLocation}
@@ -105,7 +103,6 @@ function Banner() {
             </div>
           </div>
 
-          {/* Mức lương */}
           <div className="relative">
             <select
               value={selectedSalary}
@@ -119,7 +116,6 @@ function Banner() {
             </div>
           </div>
 
-          {/* Loại hình */}
           <div className="relative">
             <select
               value={selectedJobType}
@@ -134,7 +130,6 @@ function Banner() {
           </div>
         </div>
 
-        {/* Trending Tags */}
         <div className="mt-7 flex flex-wrap items-center gap-2">
           <span className="text-gray-300 text-sm font-medium">Từ khóa phổ biến:</span>
           {trendingTags.map((tag, i) => (

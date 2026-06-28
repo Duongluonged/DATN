@@ -1,6 +1,5 @@
 const { pool, poolConnect, sql } = require('../config/db');
 
-// ─── 1. Lấy danh sách khóa học của NTD ─────────────────────────
 const getCoursesByEmployer = async (req, res) => {
     try {
         await poolConnect;
@@ -33,7 +32,6 @@ const getCoursesByEmployer = async (req, res) => {
     }
 };
 
-// ─── 2. Tạo khóa học mới ────────────────────────────────────────
 const createCourse = async (req, res) => {
     try {
         await poolConnect;
@@ -84,7 +82,6 @@ const createCourse = async (req, res) => {
     }
 };
 
-// ─── 3. Cập nhật khóa học ───────────────────────────────────────
 const updateCourse = async (req, res) => {
     try {
         await poolConnect;
@@ -131,7 +128,6 @@ const updateCourse = async (req, res) => {
     }
 };
 
-// ─── 4. Xóa mềm khóa học ────────────────────────────────────────
 const deleteCourse = async (req, res) => {
     try {
         await poolConnect;
@@ -154,7 +150,6 @@ const deleteCourse = async (req, res) => {
     }
 };
 
-// ─── 5. Lấy toàn bộ danh sách khóa học cho Admin & Học viên ──────
 const getAllCourses = async (req, res) => {
     try {
         await poolConnect;
@@ -181,12 +176,11 @@ const getAllCourses = async (req, res) => {
     }
 };
 
-// ─── 6. Admin duyệt khóa học (Cập nhật trạng thái) ────────────
 const updateCourseStatus = async (req, res) => {
     try {
         await poolConnect;
         const { courseId } = req.params;
-        const { status } = req.body; // e.g., 'Đang mở', 'Đang tuyển sinh', 'Chờ duyệt'
+        const { status } = req.body;
 
         await pool.request()
             .input('id', sql.Int, courseId)

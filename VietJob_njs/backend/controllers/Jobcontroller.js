@@ -1,8 +1,5 @@
 const { pool, poolConnect, sql } = require('../config/db');
 
-// ====================================================
-// 1. Tìm kiếm việc làm (dành cho ứng viên)
-// ====================================================
 const searchJobs = async (req, res) => {
     try {
         await poolConnect;
@@ -26,7 +23,6 @@ const searchJobs = async (req, res) => {
             request.input('key', sql.NVarChar, `%${keyword.trim()}%`);
         }
         if (location && location !== 'Tất cả các địa điểm') {
-            // Chuẩn hóa tìm kiếm Hồ Chí Minh / TP.HCM
             if (location.includes("Hồ Chí Minh") || location.includes("TP.HCM") || location.includes("TP. Hồ Chí Minh")) {
                 query += ` AND (J.DiaDiem LIKE @loc1 OR J.DiaDiem LIKE @loc2 OR J.DiaDiem LIKE @loc3)`;
                 request.input('loc1', sql.NVarChar, '%Hồ Chí Minh%');
@@ -38,7 +34,6 @@ const searchJobs = async (req, res) => {
             }
         }
         if (jobType && jobType !== 'all') {
-            // Ánh xạ các slug tiếng Anh sang chuỗi tiếng Việt trong CSDL SQL
             const typeMap = {
                 'full-time': 'Toàn thời gian',
                 'part-time': 'Bán thời gian',
@@ -71,9 +66,6 @@ const searchJobs = async (req, res) => {
     }
 };
 
-// ====================================================
-// 2. Lấy chi tiết 1 job (public)
-// ====================================================
 const getJobDetail = async (req, res) => {
     try {
         await poolConnect;
@@ -115,9 +107,6 @@ const getJobDetail = async (req, res) => {
     }
 };
 
-// ====================================================
-// 3. Lấy danh sách tin của NHÀ TUYỂN DỤNG (theo userId)
-// ====================================================
 const getJobsByEmployer = async (req, res) => {
     try {
         await poolConnect;
@@ -150,9 +139,6 @@ const getJobsByEmployer = async (req, res) => {
     }
 };
 
-// ====================================================
-// 4. Tạo tin tuyển dụng mới
-// ====================================================
 const createJob = async (req, res) => {
     try {
         await poolConnect;
@@ -170,7 +156,6 @@ const createJob = async (req, res) => {
             return res.status(400).json({ message: 'Vui lòng điền đầy đủ thông tin bắt buộc (Tên việc, Địa điểm, Loại hình).' });
         }
 
-        // Lấy CompanyID từ userId
         const compResult = await pool.request()
             .input('userId', sql.Int, parsedUserId)
             .query(`SELECT MaCongTy AS CompanyID FROM NguoiDung WHERE Id = @userId`);
@@ -215,9 +200,6 @@ const createJob = async (req, res) => {
     }
 };
 
-// ====================================================
-// 5. Cập nhật tin tuyển dụng
-// ====================================================
 const updateJob = async (req, res) => {
     try {
         await poolConnect;
@@ -263,9 +245,6 @@ const updateJob = async (req, res) => {
     }
 };
 
-// ====================================================
-// 6. Xóa / ẩn tin tuyển dụng (soft delete)
-// ====================================================
 const deleteJob = async (req, res) => {
     try {
         await poolConnect;
@@ -282,9 +261,6 @@ const deleteJob = async (req, res) => {
     }
 };
 
-// ====================================================
-// 7. Lấy toàn bộ danh sách tin tuyển dụng cho Admin
-// ====================================================
 const getAllJobsAdmin = async (req, res) => {
     try {
         await poolConnect;
@@ -306,14 +282,11 @@ const getAllJobsAdmin = async (req, res) => {
     }
 };
 
-// ====================================================
-// 8. Admin phê duyệt / từ chối tin tuyển dụng
-// ====================================================
 const toggleJobStatus = async (req, res) => {
     try {
         await poolConnect;
         const { jobId } = req.params;
-        const { isActive } = req.body; // true or false
+        const { isActive } = req.body;
 
         await pool.request()
             .input('jobId', sql.Int, jobId)
@@ -336,7 +309,6 @@ const getEmployerStats = async (req, res) => {
             return res.status(400).json({ message: 'Id nhà tuyển dụng không hợp lệ.' });
         }
 
-        // 1. Tổng tin tuyển dụng
         const jobsCountRes = await pool.request()
             .input('userId', sql.Int, parsedUserId)
             .query(`
@@ -347,7 +319,6 @@ const getEmployerStats = async (req, res) => {
             `);
         const totalJobs = jobsCountRes.recordset[0]?.total ?? 0;
 
-        // 2. Tổng số lượt ứng tuyển
         const appCountRes = await pool.request()
             .input('userId', sql.Int, parsedUserId)
             .query(`
@@ -359,7 +330,6 @@ const getEmployerStats = async (req, res) => {
             `);
         const totalApplicants = appCountRes.recordset[0]?.total ?? 0;
 
-        // 3. Số lượng hồ sơ ứng tuyển đang chờ duyệt
         const pendingCountRes = await pool.request()
             .input('userId', sql.Int, parsedUserId)
             .query(`
@@ -371,7 +341,6 @@ const getEmployerStats = async (req, res) => {
             `);
         const pendingApplications = pendingCountRes.recordset[0]?.total ?? 0;
 
-        // 4. Danh sách 5 tin tuyển dụng nổi bật kèm lượt ứng tuyển
         const featuredJobsRes = await pool.request()
             .input('userId', sql.Int, parsedUserId)
             .query(`
@@ -384,7 +353,6 @@ const getEmployerStats = async (req, res) => {
                 ORDER BY ApplicantCount DESC, J.NgayTao DESC
             `);
 
-        // 5. Xu hướng ứng tuyển theo thời gian (giả lập biểu đồ dựa trên số liệu thực tế)
         const trendData = [
             { label: "Tuần 1", cur: totalApplicants > 0 ? Math.ceil(totalApplicants * 0.15) : 3, prev: 4 },
             { label: "Tuần 2", cur: totalApplicants > 0 ? Math.ceil(totalApplicants * 0.25) : 6, prev: 5 },
@@ -392,7 +360,6 @@ const getEmployerStats = async (req, res) => {
             { label: "Tuần 4", cur: totalApplicants > 0 ? Math.ceil(totalApplicants * 0.20) : 5, prev: 7 },
         ];
 
-        // 6. Phân tích ngành nghề thực tế tuyển dụng của công ty
         const industryRes = await pool.request()
             .input('userId', sql.Int, parsedUserId)
             .query(`

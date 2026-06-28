@@ -1,6 +1,5 @@
 const { sql, pool, poolConnect } = require("../config/db");
 
-// ── Tự tạo bảng CompanyReviews nếu chưa có ────────────────────────────────────
 async function ensureTable() {
     await poolConnect;
     await pool.request().query(`
@@ -25,7 +24,6 @@ async function ensureTable() {
     `);
 }
 
-// ── POST /api/reviews ──────────────────────────────────────────────────────────
 exports.createReview = async (req, res) => {
     const {
         companyId, userId, rating, summary,
@@ -68,7 +66,6 @@ exports.createReview = async (req, res) => {
     }
 };
 
-// ── GET /api/reviews/:companyId ────────────────────────────────────────────────
 exports.getReviews = async (req, res) => {
     const { companyId } = req.params;
     try {
@@ -91,7 +88,6 @@ exports.getReviews = async (req, res) => {
     }
 };
 
-// ── GET /api/reviews/:companyId/stats ─────────────────────────────────────────
 exports.getReviewStats = async (req, res) => {
     const { companyId } = req.params;
     try {

@@ -1,11 +1,9 @@
 const { pool, poolConnect, sql } = require('../config/db');
 
-// Tự động kiểm tra và khởi tạo database cho Ví tiền
 const initializeWalletDB = async () => {
     try {
         await poolConnect;
         
-        // 1. Thêm cột Balance vào bảng Users nếu chưa có
         await pool.request().query(`
             IF NOT EXISTS (
                 SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS 
@@ -16,7 +14,6 @@ const initializeWalletDB = async () => {
             END
         `);
 
-        // 2. Thêm cột IsHighlighted vào bảng Jobs nếu chưa có
         await pool.request().query(`
             IF NOT EXISTS (
                 SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS 
@@ -27,7 +24,6 @@ const initializeWalletDB = async () => {
             END
         `);
 
-        // 3. Tạo bảng Transactions lưu lịch sử giao dịch nếu chưa có
         await pool.request().query(`
             IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'GiaoDich')
             BEGIN
@@ -44,7 +40,6 @@ const initializeWalletDB = async () => {
             END
         `);
 
-        // 4. Đảm bảo cột IsHot của bảng Companies có giá trị mặc định là 0 và cập nhật NULL thành 0
         await pool.request().query(`
             IF NOT EXISTS (
                 SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS 
@@ -65,16 +60,13 @@ const initializeWalletDB = async () => {
     }
 };
 
-// Gọi chạy khởi tạo khi import
 initializeWalletDB();
 
-// 1. Lấy thông tin ví & Lịch sử giao dịch
 const getWalletInfo = async (req, res) => {
     try {
         await poolConnect;
         const { userId } = req.params;
 
-        // Lấy số dư tài khoản
         const userRes = await pool.request()
             .input('userId', sql.Int, userId)
             .query(`SELECT SoDu AS Balance FROM NguoiDung WHERE Id = @userId`);
@@ -85,7 +77,6 @@ const getWalletInfo = async (req, res) => {
 
         const balance = userRes.recordset[0].Balance;
 
-        // Lấy lịch sử giao dịch
         const transactionsRes = await pool.request()
             .input('userId', sql.Int, userId)
             .query(`
@@ -94,7 +85,6 @@ const getWalletInfo = async (req, res) => {
                 ORDER BY NgayTao DESC
             `);
 
-        // Lấy danh sách tin tuyển dụng của nhà tuyển dụng này (để làm nổi bật)
         const jobsRes = await pool.request()
             .input('userId', sql.Int, userId)
             .query(`
@@ -115,7 +105,6 @@ const getWalletInfo = async (req, res) => {
     }
 };
 
-// 2. Nạp tiền vào ví
 const depositMoney = async (req, res) => {
     try {
         await poolConnect;
@@ -127,13 +116,11 @@ const depositMoney = async (req, res) => {
 
         const refCode = "NAP" + Math.floor(1000000 + Math.random() * 9000000);
 
-        // Cộng số dư vào bảng Users
         await pool.request()
             .input('userId', sql.Int, userId)
             .input('amount', sql.Int, amount)
             .query(`UPDATE NguoiDung SET SoDu = SoDu + @amount WHERE Id = @userId`);
 
-        // Ghi nhận lịch sử giao dịch
         await pool.request()
             .input('userId', sql.Int, userId)
             .input('title', sql.NVarChar, `Nạp tiền vào ví qua ${bankName}`)
@@ -153,14 +140,12 @@ const depositMoney = async (req, res) => {
     }
 };
 
-// 3. Kích hoạt gói đặc quyền VIP Doanh nghiệp (Nổi bật Công ty & các Tin tuyển dụng)
 const highlightJob = async (req, res) => {
     try {
         await poolConnect;
         const { userId } = req.body;
-        const fee = 3000000; // Phí kích hoạt VIP Doanh nghiệp: 3,000,000 VND
+        const fee = 3000000;
 
-        // 1. Kiểm tra số dư & CompanyID của người dùng
         const userRes = await pool.request()
             .input('userId', sql.Int, userId)
             .query(`SELECT SoDu AS Balance, MaCongTy AS CompanyID FROM NguoiDung WHERE Id = @userId`);
@@ -178,13 +163,11 @@ const highlightJob = async (req, res) => {
             return res.status(400).json({ message: "Số dư tài khoản không đủ để thực hiện thanh toán (Cần 3,000,000đ). Vui lòng nạp thêm tiền!" });
         }
 
-        // 2. Trừ tiền
         await pool.request()
             .input('userId', sql.Int, userId)
             .input('fee', sql.Int, fee)
             .query(`UPDATE NguoiDung SET SoDu = SoDu - @fee WHERE Id = @userId`);
 
-        // 3. Đánh dấu CÔNG TY (IsHot = 1) & Tất cả tin tuyển dụng của công ty (IsHighlighted = 1) là nổi bật VIP
         await pool.request()
             .input('companyId', sql.Int, CompanyID)
             .query(`
@@ -197,7 +180,6 @@ const highlightJob = async (req, res) => {
                 WHERE MaCongTy = @companyId;
             `);
 
-        // 4. Ghi nhận giao dịch
         const refCode = "HDN" + Math.floor(1000000 + Math.random() * 9000000);
         await pool.request()
             .input('userId', sql.Int, userId)
@@ -218,7 +200,6 @@ const highlightJob = async (req, res) => {
     }
 };
 
-// 4. Chia sẻ % doanh thu khi bán khóa học (Recruiter bán khóa học, hệ thống nhận 15% hoa hồng)
 const sellCourse = async (req, res) => {
     try {
         await poolConnect;
@@ -228,17 +209,14 @@ const sellCourse = async (req, res) => {
             return res.status(400).json({ message: "Giá khóa học không hợp lệ" });
         }
 
-        // Tỷ lệ chia sẻ: Hệ thống lấy 15%, Nhà tuyển dụng nhận 85%
         const systemFee = Math.floor(price * 0.15);
         const recruiterRevenue = price - systemFee;
 
-        // Cộng 85% doanh thu vào ví nhà tuyển dụng
         await pool.request()
             .input('userId', sql.Int, userId)
             .input('revenue', sql.Int, recruiterRevenue)
             .query(`UPDATE NguoiDung SET SoDu = SoDu + @revenue WHERE Id = @userId`);
 
-        // Ghi nhận giao dịch của nhà tuyển dụng
         const refCode = "CRS" + Math.floor(1000000 + Math.random() * 9000000);
         await pool.request()
             .input('userId', sql.Int, userId)

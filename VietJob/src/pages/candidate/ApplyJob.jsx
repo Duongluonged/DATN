@@ -5,7 +5,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Building, MapPin, BriefcaseBusiness, FileText, User, PenLine, Info, UploadCloud, X, CheckCircle2, Loader2 } from 'lucide-react';
 import axios from "axios";
 
-/* ─── CONSTANTS ─── */
 const CITIES = ["Hồ Chí Minh", "Hà Nội", "Đà Nẵng", "Remote"];
 
 const c = {
@@ -42,7 +41,6 @@ function FormInput({ label, value, onChange, type = "text" }) {
   );
 }
 
-/* ─── MAIN PAGE ─── */
 export default function ApplyJob() {
   const [cvOption, setCvOption] = useState("existing");
   const navigate = useNavigate();
@@ -58,16 +56,14 @@ export default function ApplyJob() {
   const [job, setJob] = useState();
   const [existingCv, setExistingCv] = useState(null);
 
-  // Upload CV state
-  const [uploadedFile, setUploadedFile] = useState(null);   // File object
-  const [uploadedUrl, setUploadedUrl] = useState("");        // URL sau khi upload lên server
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const [uploadedUrl, setUploadedUrl] = useState("");
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
   const updateForm = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
   const { jobId } = location.state || {};
 
-  // Load user profile & CV hiện tại
   useEffect(() => {
     if (!userId) return;
     const fetchProfile = async () => {
@@ -95,7 +91,6 @@ export default function ApplyJob() {
     fetchProfile();
   }, [userId]);
 
-  // Load job data
   useEffect(() => {
     if (!jobId) { setLoading(false); return; }
     const fetchJobData = async () => {
@@ -111,9 +106,7 @@ export default function ApplyJob() {
     fetchJobData();
   }, [jobId]);
 
-  // ── Upload file lên server ────────────────────────────────────
   const uploadFile = async (file) => {
-    // Kiểm tra định dạng & kích thước
     const allowed = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
     if (!allowed.includes(file.type)) {
       alert("Chỉ chấp nhận file PDF, DOC hoặc DOCX!");
@@ -129,7 +122,6 @@ export default function ApplyJob() {
     setUploadedUrl("");
 
     try {
-      // Đọc file thành Base64
       const base64 = await new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result);
@@ -170,7 +162,6 @@ export default function ApplyJob() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  // ── Nộp đơn ──────────────────────────────────────────────────
   const handleSubmit = async () => {
     if (!jobId) { alert("Không tìm thấy thông tin công việc!"); return; }
     if (cvOption === "upload" && !uploadedUrl) {
@@ -213,7 +204,6 @@ export default function ApplyJob() {
     }
   };
 
-  // ── Render ──────────────────────────────────────────────────
   return (
     <div style={{ fontFamily: "'Be Vietnam Pro', sans-serif", background: c.bg, color: c.text, minHeight: "100vh", display: "flex", flexDirection: "column", fontSize: 13 }}>
       <Navbar />
@@ -221,7 +211,6 @@ export default function ApplyJob() {
       <div style={{ display: "flex", gap: 20, maxWidth: 900, margin: "0 auto", padding: "28px 20px 60px", width: "100%", boxSizing: "border-box" }}>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 16, minWidth: 0 }}>
 
-          {/* Job banner */}
           <div style={{ background: "linear-gradient(120deg,#1a56db,#2563eb 60%,#3b82f6)", borderRadius: 14, padding: "20px 22px", color: "#fff", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, textAlign: "left" }}>
             <div>
               <span style={{ display: "inline-block", background: "rgba(255,255,255,.2)", fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 20, marginBottom: 8, letterSpacing: .4 }}>{job?.JobType}</span>
@@ -237,11 +226,9 @@ export default function ApplyJob() {
             </div>
           </div>
 
-          {/* CV Section */}
           <SectionCard icon={<FileText size={18} />} title="Hồ sơ ứng tuyển (CV)">
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
 
-              {/* Option: CV hiện tại */}
               <div
                 onClick={() => setCvOption("existing")}
                 style={{ border: `2px solid ${cvOption === "existing" ? c.blue : c.border}`, borderRadius: 12, padding: "14px 16px", cursor: "pointer", background: cvOption === "existing" ? "#f0f5ff" : c.white, transition: "all .15s" }}
@@ -264,7 +251,6 @@ export default function ApplyJob() {
                 )}
               </div>
 
-              {/* Option: Upload mới – ấn vào là mở file dialog luôn */}
               <div
                 onClick={() => { setCvOption("upload"); if (!uploadedFile) fileInputRef.current?.click(); }}
                 style={{ border: `2px solid ${cvOption === "upload" ? c.blue : c.border}`, borderRadius: 12, padding: "14px 16px", cursor: "pointer", background: cvOption === "upload" ? "#f0f5ff" : c.white, transition: "all .15s" }}
@@ -276,7 +262,6 @@ export default function ApplyJob() {
                   </div>
                 </div>
 
-                {/* Nội dung theo trạng thái */}
                 {uploading ? (
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <Loader2 size={16} color={c.blue} style={{ animation: "spin 1s linear infinite", flexShrink: 0 }} />
@@ -308,7 +293,6 @@ export default function ApplyJob() {
               </div>
             </div>
 
-            {/* Hidden file input */}
             <input
               ref={fileInputRef}
               type="file"
@@ -319,7 +303,6 @@ export default function ApplyJob() {
 
           </SectionCard>
 
-          {/* Personal Info */}
           <SectionCard icon={<User size={18} />} title="Thông tin cá nhân">
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
               <FormInput label="Họ và Tên" value={form.name} onChange={updateForm("name")} />
@@ -333,7 +316,6 @@ export default function ApplyJob() {
             </div>
           </SectionCard>
 
-          {/* Cover Letter */}
           <SectionCard icon={<PenLine size={18} />} title="Thư giới thiệu bản thân">
             <p style={{ fontSize: 12, color: c.muted, lineHeight: 1.6 }}>
               Hãy chia sẻ ngắn gọn về lý do bạn phù hợp với vị trí này hoặc những thành tựu nổi bật của bạn.
@@ -350,7 +332,6 @@ export default function ApplyJob() {
             </div>
           </SectionCard>
 
-          {/* Footer actions */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 20px", background: c.white, border: `1px solid ${c.border}`, borderRadius: 14 }}>
             <button onClick={() => navigate(-1)} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, color: c.muted, cursor: "pointer", background: "none", border: "none", fontFamily: "inherit" }}>
               ← Quay lại

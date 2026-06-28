@@ -13,7 +13,6 @@ const c = {
   text: "#111827", muted: "#6b7280",
 };
 
-/* ─── Chuyển đổi Status từ DB sang hiển thị ─── */
 const STATUS_MAP = {
   "Mới": { label: "ĐANG CHỜ", color: "#a16207", bg: "#fef9c3" },
   "Đang xem xét": { label: "ĐANG XEM XÉT", color: "#4338ca", bg: "#e0e7ff" },
@@ -22,7 +21,6 @@ const STATUS_MAP = {
   "Từ chối": { label: "TỪ CHỐI", color: "#b91c1c", bg: "#fee2e2" },
 };
 
-/* ─── SUB-COMPONENTS ─── */
 function StatCard({ icon: Icon, num, label, badge, badgeColor, badgeBg, iconColor }) {
   return (
     <div style={{ background: c.white, border: `1px solid ${c.border}`, borderRadius: 12, padding: "16px 18px", flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
@@ -44,10 +42,8 @@ function JobCard({ app, navigate, onChat }) {
   const isInterview = app.Status === "Phỏng vấn";
   const isHired = app.Status === "Đã tuyển";
 
-  // Lấy 2 chữ cái đầu tên công ty làm logo
   const logoText = (app.CompanyName || "??").substring(0, 2).toUpperCase();
 
-  // Tính thời gian ứng tuyển
   const appliedDate = new Date(app.AppliedAt);
   const now = new Date();
   const diffDays = Math.floor((now - appliedDate) / (1000 * 60 * 60 * 24));
@@ -60,12 +56,10 @@ function JobCard({ app, navigate, onChat }) {
       opacity: isRejected ? 0.65 : 1,
       transition: "box-shadow .2s",
     }}>
-      {/* Status badge */}
       <span style={{ position: "absolute", top: 16, right: 16, fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 20, background: statusInfo.bg, color: statusInfo.color }}>
         {statusInfo.label}
       </span>
 
-      {/* Header */}
       <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
         <div style={{ width: 44, height: 44, borderRadius: 10, background: "#e8f0fe", border: `1px solid ${c.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
           <span style={{ fontSize: 11, fontWeight: 800, color: "#1a56db" }}>{logoText}</span>
@@ -78,7 +72,6 @@ function JobCard({ app, navigate, onChat }) {
         </div>
       </div>
 
-      {/* Tags */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
         {app.JobType && (
           <span style={{ padding: "4px 10px", borderRadius: 20, fontSize: 11, fontWeight: 500, background: "#f3f4f6", color: "#374151", border: `1px solid ${c.border}` }}>
@@ -92,7 +85,6 @@ function JobCard({ app, navigate, onChat }) {
         )}
       </div>
 
-      {/* Interview notice */}
       {isInterview && (
         <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 10, padding: "10px 14px", display: "flex", alignItems: "center", gap: 10 }}>
           <CalendarDays size={18} color="#15803d" />
@@ -103,7 +95,6 @@ function JobCard({ app, navigate, onChat }) {
         </div>
       )}
 
-      {/* Hired notice */}
       {isHired && (
         <div style={{ background: "#e0f2fe", border: "1px solid #7dd3fc", borderRadius: 10, padding: "10px 14px", display: "flex", alignItems: "center", gap: 10 }}>
           <Check size={18} color="#0369a1" />
@@ -111,7 +102,6 @@ function JobCard({ app, navigate, onChat }) {
         </div>
       )}
 
-      {/* Footer */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <span style={{ fontSize: 11, color: c.muted, display: "flex", alignItems: "center", gap: 4 }}>
           {isRejected
@@ -139,13 +129,12 @@ function JobCard({ app, navigate, onChat }) {
   );
 }
 
-/* ─── PAGE ─── */
 export default function ViecLamCuaToi() {
   const navigate = useNavigate();
   const location = useLocation();
 
   const [chatModalOpen, setChatModalOpen] = useState(false);
-  const [chatCompany, setChatCompany] = useState(null); // { id: 1, name: "Company" }
+  const [chatCompany, setChatCompany] = useState(null);
   const [chatMessage, setChatMessage] = useState("");
   const [sendingChat, setSendingChat] = useState(false);
 
@@ -208,7 +197,6 @@ export default function ViecLamCuaToi() {
 
   useEffect(() => { fetchApplications(); }, [userId]);
 
-  // Tự ẩn toast sau 4 giây
   useEffect(() => {
     if (successMsg) {
       const t = setTimeout(() => setSuccessMsg(null), 4000);
@@ -216,7 +204,6 @@ export default function ViecLamCuaToi() {
     }
   }, [successMsg]);
 
-  /* ─── Tính toán stats từ dữ liệu thực ─── */
   const stats = [
     {
       icon: MessageCircle, iconColor: "#1d4ed8",
@@ -244,12 +231,11 @@ export default function ViecLamCuaToi() {
     },
   ];
 
-  /* ─── Lọc theo tab ─── */
   const TAB_FILTERS = [null, "applied", "Mới"];
   const filtered = activeTab === 0
     ? applications
     : activeTab === 1
-      ? applications // "Đã ứng tuyển" = tất cả
+      ? applications
       : applications.filter(a => a.Status === "Mới");
 
   const TABS = [
@@ -265,7 +251,6 @@ export default function ViecLamCuaToi() {
         <Sidebar />
         <main style={{ flex: 1, overflowY: "auto", padding: "28px 28px 32px", display: "flex", flexDirection: "column", gap: 22 }}>
 
-          {/* ✅ Toast thông báo ứng tuyển thành công */}
           {successMsg && (
             <div style={{
               display: "flex", alignItems: "center", gap: 10,
@@ -279,7 +264,6 @@ export default function ViecLamCuaToi() {
             </div>
           )}
 
-          {/* Header row */}
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
             <div>
               <h1 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>Việc làm của tôi</h1>
@@ -303,12 +287,10 @@ export default function ViecLamCuaToi() {
             </div>
           </div>
 
-          {/* Stat cards */}
           <div style={{ display: "flex", gap: 14 }}>
             {stats.map((stat, i) => <StatCard key={i} {...stat} />)}
           </div>
 
-          {/* Job cards */}
           {loading ? (
             <div style={{ textAlign: "center", padding: 40, color: c.muted }}>
               <RefreshCw size={24} style={{ animation: "spin 1s linear infinite", marginBottom: 8 }} />
@@ -357,7 +339,6 @@ export default function ViecLamCuaToi() {
                   Gửi lời chào hoặc câu hỏi đến <strong style={{ color: "#1a56db" }}>{chatCompany.name}</strong>. Tin nhắn của bạn sẽ được gửi và lưu trực tiếp vào mục Tin nhắn.
                 </p>
 
-                {/* Gợi ý tin nhắn mẫu */}
                 <div style={{ marginBottom: 14 }}>
                   <div style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>Lời chào gợi ý</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>

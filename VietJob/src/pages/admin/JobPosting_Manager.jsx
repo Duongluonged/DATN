@@ -9,10 +9,10 @@ export default function JobListings() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
-  const [activeTab, setActiveTab] = useState("Tất cả"); // "Tất cả", "Chờ duyệt", "Đã duyệt"
+  const [activeTab, setActiveTab] = useState("Tất cả");
   const [activePage, setActivePage] = useState(1);
 
-  // Lấy danh sách tin tuyển dụng từ backend
+
   const fetchJobs = async () => {
     setLoading(true);
     try {
@@ -29,7 +29,6 @@ export default function JobListings() {
     fetchJobs();
   }, []);
 
-  // Thay đổi trạng thái duyệt
   const handleToggleStatus = async (jobId, currentStatus) => {
     try {
       await axios.put(`http://localhost:5000/api/jobs/admin/status/${jobId}`, {
@@ -42,30 +41,27 @@ export default function JobListings() {
     }
   };
 
-  // Tính toán thống kê động từ dữ liệu thực tế
   const pendingCount = jobs.filter(j => !j.IsActive).length;
   const approvedCount = jobs.filter(j => j.IsActive).length;
   const totalCount = jobs.length;
 
   const STATS = [
     { icon: <Hourglass size={20} color="#b45309" />, label: "Đang chờ duyệt", value: pendingCount, bg: "#fffbeb" },
-    { icon: <CheckCircle size={20} color="#15803d" />, label: "Đã phê duyệt",   value: approvedCount, bg: "#f0fdf4" },
+    { icon: <CheckCircle size={20} color="#15803d" />, label: "Đã phê duyệt", value: approvedCount, bg: "#f0fdf4" },
     { icon: <Briefcase size={20} color="#3b7efa" />, label: "Tổng số tin tuyển dụng", value: totalCount, bg: "#eff6ff" },
   ];
 
-  // Lọc và Tìm kiếm
   const filteredJobs = jobs.filter(job => {
-    const matchesSearch = 
-      (job.JobTitle && job.JobTitle.toLowerCase().includes(search.toLowerCase())) || 
+    const matchesSearch =
+      (job.JobTitle && job.JobTitle.toLowerCase().includes(search.toLowerCase())) ||
       (job.CompanyName && job.CompanyName.toLowerCase().includes(search.toLowerCase())) ||
       (job.Location && job.Location.toLowerCase().includes(search.toLowerCase()));
-      
+
     if (activeTab === "Chờ duyệt") return matchesSearch && !job.IsActive;
     if (activeTab === "Đã duyệt") return matchesSearch && job.IsActive;
     return matchesSearch;
   });
 
-  // Phân trang đơn giản (10 dòng mỗi trang)
   const itemsPerPage = 10;
   const totalPages = Math.ceil(filteredJobs.length / itemsPerPage) || 1;
   const displayedJobs = filteredJobs.slice((activePage - 1) * itemsPerPage, activePage * itemsPerPage);
@@ -79,7 +75,6 @@ export default function JobListings() {
 
         <main style={{ flex: 1, overflowY: "auto", padding: 20 }}>
 
-          {/* Page Header */}
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 18, gap: 16 }}>
             <div>
               <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 3 }}>Quản lý tin tuyển dụng</div>
@@ -87,8 +82,8 @@ export default function JobListings() {
             </div>
             <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
               {["Tất cả", "Chờ duyệt", "Đã duyệt"].map((label) => (
-                <button 
-                  key={label} 
+                <button
+                  key={label}
                   onClick={() => { setActiveTab(label); setActivePage(1); }}
                   style={{
                     border: activeTab === label ? "none" : "1px solid #e8eaf0",
@@ -104,7 +99,7 @@ export default function JobListings() {
             </div>
           </div>
 
-          {/* Stats */}
+
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 20 }}>
             {STATS.map(s => (
               <div key={s.label} style={{ background: "#fff", border: "1px solid #e8eaf0", borderRadius: 10, padding: "14px 18px", minWidth: 110, display: "flex", alignItems: "center", gap: 14 }}>
@@ -119,7 +114,7 @@ export default function JobListings() {
             ))}
           </div>
 
-          {/* Search bar */}
+
           <div style={{ background: "#fff", border: "1px solid #e8eaf0", borderRadius: 10, padding: "10px 14px", marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}>
             <Search size={16} color="#8b93a7" />
             <input
@@ -131,7 +126,7 @@ export default function JobListings() {
             />
           </div>
 
-          {/* Table */}
+
           <div style={{ background: "#fff", border: "1px solid #e8eaf0", borderRadius: 12, overflow: "hidden" }}>
             {loading ? (
               <div style={{ padding: "40px", textAlign: "center", color: "#8b93a7" }}>
@@ -156,7 +151,6 @@ export default function JobListings() {
                       const formattedDate = job.CreatedAt ? new Date(job.CreatedAt).toLocaleDateString('vi-VN') : "Chưa rõ";
                       return (
                         <tr key={job.JobID} style={{ borderBottom: idx < displayedJobs.length - 1 ? "1px solid #e8eaf0" : "none" }}>
-                          {/* Job cell */}
                           <td style={{ padding: "12px 14px" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                               <div style={{ width: 38, height: 38, borderRadius: 8, background: "#eff6ff", border: "1px solid #dbeafe", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -165,19 +159,18 @@ export default function JobListings() {
                               <div>
                                 <div style={{ fontSize: 12.5, fontWeight: 600, marginBottom: 3, color: "#1a1d27" }}>{job.JobTitle}</div>
                                 <div style={{ fontSize: 11, color: "#8b93a7", display: "flex", gap: 8, flexWrap: "wrap" }}>
-                                  <span style={{display: 'flex', alignItems: 'center', gap: 4}}><MapPin size={12}/> {job.Location}</span>
-                                  <span style={{display: 'flex', alignItems: 'center', gap: 4}}><Banknote size={12}/> {job.SalaryRange || "Thỏa thuận"}</span>
-                                  {job.JobType && <span style={{display: 'flex', alignItems: 'center', gap: 4}}><Clock size={12}/> {job.JobType}</span>}
+                                  <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><MapPin size={12} /> {job.Location}</span>
+                                  <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Banknote size={12} /> {job.SalaryRange || "Thỏa thuận"}</span>
+                                  {job.JobType && <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Clock size={12} /> {job.JobType}</span>}
                                 </div>
                               </div>
                             </div>
                           </td>
-                          {/* Employer */}
+
                           <td style={{ padding: "12px 14px", verticalAlign: "middle" }}>
                             <div style={{ fontSize: 12.5, fontWeight: 600, color: "#1a1d27" }}>{job.CompanyName}</div>
-                            {job.Skills && <div style={{ fontSize: 11, color: "#8b93a7", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 180 }} title={job.Skills}><span style={{display: 'flex', alignItems: 'center', gap: 4}}><PenTool size={12}/> {job.Skills}</span></div>}
+                            {job.Skills && <div style={{ fontSize: 11, color: "#8b93a7", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 180 }} title={job.Skills}><span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><PenTool size={12} /> {job.Skills}</span></div>}
                           </td>
-                          {/* Status */}
                           <td style={{ padding: "12px 14px", verticalAlign: "middle" }}>
                             {job.IsActive ? (
                               <span style={{ display: "inline-block", fontSize: 11, fontWeight: 700, padding: "4px 8px", borderRadius: 6, background: "#dcfce7", color: "#15803d", letterSpacing: ".02em" }}>
@@ -189,20 +182,17 @@ export default function JobListings() {
                               </span>
                             )}
                           </td>
-                          {/* Date */}
+
                           <td style={{ padding: "12px 14px", verticalAlign: "middle", fontSize: 12, color: "#8b93a7" }}>{formattedDate}</td>
-                          {/* Actions */}
                           <td style={{ padding: "12px 14px", verticalAlign: "middle" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                              {/* Xem chi tiết */}
                               <div
                                 title="Xem chi tiết"
                                 style={{ width: 28, height: 28, border: "1px solid #e8eaf0", borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", background: "#fff" }}
                               >
                                 <Eye size={13} color="#8b93a7" />
                               </div>
-                              
-                              {/* Duyệt / Huỷ duyệt */}
+
                               {job.IsActive ? (
                                 <button
                                   onClick={() => handleToggleStatus(job.JobID, true)}
@@ -232,7 +222,6 @@ export default function JobListings() {
                   </tbody>
                 </table>
 
-                {/* Footer */}
                 {totalPages > 1 && (
                   <div style={{ padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid #e8eaf0" }}>
                     <div style={{ fontSize: 11.5, color: "#8b93a7" }}>
@@ -240,9 +229,9 @@ export default function JobListings() {
                     </div>
                     <div style={{ display: "flex", gap: 4 }}>
                       {Array.from({ length: totalPages }).map((_, i) => (
-                        <button 
-                          key={i} 
-                          onClick={() => setActivePage(i + 1)} 
+                        <button
+                          key={i}
+                          onClick={() => setActivePage(i + 1)}
                           style={{
                             width: 28, height: 28,
                             background: activePage === i + 1 ? "#3b7efa" : "#fff",

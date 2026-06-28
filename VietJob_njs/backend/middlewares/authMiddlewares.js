@@ -2,7 +2,6 @@ const jwt = require('jsonwebtoken');
 const { pool, poolConnect, sql } = require('../config/db');
 
 const auth = (req, res, next) => {
-    // Lấy token từ header
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
@@ -11,10 +10,9 @@ const auth = (req, res, next) => {
     }
 
     try {
-        // Thay 'YOUR_SECRET_KEY' bằng key thực tế của bạn
         const decoded = jwt.verify(token, 'YOUR_SECRET_KEY');
-        req.user = decoded; // Lưu thông tin user vào request
-        next(); // Chuyển sang middleware/controller tiếp theo
+        req.user = decoded;
+        next();
     } catch (error) {
         return res.status(403).json({ message: "Token không hợp lệ hoặc đã hết hạn." });
     }
@@ -34,7 +32,6 @@ const verifyToken = (req, res, next) => {
 
 const isAdmin = async (req, res, next) => {
     await poolConnect;
-    // Kiểm tra role từ DB thay vì chỉ dựa vào token
     const result = await pool.request()
         .input('userId', sql.Int, req.user.id)
         .query(`
@@ -49,7 +46,6 @@ const isAdmin = async (req, res, next) => {
     next();
 };
 
-// Đảm bảo vừa callable vừa có thuộc tính
 auth.verifyToken = verifyToken;
 auth.isAdmin = isAdmin;
 

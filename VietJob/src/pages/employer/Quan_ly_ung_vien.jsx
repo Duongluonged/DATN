@@ -69,7 +69,6 @@ function StatusBadge({ status }) {
     );
 }
 
-// ═══ MODAL LÊN LỊCH PHỎNG VẤN ═════════════════════════════════
 function InterviewScheduleModal({ app, onClose, onSubmit }) {
     const [date, setDate] = useState("");
     const [format, setFormat] = useState("Online (Google Meet / Zoom)");
@@ -208,7 +207,6 @@ function InterviewScheduleModal({ app, onClose, onSubmit }) {
     );
 }
 
-// ═══ MODAL XEM CHI TIẾT HỒ SƠ ══════════════════════════════════
 function CandidateDetailModal({ app, onClose, onStatusChange }) {
     if (!app) return null;
     const cfg = getStatusCfg(app.Status);
@@ -223,7 +221,6 @@ function CandidateDetailModal({ app, onClose, onStatusChange }) {
                 maxHeight: "90vh", overflowY: "auto",
                 boxShadow: "0 24px 60px rgba(0,0,0,0.18)",
             }}>
-                {/* Header */}
                 <div style={{
                     background: "linear-gradient(135deg,#2563eb,#4f46e5)",
                     borderRadius: "18px 18px 0 0", padding: "24px 24px 20px",
@@ -258,10 +255,8 @@ function CandidateDetailModal({ app, onClose, onStatusChange }) {
                     </div>
                 </div>
 
-                {/* Body */}
                 <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 18 }}>
 
-                    {/* Thông tin liên hệ */}
                     <div>
                         <div style={{ fontSize: 11, fontWeight: 700, color: "#aaa", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 }}>Thông tin liên hệ</div>
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
@@ -280,7 +275,6 @@ function CandidateDetailModal({ app, onClose, onStatusChange }) {
                         </div>
                     </div>
 
-                    {/* CV File */}
                     <div>
                         <div style={{ fontSize: 11, fontWeight: 700, color: "#aaa", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 }}>Hồ sơ CV</div>
                         <div style={{
@@ -303,7 +297,6 @@ function CandidateDetailModal({ app, onClose, onStatusChange }) {
                         </div>
                     </div>
 
-                    {/* Thư giới thiệu */}
                     {app.CoverLetter && (
                         <div>
                             <div style={{ fontSize: 11, fontWeight: 700, color: "#aaa", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 }}>Thư giới thiệu</div>
@@ -318,7 +311,6 @@ function CandidateDetailModal({ app, onClose, onStatusChange }) {
                         </div>
                     )}
 
-                    {/* Cập nhật trạng thái */}
                     <div>
                         <div style={{ fontSize: 11, fontWeight: 700, color: "#aaa", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 }}>Cập nhật trạng thái</div>
                         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -347,7 +339,6 @@ function CandidateDetailModal({ app, onClose, onStatusChange }) {
     );
 }
 
-// ═══ CANDIDATE CARD ══════════════════════════════════════════════
 function CandidateCard({ app, onStatusChange, onViewDetail, onChat }) {
     const [menuOpen, setMenuOpen] = useState(false);
 
@@ -362,7 +353,6 @@ function CandidateCard({ app, onStatusChange, onViewDetail, onChat }) {
             onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 24px rgba(37,99,235,0.12)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
             onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; }}
         >
-            {/* Header */}
             <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
                 <Avatar name={app.CandidateName} />
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -376,13 +366,11 @@ function CandidateCard({ app, onStatusChange, onViewDetail, onChat }) {
                 </div>
             </div>
 
-            {/* Footer */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div style={{ fontSize: 11.5, color: "#aaa" }}>
                     <span style={{display: 'flex', alignItems: 'center', gap: 4}}><Calendar size={12}/> {app.AppliedAt ? new Date(app.AppliedAt).toLocaleDateString("vi-VN") : "—"}</span>
                 </div>
                 <div style={{ display: "flex", gap: 6, position: "relative" }}>
-                    {/* Nút nhắn tin */}
                     {app.CandidateUserId && (
                         <button
                             onClick={e => { e.stopPropagation(); onChat(app.CandidateUserId); }}
@@ -390,13 +378,11 @@ function CandidateCard({ app, onStatusChange, onViewDetail, onChat }) {
                             Nhắn tin
                         </button>
                     )}
-                    {/* Nút xem */}
                     <button
                         onClick={e => { e.stopPropagation(); onViewDetail(app); }}
                         style={{ fontSize: 11.5, color: "#2563eb", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontWeight: 600 }}>
                         Xem hồ sơ
                     </button>
-                    {/* Đổi trạng thái */}
                     <div style={{ position: "relative" }}>
                         <button
                             onClick={e => { e.stopPropagation(); setMenuOpen(!menuOpen); }}
@@ -434,7 +420,6 @@ function CandidateCard({ app, onStatusChange, onViewDetail, onChat }) {
                 </div>
             </div>
 
-            {/* Cover Letter preview */}
             {app.CoverLetter && (
                 <div style={{ fontSize: 11.5, color: "#666", background: "#f8f9fc", borderRadius: 8, padding: "8px 10px", lineHeight: 1.5, borderLeft: "3px solid #2563eb" }}>
                     "{app.CoverLetter.slice(0, 100)}{app.CoverLetter.length > 100 ? "..." : ""}"
@@ -471,7 +456,6 @@ export default function Quan_ly_ung_vien() {
         navigate(`/employer/Quan_ly_tin_nhan?partnerId=${candidateUserId}`);
     };
 
-    // Fetch applications
     const fetchApplications = async () => {
         if (!userId) { setLoading(false); return; }
         setLoading(true);
@@ -486,7 +470,6 @@ export default function Quan_ly_ung_vien() {
             const data = await res.json();
             setApplications(Array.isArray(data) ? data : []);
 
-            // Lấy danh sách jobs để filter
             const jobsRes = await fetch(`${API}/jobs/employer/${userId}`, {
                 headers: { Authorization: `Bearer ${JSON.parse(localStorage.getItem("user") || "{}")?.token}` }
             });
@@ -501,7 +484,6 @@ export default function Quan_ly_ung_vien() {
 
     useEffect(() => { fetchApplications(); }, [userId, filterJob, filterStatus]);
 
-    // Update status
     const handleStatusChange = async (applicationId, newStatus, scheduleData = null) => {
         const app = applications.find(a => a.ApplicationID === applicationId);
         if (!app) return;
@@ -527,7 +509,6 @@ export default function Quan_ly_ung_vien() {
             if (!res.ok) throw new Error();
             showToast(`Đã cập nhật trạng thái thành "${newStatus}" và gửi mail thành công!`);
             
-            // Cập nhật local state ngay
             setApplications(prev => prev.map(a =>
                 a.ApplicationID === applicationId ? { ...a, Status: newStatus } : a
             ));
@@ -553,7 +534,6 @@ export default function Quan_ly_ung_vien() {
                 <Topbar_empl />
 
                 <div style={{ flex: 1, overflowY: "auto", padding: "24px" }}>
-                    {/* Header */}
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
                         <div>
                             <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>Danh sách ứng viên</h1>
@@ -566,7 +546,6 @@ export default function Quan_ly_ung_vien() {
                         </button>
                     </div>
 
-                    {/* Summary badges */}
                     <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
                         {Object.entries(STATUS_CONFIG).map(([s, cfg]) => (
                             <div key={s} style={{ background: cfg.bg, color: cfg.color, padding: "5px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600 }}>
@@ -575,7 +554,6 @@ export default function Quan_ly_ung_vien() {
                         ))}
                     </div>
 
-                    {/* Filters */}
                     <div style={{ display: "flex", gap: 10, marginBottom: 22, alignItems: "flex-end", flexWrap: "wrap" }}>
                         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                             <label style={{ fontSize: 11, color: "#aaa", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>Vị trí tuyển dụng</label>
@@ -595,7 +573,6 @@ export default function Quan_ly_ung_vien() {
                         </div>
                     </div>
 
-                    {/* Grid */}
                     {loading ? (
                         <div style={{ textAlign: "center", padding: 60, color: "#aaa", fontSize: 14 }}>Đang tải dữ liệu...</div>
                     ) : applications.length === 0 ? (
@@ -612,7 +589,6 @@ export default function Quan_ly_ung_vien() {
                         </div>
                     )}
 
-                    {/* Pagination info */}
                     {applications.length > 0 && (
                         <div style={{ marginTop: 20, fontSize: 13, color: "#888", textAlign: "center" }}>
                             Hiển thị {applications.length} hồ sơ
@@ -621,7 +597,6 @@ export default function Quan_ly_ung_vien() {
                 </div>
             </main>
 
-            {/* Modal chi tiết */}
             {selectedApp && (
                 <CandidateDetailModal
                     app={selectedApp}
@@ -632,7 +607,6 @@ export default function Quan_ly_ung_vien() {
                 />
             )}
 
-            {/* Modal lên lịch phỏng vấn */}
             {schedulingApp && (
                 <InterviewScheduleModal
                     app={schedulingApp}
@@ -644,7 +618,6 @@ export default function Quan_ly_ung_vien() {
                 />
             )}
 
-            {/* Modal xác nhận từ chối */}
             {rejectingApp && (
                 <div onClick={() => setRejectingApp(null)} style={{
                     position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)",
@@ -681,7 +654,6 @@ export default function Quan_ly_ung_vien() {
                 </div>
             )}
 
-            {/* Toast */}
             {toast && (
                 <div style={{
                     position: "fixed", bottom: 28, right: 28,

@@ -95,7 +95,7 @@ export default function MyLearningPath() {
   const [userCourses, setUserCourses] = useState([]);
   const [allDBCourses, setAllDBCourses] = useState([]);
   const [toast, setToast] = useState(null);
-  const [activeSubTab, setActiveSubTab] = useState('enrolled'); // 'enrolled' | 'wishlist'
+  const [activeSubTab, setActiveSubTab] = useState('enrolled');
 
   const showToast = (message, success = true) => {
     setToast({ message, success });
@@ -111,21 +111,18 @@ export default function MyLearningPath() {
     const parsedUser = JSON.parse(storedUser);
     setUser(parsedUser);
 
-    // Initial fetch
     fetchData(parsedUser.id);
   }, []);
 
   const fetchData = async (userId) => {
     setLoading(true);
     try {
-      // 1. Fetch user learning path list
       const resPath = await fetch(`http://localhost:5000/api/user-courses/${userId}`);
       let pathData = [];
       if (resPath.ok) {
         pathData = await resPath.json();
       }
 
-      // 2. Fetch all courses from DB to map details
       const resCourses = await fetch('http://localhost:5000/api/courses');
       let dbCourses = [];
       if (resCourses.ok) {
@@ -133,9 +130,7 @@ export default function MyLearningPath() {
         setAllDBCourses(dbCourses);
       }
 
-      // 3. Map details for each user course entry
       const mapped = pathData.map(uc => {
-        // Find course details in db
         const dbCourse = dbCourses.find(c => String(c.Id) === String(uc.CourseId));
         let details;
         if (dbCourse) {
@@ -164,7 +159,6 @@ export default function MyLearningPath() {
             driveLink: dbCourse.DriveLink || 'https://drive.google.com/drive/folders/1VJ-mock-learning-folder-vietjob'
           };
         } else {
-          // Fallback if not found in db
           details = {
             id: uc.CourseId,
             title: `Khóa học mã số #${uc.CourseId}`,
@@ -239,7 +233,6 @@ export default function MyLearningPath() {
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       <Navbar />
 
-      {/* Hero Banner Section */}
       <section className="relative w-full bg-gradient-to-r from-blue-700 via-indigo-800 to-blue-900 text-white py-14 px-6 overflow-hidden">
         <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500 rounded-full opacity-10 blur-3xl" />
         <div className="absolute bottom-0 left-0 w-72 h-72 bg-cyan-400 rounded-full opacity-10 blur-3xl" />
@@ -258,10 +251,8 @@ export default function MyLearningPath() {
         </div>
       </section>
 
-      {/* Main Tab Controller & List Container */}
       <main className="max-w-6xl w-full mx-auto px-4 py-10 flex-grow">
 
-        {/* Toggle navigation tabs */}
         <div className="flex border-b border-gray-200 mb-8 w-full">
           <button
             onClick={() => setActiveSubTab('enrolled')}
@@ -292,13 +283,11 @@ export default function MyLearningPath() {
           </button>
         </div>
 
-        {/* Content displays based on selected tab */}
         {loading ? (
           <div className="flex justify-center py-20">
             <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
           </div>
         ) : activeSubTab === 'enrolled' ? (
-          /* ================== TAB: ENROLLED COURSES ================== */
           enrolledCourses.length === 0 ? (
             <div className="bg-white rounded-3xl p-16 text-center shadow-sm border border-gray-100 max-w-md mx-auto mt-8 space-y-4">
               <div className="flex justify-center mb-2"><GraduationCap size={48} className="text-blue-500" /></div>
@@ -320,7 +309,6 @@ export default function MyLearningPath() {
                   key={uc.UserCourseID}
                   className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 flex flex-col md:flex-row h-full"
                 >
-                  {/* Left visually rich gradient block */}
                   <div className={`w-full md:w-44 bg-gradient-to-br ${uc.details?.bgGradient} shrink-0 p-5 flex flex-col justify-between text-white relative`}>
                     <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded bg-white/20 self-start backdrop-blur-sm">
                       {categoryLabels[uc.details?.category] || 'Công nghệ'}
@@ -331,7 +319,6 @@ export default function MyLearningPath() {
                     </span>
                   </div>
 
-                  {/* Right description block */}
                   <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                     <div className="space-y-2">
                       <h4 className="font-bold text-gray-800 text-base line-clamp-2">
@@ -340,7 +327,6 @@ export default function MyLearningPath() {
                       <p className="text-xs text-gray-400">Giảng viên: <span className="font-semibold text-gray-600">{uc.details?.instructor}</span></p>
                     </div>
 
-                    {/* Progress tracking display */}
                     <div className="space-y-1.5 shrink-0">
                       <div className="flex items-center justify-between text-[11px] font-bold text-gray-400 uppercase">
                         <span>Tiến độ học tập</span>
@@ -351,7 +337,6 @@ export default function MyLearningPath() {
                       </div>
                     </div>
 
-                    {/* Footer metadata and action button */}
                     <div className="flex items-center justify-between pt-3 border-t border-gray-50 shrink-0">
                       <span className="text-[11px] font-bold text-gray-400 flex items-center gap-1">
                         <Clock className="w-3.5 h-3.5" />
@@ -374,7 +359,6 @@ export default function MyLearningPath() {
             </div>
           )
         ) : (
-          /* ================== TAB: WISHLIST (DANH SÁCH QUAN TÂM) ================== */
           wishlistCourses.length === 0 ? (
             <div className="bg-white rounded-3xl p-16 text-center shadow-sm border border-gray-100 max-w-md mx-auto mt-8 space-y-4">
               <div className="flex justify-center mb-2"><Heart size={48} className="text-rose-500" /></div>
@@ -396,7 +380,6 @@ export default function MyLearningPath() {
                   key={uc.UserCourseID}
                   className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 flex flex-col md:flex-row h-full animate-fadeIn"
                 >
-                  {/* Left visually rich gradient block */}
                   <div className={`w-full md:w-44 bg-gradient-to-br ${uc.details?.bgGradient} shrink-0 p-5 flex flex-col justify-between text-white relative`}>
                     <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded bg-white/20 self-start backdrop-blur-sm">
                       {categoryLabels[uc.details?.category] || 'Công nghệ'}
@@ -407,7 +390,6 @@ export default function MyLearningPath() {
                     </span>
                   </div>
 
-                  {/* Right description block */}
                   <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                     <div className="space-y-2">
                       <h4 className="font-bold text-gray-800 text-base line-clamp-2">
@@ -416,7 +398,6 @@ export default function MyLearningPath() {
                       <p className="text-xs text-gray-400">Giảng viên: <span className="font-semibold text-gray-600">{uc.details?.instructor}</span></p>
                     </div>
 
-                    {/* Wishlist courses details and action buttons */}
                     <div className="flex items-center gap-2 pt-3 border-t border-gray-50 shrink-0">
                       <button
                         onClick={() => handleRemove(uc.CourseId)}
@@ -443,7 +424,6 @@ export default function MyLearningPath() {
 
       </main>
 
-      {/* Floating toast alert */}
       {toast && (
         <div className={`fixed bottom-8 right-8 text-white px-6 py-3.5 rounded-xl text-sm font-semibold shadow-2xl z-[9999] flex items-center gap-2 animate-bounce ${toast.success ? 'bg-emerald-600' : 'bg-red-600'
           }`}>

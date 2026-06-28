@@ -42,7 +42,7 @@ export default function Quan_ly_tin_nhan() {
     const [messages, setMessages] = useState([]);
     const [inputText, setInputText] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
-    const [filterType, setFilterType] = useState("all"); // 'all' | 'unread'
+    const [filterType, setFilterType] = useState("all");
     const [noteText, setNoteText] = useState("");
     const [uploading, setUploading] = useState(false);
     const [toast, setToast] = useState(null);
@@ -55,14 +55,12 @@ export default function Quan_ly_tin_nhan() {
         setTimeout(() => setToast(null), 3500);
     };
 
-    // Helper for candidate initials
     const getInitials = (name = "") => {
         const parts = name.trim().split(" ");
         if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
         return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     };
 
-    // Safe JSON base64 converter
     const toBase64 = file => new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
@@ -70,18 +68,15 @@ export default function Quan_ly_tin_nhan() {
         reader.onerror = error => reject(error);
     });
 
-    // ─── FETCH CONVERSATIONS ──────────────────────────────────────
     const fetchConversations = async (silent = false) => {
         if (!userId) return;
         try {
             const res = await axios.get(`${API}/messages/conversations/${userId}`);
             setConversations(Array.isArray(res.data) ? res.data : []);
             
-            // If there's an active partner, update their latest status
             if (activePartner && Array.isArray(res.data)) {
                 const updatedPartner = res.data.find(c => c.PartnerID === activePartner.PartnerID);
                 if (updatedPartner) {
-                    // Update partner stats if necessary
                 }
             }
         } catch (err) {
@@ -89,21 +84,18 @@ export default function Quan_ly_tin_nhan() {
         }
     };
 
-    // ─── FETCH MESSAGES ───────────────────────────────────────────
     const fetchMessages = async (partnerId, silent = false) => {
         if (!userId || !partnerId) return;
         try {
             const res = await axios.get(`${API}/messages/history/${userId}/${partnerId}`);
             setMessages(res.data);
             
-            // Mark as read
             await axios.put(`${API}/messages/read/${userId}/${partnerId}`);
         } catch (err) {
             console.error("Lỗi lấy lịch sử tin nhắn:", err);
         }
     };
 
-    // ─── AUTO-POLLING INTERVAL ────────────────────────────────────
     useEffect(() => {
         fetchConversations();
         
@@ -112,28 +104,24 @@ export default function Quan_ly_tin_nhan() {
             if (activePartner) {
                 fetchMessages(activePartner.PartnerID, true);
             }
-        }, 3000); // Poll every 3 seconds
+        }, 3000);
 
         return () => clearInterval(interval);
     }, [userId, activePartner?.PartnerID]);
 
-    // Scroll to bottom when messages update
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
-    // Handle switching conversations
     const handleSelectPartner = (partner) => {
         setActivePartner(partner);
         setMessages([]);
         fetchMessages(partner.PartnerID);
         
-        // Load note
         const savedNote = localStorage.getItem(`candidate_note_${partner.PartnerID}`) || "";
         setNoteText(savedNote);
     };
 
-    // Check query parameters to see if we should start a chat with someone
     useEffect(() => {
         const queryParams = new URLSearchParams(window.location.search);
         const partnerIdParam = queryParams.get("partnerId");
@@ -143,7 +131,6 @@ export default function Quan_ly_tin_nhan() {
             if (found) {
                 handleSelectPartner(found);
             } else {
-                // If not in active conversations, let's fetch their user info to build a dummy conversation item
                 const fetchUserInfo = async () => {
                     try {
                         const userRes = await axios.get(`${API}/auth/profile/${partnerId}`);
@@ -167,18 +154,16 @@ export default function Quan_ly_tin_nhan() {
                 };
                 fetchUserInfo();
             }
-            // Clean up URL query param so it doesn't re-trigger
             window.history.replaceState({}, document.title, window.location.pathname);
         }
     }, [conversations, window.location.search]);
 
-    // ─── SEND MESSAGE ─────────────────────────────────────────────
     const handleSendMessage = async (e) => {
         e.preventDefault();
         if (!userId || !activePartner || (!inputText.trim())) return;
 
         const textToSend = inputText;
-        setInputText(""); // Clear early for responsiveness
+        setInputText("");
 
         try {
             const res = await axios.post(`${API}/messages/send`, {
@@ -188,7 +173,6 @@ export default function Quan_ly_tin_nhan() {
             });
 
             if (res.status === 201) {
-                // Append locally instantly
                 setMessages(prev => [...prev, res.data.data]);
                 fetchConversations();
             }
@@ -197,7 +181,6 @@ export default function Quan_ly_tin_nhan() {
         }
     };
 
-    // ─── HANDLE FILE UPLOAD ────────────────────────────────────────
     const handleFileUpload = async (e) => {
         const file = e.target.files[0];
         if (!file || !userId || !activePartner) return;
@@ -205,7 +188,6 @@ export default function Quan_ly_tin_nhan() {
         setUploading(true);
         try {
             const base64 = await toBase64(file);
-            // Upload to server upload api
             const uploadRes = await axios.post(`${API}/upload`, {
                 base64,
                 fileName: file.name
@@ -214,7 +196,6 @@ export default function Quan_ly_tin_nhan() {
             if (uploadRes.data?.url) {
                 const fileUrl = uploadRes.data.url;
                 
-                // Send message with file URL
                 const sendRes = await axios.post(`${API}/messages/send`, {
                     senderId: userId,
                     receiverId: activePartner.PartnerID,
@@ -237,14 +218,12 @@ export default function Quan_ly_tin_nhan() {
         }
     };
 
-    // ─── SAVE NOTE ────────────────────────────────────────────────
     const handleSaveNote = () => {
         if (!activePartner) return;
         localStorage.setItem(`candidate_note_${activePartner.PartnerID}`, noteText);
         showToast("Lưu ghi chú tuyển dụng thành công!");
     };
 
-    // Filtering lists
     const filteredConversations = conversations.filter(c => {
         const matchesSearch = c.PartnerName?.toLowerCase().includes(searchTerm.toLowerCase()) || 
                               c.CompanyName?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -262,9 +241,7 @@ export default function Quan_ly_tin_nhan() {
                 <div style={{ flex: 1, padding: "24px", overflow: "hidden" }}>
                     <div className="h-full bg-white rounded-[26px] overflow-hidden border border-[#e8edf5] flex">
 
-                        {/* CHAT LIST */}
                         <section className="w-[340px] border-r border-[#e8edf5] bg-white flex flex-col h-full overflow-hidden flex-shrink-0">
-                            {/* SEARCH */}
                             <div className="px-5 pt-5 pb-3">
                                 <div className="h-10 bg-[#f4f6fb] rounded-xl px-4 flex items-center gap-2">
                                     <Search size={16} className="text-gray-400" />
@@ -277,7 +254,6 @@ export default function Quan_ly_tin_nhan() {
                                 </div>
                             </div>
 
-                            {/* FILTER TYPES */}
                             <div className="px-5 py-2 flex gap-2 flex-shrink-0">
                                 <button
                                     onClick={() => setFilterType("all")}
@@ -297,7 +273,6 @@ export default function Quan_ly_tin_nhan() {
                                 </button>
                             </div>
 
-                            {/* LIST */}
                             <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1">
                                 {filteredConversations.length === 0 ? (
                                     <div className="text-center py-10 text-gray-400 text-xs">
@@ -316,7 +291,6 @@ export default function Quan_ly_tin_nhan() {
                                                     isActive ? "bg-[#f4f7ff]" : "hover:bg-[#f8fafc]"
                                                 }`}
                                             >
-                                                {/* Initials Avatar */}
                                                 <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm flex-shrink-0 shadow-sm border border-blue-50">
                                                     {getInitials(c.PartnerName)}
                                                 </div>
@@ -350,11 +324,9 @@ export default function Quan_ly_tin_nhan() {
                             </div>
                         </section>
 
-                        {/* CHAT CONTENT */}
                         <section className="flex-1 bg-[#fbfbfc] relative flex flex-col h-full overflow-hidden">
                             {activePartner ? (
                                 <>
-                                    {/* HEADER */}
                                     <div className="h-[80px] bg-white border-b border-[#edf1f7] px-6 flex items-center justify-between flex-shrink-0 shadow-sm">
                                         <div className="flex items-center gap-3">
                                             <div className="w-11 h-11 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm shadow-sm">
@@ -378,7 +350,6 @@ export default function Quan_ly_tin_nhan() {
                                         </div>
                                     </div>
 
-                                    {/* MESSAGES CONTAINER */}
                                     <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4">
                                         {messages.length === 0 ? (
                                             <div className="text-center py-20 text-gray-400 text-xs">
@@ -399,7 +370,6 @@ export default function Quan_ly_tin_nhan() {
                                                         )}
 
                                                         <div className="max-w-[70%]">
-                                                            {/* Text or Attachment */}
                                                             {m.AttachmentURL ? (
                                                                 <div className="space-y-2">
                                                                     <div className={`rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center gap-3 ${
@@ -444,10 +414,8 @@ export default function Quan_ly_tin_nhan() {
                                         <div ref={messagesEndRef} />
                                     </div>
 
-                                    {/* INPUT PANEL */}
                                     <div className="p-4 bg-white border-t border-[#edf1f7] flex-shrink-0 shadow-lg">
                                         <form onSubmit={handleSendMessage} className="h-[54px] bg-[#f4f6fb] rounded-2xl px-4 flex items-center gap-3">
-                                            {/* Attachment input */}
                                             <button
                                                 type="button"
                                                 onClick={() => fileInputRef.current?.click()}
@@ -499,7 +467,6 @@ export default function Quan_ly_tin_nhan() {
                             )}
                         </section>
 
-                        {/* PROFILE CARD */}
                         <aside className="w-[300px] border-l border-[#e8edf5] bg-white h-full overflow-y-auto flex-shrink-0">
                             {activePartner ? (
                                 <div className="p-6">
@@ -538,7 +505,6 @@ export default function Quan_ly_tin_nhan() {
                                         </div>
                                     </div>
 
-                                    {/* GHI CHÚ TUYỂN DỤNG */}
                                     <div className="mt-8 border-t border-slate-100 pt-6">
                                         <h4 className="text-[11px] tracking-wider text-[#9ca3af] font-bold uppercase">
                                             Ghi chú tuyển dụng
@@ -570,7 +536,6 @@ export default function Quan_ly_tin_nhan() {
                 </div>
             </main>
 
-            {/* Toast */}
             {toast && (
                 <div style={{
                     position: "fixed", bottom: 28, right: 28,

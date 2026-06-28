@@ -2,17 +2,17 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Sidebar from '../../components/common/admin_c/sidebar.jsx';
 import Topbar from '../../components/common/admin_c/topbar';
-import { 
-  DollarSign, 
-  ArrowUpRight, 
-  ArrowDownLeft, 
-  TrendingUp, 
-  Activity, 
-  Briefcase, 
-  BookOpen, 
-  Calendar, 
-  Search, 
-  Loader2, 
+import {
+  DollarSign,
+  ArrowUpRight,
+  ArrowDownLeft,
+  TrendingUp,
+  Activity,
+  Briefcase,
+  BookOpen,
+  Calendar,
+  Search,
+  Loader2,
   RefreshCw,
   Wallet,
   User
@@ -41,7 +41,6 @@ export default function RevenueManager() {
     fetchTransactions();
   }, []);
 
-  // Calculate stats based on transactions
   let totalSystemRevenue = 0;
   let vipJobRevenue = 0;
   let courseCommissionRevenue = 0;
@@ -50,31 +49,25 @@ export default function RevenueManager() {
   transactions.forEach(t => {
     if (t.Status === 'ThanhCong') {
       if (t.Type === 'ThanhToan') {
-        // VIP Highlight Job Fee (recruiter pays -1M VND, system gains +1M VND)
         const fee = Math.abs(t.Amount);
         vipJobRevenue += fee;
         totalSystemRevenue += fee;
       } else if (t.Type === 'BanKhoaHoc') {
-        // Recruiter receives 85% of price, system gets 15%
-        // Recruiter Amount = Price * 0.85 => systemFee = Amount / 85 * 15
         const fee = Math.floor(t.Amount / 85 * 15);
         courseCommissionRevenue += fee;
         totalSystemRevenue += fee;
       } else if (t.Type === 'Nap') {
-        // User deposited money into wallet
         totalDeposits += t.Amount;
       }
     }
   });
 
-  // Filtered list
   const filteredList = transactions.filter(t => {
-    // 1. Category Filter
+
     if (activeFilter === "Tin VIP" && t.Type !== "ThanhToan") return false;
     if (activeFilter === "Khóa học" && t.Type !== "BanKhoaHoc") return false;
     if (activeFilter === "Nạp ví" && t.Type !== "Nap") return false;
 
-    // 2. Search query filter (Recruiter Name or RefCode or Title)
     if (searchQuery.trim() !== "") {
       const query = searchQuery.toLowerCase();
       const titleMatch = (t.Title || "").toLowerCase().includes(query);
@@ -85,7 +78,6 @@ export default function RevenueManager() {
     return true;
   });
 
-  // Simple monthly dataset for visual SVG chart
   const months = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6'];
   const revenueValues = [15000000, 22000000, 18000000, 29000000, totalSystemRevenue * 0.6, totalSystemRevenue];
 
@@ -97,8 +89,7 @@ export default function RevenueManager() {
         <Topbar />
 
         <main style={{ flex: 1, overflowY: "auto", padding: 24 }}>
-          
-          {/* Header */}
+
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 24 }}>
             <div>
               <div style={{ fontSize: 20, fontWeight: 800, color: "#0f172a", marginBottom: 4 }}>Quản Lý Doanh Thu Hệ Thống</div>
@@ -122,7 +113,6 @@ export default function RevenueManager() {
             </button>
           </div>
 
-          {/* Cards Statistics Grid */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 24 }}>
             {[
               {
@@ -162,11 +152,11 @@ export default function RevenueManager() {
                 desc: "Số dư khả dụng của NTD"
               }
             ].map((card, i) => (
-              <div 
-                key={i} 
-                style={{ 
-                  background: "#ffffff", padding: "20px 22px", borderRadius: 16, 
-                  border: card.border, display: "flex", flexDirection: "column", 
+              <div
+                key={i}
+                style={{
+                  background: "#ffffff", padding: "20px 22px", borderRadius: 16,
+                  border: card.border, display: "flex", flexDirection: "column",
                   justifyContent: "space-between", boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
                   background: card.bg
                 }}
@@ -185,9 +175,8 @@ export default function RevenueManager() {
             ))}
           </div>
 
-          {/* Visual SVG Chart & Right Summary Info */}
           <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 20, marginBottom: 24 }}>
-            {/* Visual SVG Line Chart */}
+
             <div style={{ background: "#ffffff", padding: 24, borderRadius: 16, border: "1px solid #e2e8f0", boxShadow: "0 1px 3px rgba(0,0,0,0.01)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                 <h4 style={{ margin: 0, fontWeight: 800, display: "flex", alignItems: "center", gap: 6, fontSize: 14, color: "#0f172a" }}>
@@ -205,12 +194,10 @@ export default function RevenueManager() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   <div style={{ position: "relative", height: 180, width: "100%" }}>
                     <svg viewBox="0 0 500 180" style={{ width: "100%", height: "100%", overflow: "visible" }}>
-                      {/* Grid Lines */}
                       {[0, 45, 90, 135, 180].map((yVal) => (
                         <line key={yVal} x1="0" y1={yVal} x2="500" y2={yVal} stroke="#f8fafc" strokeWidth="1.5" />
                       ))}
 
-                      {/* Trend Line Path */}
                       <path
                         fill="none"
                         stroke="linear-gradient(to right, #2563eb, #8b5cf6)"
@@ -225,8 +212,6 @@ export default function RevenueManager() {
                         }).join(' ')}
                         style={{ stroke: "#2563eb" }}
                       />
-
-                      {/* Dots & Labels */}
                       {revenueValues.map((val, idx) => {
                         const x = (idx / (revenueValues.length - 1)) * 500;
                         const maxVal = Math.max(...revenueValues, 10000000);
@@ -243,7 +228,6 @@ export default function RevenueManager() {
                     </svg>
                   </div>
 
-                  {/* X-axis labels */}
                   <div style={{ display: "flex", justifyContent: "space-between", padding: "0 10px", borderTop: "1px solid #f1f5f9", paddingTop: 8 }}>
                     {months.map((m, idx) => (
                       <span key={idx} style={{ fontSize: 10, fontWeight: 700, color: "#64748b" }}>{m}</span>
@@ -253,7 +237,7 @@ export default function RevenueManager() {
               )}
             </div>
 
-            {/* Quick summary stats breakdown */}
+
             <div style={{ background: "#ffffff", padding: 24, borderRadius: 16, border: "1px solid #e2e8f0", display: "flex", flexDirection: "column", justifyContent: "center", boxShadow: "0 1px 3px rgba(0,0,0,0.01)" }}>
               <h4 style={{ margin: "0 0 16px 0", fontWeight: 800, fontSize: 14, color: "#0f172a", display: "flex", alignItems: "center", gap: 6 }}>
                 <Activity size={16} style={{ color: "#7c3aed" }} />
@@ -280,10 +264,9 @@ export default function RevenueManager() {
             </div>
           </div>
 
-          {/* Interactive Transactions Log Table */}
+
           <div style={{ background: "#ffffff", borderRadius: 16, border: "1px solid #e2e8f0", overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.02)" }}>
-            
-            {/* Table Header Controls */}
+
             <div style={{ padding: "18px 24px", borderBottom: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
               <div style={{ display: "flex", gap: 8 }}>
                 {["Tất cả", "Tin VIP", "Khóa học", "Nạp ví"].map((f) => (
@@ -302,7 +285,6 @@ export default function RevenueManager() {
                 ))}
               </div>
 
-              {/* Search input */}
               <div style={{ position: "relative", minWidth: 260 }}>
                 <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#94a3b8" }} />
                 <input
@@ -318,7 +300,6 @@ export default function RevenueManager() {
               </div>
             </div>
 
-            {/* Table View */}
             {loading ? (
               <div style={{ padding: 60, textAlign: "center" }}>
                 <Loader2 size={28} className="animate-spin" style={{ color: "#2563eb", margin: "0 auto" }} />
@@ -351,45 +332,44 @@ export default function RevenueManager() {
                       typeLabel = "Dịch vụ Tin VIP";
                       typeBg = "rgba(234,179,8,0.08)";
                       typeColor = "#a16207";
-                      systemProfit = Math.abs(t.Amount); // Fixed VIP job commission
+                      systemProfit = Math.abs(t.Amount);
                     } else if (t.Type === 'BanKhoaHoc') {
                       typeLabel = "Bán khóa học";
                       typeBg = "rgba(22,163,74,0.08)";
                       typeColor = "#16a34a";
-                      systemProfit = Math.floor(t.Amount / 85 * 15); // Dynamic 15% sharing fee
+                      systemProfit = Math.floor(t.Amount / 85 * 15);
                     }
 
                     return (
-                      <tr 
-                        key={t.Id} 
+                      <tr
+                        key={t.Id}
                         style={{ borderBottom: idx < filteredList.length - 1 ? "1px solid #f1f5f9" : "none", transition: "background 0.15s" }}
                         onMouseEnter={e => e.currentTarget.style.background = "#fafbfe"}
                         onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                       >
-                        {/* Title */}
                         <td style={{ padding: "14px 20px", fontWeight: 700, color: "#0f172a" }}>
                           {t.Title}
                         </td>
-                        {/* Recruiter Name */}
+
                         <td style={{ padding: "14px 20px", color: "#334155", fontWeight: 600 }}>
-                          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><User size={14}/> {t.RecruiterName || "Không xác định"}</span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><User size={14} /> {t.RecruiterName || "Không xác định"}</span>
                         </td>
-                        {/* Type Badge */}
+
                         <td style={{ padding: "14px 20px" }}>
                           <span style={{ background: typeBg, color: typeColor, fontSize: 10, fontWeight: 800, padding: "4px 10px", borderRadius: 20, letterSpacing: "0.2px" }}>
                             {typeLabel}
                           </span>
                         </td>
-                        {/* Date & Ref */}
+
                         <td style={{ padding: "14px 20px", color: "#64748b", fontSize: 12 }}>
                           <div>{new Date(t.CreatedAt).toLocaleString("vi-VN")}</div>
                           <div style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", marginTop: 2 }}>{t.RefCode}</div>
                         </td>
-                        {/* Recruiter side amount */}
+
                         <td style={{ padding: "14px 20px", textAlign: "right", fontWeight: 700, color: t.Amount >= 0 ? "#16a34a" : "#dc2626" }}>
                           {t.Amount >= 0 ? "+" : ""}{t.Amount.toLocaleString()}đ
                         </td>
-                        {/* System commission amount */}
+
                         <td style={{ padding: "14px 20px", textAlign: "right", fontWeight: 800, color: systemProfit > 0 ? "#2563eb" : "#94a3b8" }}>
                           {systemProfit > 0 ? `+${systemProfit.toLocaleString()}đ` : "---"}
                         </td>

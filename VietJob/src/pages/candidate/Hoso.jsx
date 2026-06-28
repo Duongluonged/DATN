@@ -6,7 +6,6 @@ import { Mail, Phone, MapPin, Pen, GraduationCap, Briefcase, Plus, Loader2, X, S
 
 const API = "http://localhost:5000/api";
 
-// Bảng màu cho kỹ năng (tự động xoay vòng)
 const SKILL_COLORS = [
   { color: "#2563eb", bg: "#eff6ff" },
   { color: "#059669", bg: "#d1fae5" },
@@ -30,7 +29,6 @@ function parseJwt(token) {
   }
 }
 
-// ─── Modal Overlay ───────────────────────────────────────────────────────────
 function Modal({ title, onClose, children }) {
   return (
     <div
@@ -49,7 +47,6 @@ function Modal({ title, onClose, children }) {
           animation: "modalIn 0.22s cubic-bezier(.4,0,.2,1)",
         }}
       >
-        {/* Header */}
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
           padding: "22px 28px", borderBottom: "1px solid #f3f4f6",
@@ -67,7 +64,6 @@ function Modal({ title, onClose, children }) {
           </button>
         </div>
 
-        {/* Body */}
         <div style={{ padding: "28px 32px" }}>
           {children}
         </div>
@@ -76,7 +72,6 @@ function Modal({ title, onClose, children }) {
   );
 }
 
-// ─── Form Field ───────────────────────────────────────────────────────────────
 function Field({ label, children }) {
   return (
     <div style={{ marginBottom: 18 }}>
@@ -112,7 +107,6 @@ function SaveBtn({ onClick }) {
   );
 }
 
-// ─── SectionCard ─────────────────────────────────────────────────────────────
 function SectionCard({ title, actions, children }) {
   return (
     <div style={{ border: "1px solid #e5e7eb", borderRadius: 12, overflow: "hidden", background: "#fff" }}>
@@ -143,7 +137,6 @@ function SmBtn({ icon: Icon, onClick }) {
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
 export default function Hoso() {
   const [userId, setUserId] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -152,22 +145,18 @@ export default function Hoso() {
   const [avatarUploading, setAvatarUploading] = useState(false);
   const avatarInputRef = useRef(null);
 
-  // Modal state
-  const [modal, setModal] = useState(null); // 'bio' | 'edu' | 'exp' | 'skill'
+  const [modal, setModal] = useState(null);
 
-  // CV data từ DB
   const [bio, setBio] = useState("");
   const [educations, setEducations] = useState([]);
   const [experiences, setExperiences] = useState([]);
-  const [skills, setSkills] = useState([]); // mảng string ["ReactJS", "Node.js"]
+  const [skills, setSkills] = useState([]);
 
-  // Form states
   const [bioForm, setBioForm] = useState("");
   const [eduForm, setEduForm] = useState({ school: "", major: "", from: "", to: "" });
   const [expForm, setExpForm] = useState({ company: "", position: "", from: "", to: "", description: "" });
   const [skillForm, setSkillForm] = useState("");
 
-  // ── Fetch tất cả dữ liệu khi component mount ──
   useEffect(() => {
     const init = async () => {
       try {
@@ -201,7 +190,6 @@ export default function Hoso() {
         const bioVal = cvRes.data?.bio || "";
         setBio(bioVal);
         setBioForm(bioVal);
-        // Skills là chuỗi "ReactJS, Node.js" → tách thành mảng
         const rawSkills = cvRes.data?.skills || "";
         setSkills(rawSkills ? rawSkills.split(",").map(s => s.trim()).filter(Boolean) : []);
         setEducations(eduRes.data || []);
@@ -219,7 +207,6 @@ export default function Hoso() {
     ? profile.Username.substring(0, 2).toUpperCase()
     : "??";
 
-  // ── Upload Avatar ──
   const handleAvatarUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -232,14 +219,12 @@ export default function Hoso() {
       const reader = new FileReader();
       reader.onload = async (ev) => {
         try {
-          // 1. Upload file lên server
           const uploadRes = await axios.post(`${API}/upload`, {
             base64: ev.target.result,
             fileName: file.name,
           });
           const newAvatarUrl = uploadRes.data.url;
 
-          // 2. Lưu URL vào profile
           await axios.put(`${API}/auth/profile/${userId}`, { avatarUrl: newAvatarUrl });
 
           setAvatarUrl(newAvatarUrl);
@@ -266,7 +251,6 @@ export default function Hoso() {
 
   const closeModal = () => setModal(null);
 
-  // ── Lưu Giới thiệu ──
   const saveBio = async () => {
     try {
       await axios.post(`${API}/cv/${userId}/bio`, { bio: bioForm });
@@ -275,7 +259,6 @@ export default function Hoso() {
     } catch (err) { console.error(err); }
   };
 
-  // ── Lưu Học vấn ──
   const saveEducation = async () => {
     try {
       const payload = { school: eduForm.school, major: eduForm.major, from: eduForm.from, to: eduForm.to };
@@ -300,7 +283,6 @@ export default function Hoso() {
     } catch (err) { console.error(err); }
   };
 
-  // ── Lưu Kinh nghiệm ──
   const saveExperience = async () => {
     try {
       const payload = { company: expForm.company, position: expForm.position, from: expForm.from, to: expForm.to, description: expForm.description };
@@ -325,7 +307,6 @@ export default function Hoso() {
     } catch (err) { console.error(err); }
   };
 
-  // ── Lưu Kỹ năng (lưu toàn bộ chuỗi) ──
   const saveSkill = async () => {
     if (!skillForm.trim()) return;
     try {
@@ -354,10 +335,8 @@ export default function Hoso() {
         <Sidebar />
         <main style={{ flex: 1, overflowY: "auto" }}>
 
-          {/* Profile header */}
           <div style={{ background: "#fff", borderBottom: "1px solid #e5e7eb", padding: "18px 24px 14px", display: "flex", alignItems: "flex-start", gap: 18 }}>
             <div style={{ position: "relative", flexShrink: 0 }}>
-              {/* Hidden file input */}
               <input
                 ref={avatarInputRef}
                 type="file"
@@ -365,7 +344,6 @@ export default function Hoso() {
                 style={{ display: "none" }}
                 onChange={handleAvatarUpload}
               />
-              {/* Avatar clickable */}
               <div
                 onClick={() => !avatarUploading && avatarInputRef.current?.click()}
                 style={{
@@ -387,7 +365,6 @@ export default function Hoso() {
                 ) : (
                   avatarText
                 )}
-                {/* Camera hover overlay */}
                 {!loading && !avatarUploading && (
                   <div style={{
                     position: "absolute", inset: 0, background: "rgba(0,0,0,0.45)",
@@ -420,11 +397,9 @@ export default function Hoso() {
             </div>
           </div>
 
-          {/* Content row */}
           <div style={{ display: "flex" }}>
             <div style={{ flex: 1, padding: "20px 24px", display: "flex", flexDirection: "column", gap: 16, borderRight: "1px solid #e5e7eb" }}>
 
-              {/* Giới thiệu */}
               <SectionCard
                 title="Giới thiệu bản thân"
                 actions={[<SmBtn key="e" icon={Pen} onClick={() => { setBioForm(bio); setModal("bio"); }} />]}
@@ -434,7 +409,6 @@ export default function Hoso() {
                 </div>
               </SectionCard>
 
-              {/* Học vấn */}
               <SectionCard
                 title="Học vấn"
                 actions={[
@@ -465,7 +439,6 @@ export default function Hoso() {
                 ))}
               </SectionCard>
 
-              {/* Kinh nghiệm */}
               <SectionCard
                 title="Kinh nghiệm làm việc"
                 actions={[<SmBtn key="a" icon={Plus} onClick={() => { setExpForm({ company: "", position: "", from: "", to: "", description: "" }); setModal("exp"); }} />]}
@@ -496,7 +469,6 @@ export default function Hoso() {
                 ))}
               </SectionCard>
 
-              {/* Kỹ năng */}
               <SectionCard
                 title="Kỹ năng"
                 actions={[<SmBtn key="a" icon={Plus} onClick={() => { setSkillForm(""); setModal("skill"); }} />]}
@@ -523,7 +495,6 @@ export default function Hoso() {
         </main>
       </div>
 
-      {/* ── Modal: Giới thiệu bản thân ── */}
       {modal === "bio" && (
         <Modal title="Chỉnh sửa giới thiệu bản thân" onClose={closeModal}>
           <Field label="Giới thiệu">
@@ -539,7 +510,6 @@ export default function Hoso() {
         </Modal>
       )}
 
-      {/* ── Modal: Học vấn ── */}
       {modal === "edu" && (
         <Modal title={eduForm.id ? "Chỉnh sửa học vấn" : "Thêm học vấn"} onClose={closeModal}>
           <Field label="Trường / Cơ sở đào tạo">
@@ -566,7 +536,6 @@ export default function Hoso() {
         </Modal>
       )}
 
-      {/* ── Modal: Kinh nghiệm làm việc ── */}
       {modal === "exp" && (
         <Modal title={expForm.id ? "Chỉnh sửa kinh nghiệm" : "Thêm kinh nghiệm làm việc"} onClose={closeModal}>
           <Field label="Công ty">
@@ -599,7 +568,6 @@ export default function Hoso() {
         </Modal>
       )}
 
-      {/* ── Modal: Kỹ năng ── */}
       {modal === "skill" && (
         <Modal title="Thêm kỹ năng" onClose={closeModal}>
           <Field label="Tên kỹ năng">

@@ -16,7 +16,6 @@ const getUserFromStorage = () => {
   } catch { return {}; }
 };
 
-// ─── Map trạng thái → style ───────────────────────────────────────────────────
 const STATUS_MAP = {
   'Mới': { label: 'ĐÃ NỘP', cls: 'bg-indigo-100 text-indigo-600' },
   'Đang xem xét': { label: 'ĐANG XEM XÉT', cls: 'bg-blue-100 text-blue-600' },
@@ -34,19 +33,17 @@ const timeAgo = (dateStr) => {
   return `${Math.floor(diff / 604800)} tuần trước`;
 };
 
-// ─── Tính % hoàn thành hồ sơ ─────────────────────────────────────────────────
 const calcProfileStrength = (user, cvData, applications) => {
   let score = 0;
-  if (user?.username || user?.name) score += 20; // Tên
-  if (user?.email) score += 15; // Email
-  if (cvData?.bio) score += 20; // Bio
-  if (cvData?.skills) score += 20; // Skills
-  if (cvData?.cvFilePath) score += 15; // CV file
-  if (applications?.length > 0) score += 10; // Đã ứng tuyển
+  if (user?.username || user?.name) score += 20;
+  if (user?.email) score += 15;
+  if (cvData?.bio) score += 20;
+  if (cvData?.skills) score += 20;
+  if (cvData?.cvFilePath) score += 15;
+  if (applications?.length > 0) score += 10;
   return Math.min(score, 100);
 };
 
-// ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 const Tongquan = () => {
   const navigate = useNavigate();
   const user = getUserFromStorage();
@@ -77,7 +74,6 @@ const Tongquan = () => {
     fetchAll();
   }, [userId]);
 
-  // ── Thống kê ────────────────────────────────────────────────────────────────
   const totalApplied = applications.length;
   const interviewCount = applications.filter(a => a.Status === 'Phỏng vấn' || a.Status === 'Đã tuyển').length;
   const profileStrength = calcProfileStrength(user, cvData, applications);
@@ -103,14 +99,11 @@ const Tongquan = () => {
         style={{ fontFamily: "'Inter', sans-serif" }}>
         <Sidebar />
 
-        {/* --- MAIN CONTENT --- */}
         <main className="flex-1 p-8">
           <div className="grid grid-cols-3 gap-6">
 
-            {/* ── Left: Welcome + Activity ── */}
             <div className="col-span-2 space-y-6">
 
-              {/* Welcome Banner */}
               <div className="bg-white p-8 rounded-3xl relative overflow-hidden shadow-sm border border-gray-100">
                 <div className="relative z-10">
                   <h2 className="text-2xl font-bold mb-2">
@@ -150,7 +143,6 @@ const Tongquan = () => {
                 </div>
               </div>
 
-              {/* Application Activity */}
               <div>
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="font-bold text-lg">Hoạt động ứng tuyển mới nhất</h3>
@@ -184,10 +176,8 @@ const Tongquan = () => {
               </div>
             </div>
 
-            {/* ── Right Column ── */}
             <div className="space-y-6">
 
-              {/* Profile Strength */}
               <div className="bg-blue-600 p-6 rounded-3xl text-white shadow-lg shadow-blue-200">
                 <div className="flex justify-between mb-4">
                   <span className="text-sm opacity-90">Độ mạnh hồ sơ</span>
@@ -217,7 +207,6 @@ const Tongquan = () => {
                 </button>
               </div>
 
-              {/* CV File */}
               <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="font-bold text-sm">Hồ sơ đính kèm</h3>
@@ -256,7 +245,6 @@ const Tongquan = () => {
                 )}
               </div>
 
-              {/* Quick Info */}
               <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
                 <h3 className="font-bold text-sm mb-4">Thông tin tài khoản</h3>
                 <div className="space-y-3">
@@ -274,7 +262,6 @@ const Tongquan = () => {
   );
 };
 
-// ─── SUB-COMPONENTS ───────────────────────────────────────────────────────────
 
 const StatCard = ({ label, value, trend, color }) => (
   <div className="bg-gray-50 p-4 rounded-2xl flex-1 border border-gray-100">

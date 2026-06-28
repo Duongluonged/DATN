@@ -24,7 +24,6 @@ function Input({ label, icon, type = "text", placeholder, value, onChange, error
         <label style={{ fontSize: 13, fontWeight: 500, color: C.text }}>{label}</label>
       )}
       <div style={{ position: "relative" }}>
-        {/* Leading icon */}
         <span style={{
           position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)",
           fontSize: 15, color: C.placeholder, pointerEvents: "none",
@@ -111,25 +110,21 @@ export default function EmployerSignup() {
         minHeight: 560,
       }}>
 
-        {/* ── LEFT PANEL ─────────────────────────────────────────── */}
         <div style={{
           flex: "0 0 340px", position: "relative", overflow: "hidden",
           background: "linear-gradient(160deg,#0f2460 0%,#1a3a8f 40%,#0e1e55 100%)",
           display: "flex", flexDirection: "column", justifyContent: "flex-end",
           padding: "32px 28px",
         }}>
-          {/* Simulated city image overlay */}
           <div style={{
             position: "absolute", inset: 0,
             background: "radial-gradient(ellipse at 60% 30%, rgba(30,80,180,0.35) 0%, transparent 70%)",
             pointerEvents: "none",
           }} />
-          {/* Grid / city silhouette effect */}
           <div style={{
             position: "absolute", inset: 0, opacity: 0.08,
             backgroundImage: "repeating-linear-gradient(0deg,#fff 0,#fff 1px,transparent 1px,transparent 40px),repeating-linear-gradient(90deg,#fff 0,#fff 1px,transparent 1px,transparent 40px)",
           }} />
-          {/* Building silhouettes */}
           <svg viewBox="0 0 340 320" style={{ position: "absolute", bottom: 0, left: 0, width: "100%", opacity: 0.18 }} fill="none">
             <rect x="0"   y="160" width="30"  height="160" fill="#fff" />
             <rect x="35"  y="120" width="40"  height="200" fill="#fff" />
@@ -142,12 +137,10 @@ export default function EmployerSignup() {
             <rect x="315" y="100" width="25"  height="220" fill="#fff" />
           </svg>
 
-          {/* Logo */}
           <div style={{ position: "absolute", top: 24, left: 28, fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.9)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
             TALENT ARC
           </div>
 
-          {/* Main copy */}
           <div style={{ position: "relative", zIndex: 1 }}>
             <h2 style={{ fontSize: 28, fontWeight: 800, color: "#fff", lineHeight: 1.2, letterSpacing: "-0.03em", margin: "0 0 12px" }}>
               Xây dựng đội ngũ<br />xuất sắc của bạn.
@@ -155,7 +148,6 @@ export default function EmployerSignup() {
             <p style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", lineHeight: 1.65, margin: "0 0 24px" }}>
               Hệ thống quản trị tài năng hiện đại giúp bạn kết nối với những chuyên gia IT hàng đầu một cách nhanh chóng và chính xác.
             </p>
-            {/* Avatars + count */}
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <div style={{ display: "flex" }}>
                 {["#4f8ef7","#f97316","#22c55e"].map((bg, i) => (
@@ -174,7 +166,6 @@ export default function EmployerSignup() {
           </div>
         </div>
 
-        {/* ── RIGHT PANEL ────────────────────────────────────────── */}
         <div style={{ flex: 1, background: C.white, padding: "40px 36px", display: "flex", flexDirection: "column", justifyContent: "center", overflowY: "auto" }}>
           {submitted ? (
             <div style={{ textAlign: "center" }}>
@@ -225,7 +216,6 @@ export default function EmployerSignup() {
                   error={errors.company}
                 />
 
-                {/* Password row */}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                   <Input
                     label="Mật khẩu"
@@ -247,7 +237,6 @@ export default function EmployerSignup() {
                   />
                 </div>
 
-                {/* Terms */}
                 <p style={{ fontSize: 11, color: C.muted, margin: "0 0 2px", lineHeight: 1.6 }}>
                   Bằng cách đăng ký, bạn đồng ý với{" "}
                   <span style={{ color: C.blue, cursor: "pointer", fontWeight: 600 }}>Điều khoản dịch vụ</span>{" "}
@@ -255,7 +244,6 @@ export default function EmployerSignup() {
                   <span style={{ color: C.blue, cursor: "pointer", fontWeight: 600 }}>Chính sách bảo mật</span>.
                 </p>
 
-                {/* Submit */}
                 <button
                   onClick={handleSubmit}
                   disabled={loading}
@@ -271,7 +259,6 @@ export default function EmployerSignup() {
 
                 <Divider text="HOẶC THAM GIA VỚI" />
 
-                {/* Google */}
                 <button
                   style={{
                     width: "100%", padding: "10px 0",

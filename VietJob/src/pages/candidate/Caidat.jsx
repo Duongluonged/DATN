@@ -11,7 +11,6 @@ const getUserFromStorage = () => {
   catch { return {}; }
 };
 
-// ─── Toast nhỏ thông báo ─────────────────────────────────────────
 const Toast = ({ msg, type }) => {
   if (!msg) return null;
   const isOk = type === "success";
@@ -29,7 +28,6 @@ const Toast = ({ msg, type }) => {
   );
 };
 
-// ─── Toggle Switch ────────────────────────────────────────────────
 const Toggle = ({ value, onChange }) => (
   <button
     onClick={() => onChange(!value)}
@@ -39,29 +37,24 @@ const Toggle = ({ value, onChange }) => (
   </button>
 );
 
-// ─── MAIN ─────────────────────────────────────────────────────────
 const Caidat = () => {
   const user = getUserFromStorage();
   const userId = user?.id;
 
-  // --- Thông tin tài khoản ---
   const [form, setForm] = useState({ username: "", phone: "", email: "" });
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileToast, setProfileToast] = useState({ msg: "", type: "" });
 
-  // --- Đổi mật khẩu ---
   const [pwForm, setPwForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [showPwModal, setShowPwModal] = useState(false);
   const [savingPw, setSavingPw] = useState(false);
   const [pwToast, setPwToast] = useState({ msg: "", type: "" });
 
-  // --- Thông báo & Riêng tư (local UI state) ---
   const [emailNoti, setEmailNoti] = useState(true);
   const [pushNoti, setPushNoti] = useState(false);
   const [privacy, setPrivacy] = useState("public");
 
-  // Fetch profile khi mount
   useEffect(() => {
     if (!userId) { setLoadingProfile(false); return; }
     const fetchProfile = async () => {
@@ -82,13 +75,11 @@ const Caidat = () => {
     fetchProfile();
   }, [userId]);
 
-  // Helper hiển thị toast rồi tự ẩn
   const showToast = (setter, msg, type) => {
     setter({ msg, type });
     setTimeout(() => setter({ msg: "", type: "" }), 3500);
   };
 
-  // Lưu thông tin tài khoản
   const handleSaveProfile = async () => {
     if (!form.username.trim()) { showToast(setProfileToast, "Họ tên không được để trống.", "error"); return; }
     setSavingProfile(true);
@@ -97,7 +88,6 @@ const Caidat = () => {
         username: form.username,
         phone:    form.phone,
       });
-      // Cập nhật tên trong localStorage
       const stored = getUserFromStorage();
       localStorage.setItem("user", JSON.stringify({ ...stored, username: form.username }));
       showToast(setProfileToast, "Lưu thông tin thành công!", "success");
@@ -108,7 +98,6 @@ const Caidat = () => {
     }
   };
 
-  // Đổi mật khẩu
   const handleChangePassword = async () => {
     if (!pwForm.currentPassword || !pwForm.newPassword) {
       showToast(setPwToast, "Vui lòng điền đầy đủ thông tin.", "error"); return;
@@ -140,7 +129,6 @@ const Caidat = () => {
         <Sidebar />
 
         <main className="flex-1 overflow-y-auto p-10">
-          {/* Header */}
           <div className="mb-8">
             <h1 className="text-[28px] font-bold text-[#0F172A]">Cài đặt</h1>
             <p className="text-[14px] text-[#64748B] mt-1">Quản lý thông tin cá nhân và cấu hình trải nghiệm của bạn trên VietJob.</p>
@@ -148,7 +136,6 @@ const Caidat = () => {
 
           <div className="space-y-6 max-w-8xl">
 
-            {/* ── 1. Thông tin tài khoản ── */}
             <section className="bg-white rounded-[24px] border border-[#F1F5F9] shadow-sm p-8">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 bg-[#EFF6FF] rounded-xl flex items-center justify-center text-[#2563EB]">
@@ -211,7 +198,6 @@ const Caidat = () => {
               )}
             </section>
 
-            {/* ── 2. Cài đặt thông báo ── */}
             <section className="bg-white rounded-[24px] border border-[#F1F5F9] shadow-sm p-8">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 bg-[#F0FDF4] rounded-xl flex items-center justify-center text-[#16A34A]">
@@ -238,7 +224,6 @@ const Caidat = () => {
             </section>
 
             <div className="grid grid-cols-2 gap-6">
-              {/* ── 3. Bảo mật ── */}
               <section className="bg-white rounded-[24px] border border-[#F1F5F9] shadow-sm p-8">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 bg-[#F5F3FF] rounded-xl flex items-center justify-center text-[#7C3AED]">
@@ -264,7 +249,6 @@ const Caidat = () => {
                 </div>
               </section>
 
-              {/* ── 4. Quyền riêng tư ── */}
               <section className="bg-white rounded-[24px] border border-[#F1F5F9] shadow-sm p-8">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 bg-[#F0FDF4] rounded-xl flex items-center justify-center text-[#16A34A]">
@@ -296,7 +280,6 @@ const Caidat = () => {
               </section>
             </div>
 
-            {/* Vô hiệu hóa tài khoản */}
             <div className="flex justify-start">
               <button className="flex items-center gap-2 text-[#EF4444] text-[13px] font-bold hover:underline py-2">
                 <Trash2 size={16} />
@@ -307,7 +290,6 @@ const Caidat = () => {
         </main>
       </div>
 
-      {/* ── Modal Đổi mật khẩu ── */}
       {showPwModal && (
         <div
           style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 999, display: "flex", alignItems: "center", justifyContent: "center" }}
